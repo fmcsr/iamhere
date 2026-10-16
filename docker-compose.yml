@@ -1,0 +1,36 @@
+# Yerel geliştirme ortamı (üretim için değil).
+name: anlik
+
+services:
+  postgres:
+    build: ./infra/docker/postgres
+    environment:
+      POSTGRES_USER: anlik_owner            # tablo sahibi + migration rolü (pg_cron işi de bu rolle çalışır)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-anlik_owner_dev}
+      POSTGRES_DB: anlik
+      ANLIK_API_PASSWORD: ${ANLIK_API_PASSWORD:-anlik_api_dev}
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_cron
+      - -c
+      - cron.database_name=anlik
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql          # PG 18 imajlarında bağlama noktası budur
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U anlik_owner -d anlik"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Redis uyumlu: WebSocket pub/sub, hız sınırı, BullMQ kuyrukları
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: ["valkey-server", "--save", "", "--appendonly", "no"]   # kalıcılık kapalı: geçici veri diske yazılmaz
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
