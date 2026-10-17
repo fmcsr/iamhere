@@ -33,7 +33,8 @@ export default function CheckInScreen() {
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={styles.scroll}>
-      <Stack.Title large {...TitleFonts}>Buradayım</Stack.Title>
+      {/* Başlık yok: sekme zaten "Buradayım"; üstte yalnızca arama çubuğu kalır. */}
+      <Stack.Title {...TitleFonts}>{''}</Stack.Title>
       <Stack.SearchBar placeholder="Mekân ara" hideWhenScrolling={false} onChangeText={(e) => setQuery(e.nativeEvent.text)} />
       <PageColumn style={styles.content}>
 

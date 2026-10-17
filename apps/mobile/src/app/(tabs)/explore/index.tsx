@@ -59,7 +59,8 @@ export default function ExploreScreen() {
               <Text style={[Type.subheadline, { color: theme.textSecondary }]}>· {shown.length} canlı mekân</Text>
             </Glass>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+          {/* flexGrow 0: yatay ScrollView aksi hâlde tüm boşluğu kaplayıp haritaya giden dokunuşları yutuyor. */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsView} contentContainerStyle={styles.chips}>
             {FILTERS.map((f) => {
               const active = f.value === filter;
               return (
@@ -118,6 +119,7 @@ const styles = StyleSheet.create({
   top: { flex: 1, gap: 10, paddingTop: 8 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 16 },
   place: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, flexShrink: 1 },
+  chipsView: { flexGrow: 0 },
   chips: { gap: 8, paddingHorizontal: 16 },
   chip: { height: 36, paddingHorizontal: 14, borderRadius: 18, justifyContent: 'center' },
   carouselView: { flexGrow: 0 },

@@ -503,6 +503,7 @@ Faz 6  Lansman
 | 17.10.2026 | **T-16: Yazı tipi her yerde DM Sans**; **T-17: paylaşım kartları daha geçirgen** (net cam); kişilere sahte profil fotoğrafları | Kurucu isteği |
 | 17.10.2026 | Zemin varyantları (T-18: A üst ışıklar · B üst + sağ alt · C geniş, Revolut gibi) ve ayarlardaki görünüm alanının üç seçeneği (T-19) Ayarlar › Tasarım denemesi'nde denenebilir | **Karar bekliyor** |
 | 17.10.2026 | **K-14 güncellendi: ana sayfa mekân odaklı** (T-20): Takipleştiklerin şu an → Şu an canlı mekânlar → Bu gece etkinlikler → Paylaşımlar (Sana özel / Çevrende). Prototip verisi gerçekçi mekân fotoğrafları ve yorumlarla yenilendi | Kurucuyla tartışma: ürün "bir sosyal medya daha" gibi değil, "bu gece nereye?" sorusunun cevabı gibi görünmeli |
+| 17.10.2026 | Mesajlar Instagram mesaj kutusu düzeninde yeniden kuruldu (T-21); Keşfet haritası gezilebilir hâle getirildi (yatay çip şeridi dokunuşları yutuyordu); Buradayım büyük başlığı kaldırıldı | Kurucu isteği |
 
 ---
 

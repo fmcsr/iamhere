@@ -239,7 +239,8 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 - **Buradayım ekranı:** üst %35 harita (300 m dairesi + kullanıcı noktası), altında yükseltilebilir sayfa: "Mekân ara" (Google atfı alanın içinde), satırlar "ikon · ad · 120 m · Bar · ● 23", mesafeye göre sıralı. 300 m dışındakiler gizlenmez, soluk: "Mekânda olmalısın".
 - **Onay sayfası:** büyük mekân adı + "Değiştir" bağlantısı + tam genişlikte cam-fuşya **Buradayım**. Sonra tek öneri: "Grup sohbetine katıl (23)". Fotoğraf isteğe bağlı.
 - **Paylaşım (tek ekranlık sayfa, sihirbaz değil):** değiştirilemeyen mekân etiketi → 4:5 fotoğraf (önce kamera) → açıklama (280 sayaç) → "Kim görebilir: Herkes ›" satırı (dokununca 3 seçenekli sayfa; her seçeneğin altında sonucu: *Herkes:* yakındakilerin akışında · *Takipçilerim* · *Anonim:* adın gizlenir, mekân görünür) → en fazla 2 açıklamalı anahtar → altta fuşya **Paylaş**.
-- **Harita gezilebilir:** Buradayım haritası kaydırılıp yakınlaştırılabilir; sağ altta cam "Konumuma dön" düğmesi. Uzaktaki pine dokunmak yer bildirimini değil mekân sayfasını açar.
+- **Başlık yok:** Buradayım sekmesi büyük başlık olmadan doğrudan "Mekân ara" ile başlar (sekme adı zaten Buradayım).
+- **Harita gezilebilir:** Buradayım ve Keşfet haritaları kaydırılıp yakınlaştırılabilir; sağ altta cam "Konumuma dön" düğmesi. Uzaktaki pine dokunmak yer bildirimini değil mekân sayfasını açar.
 - **Yalnızca yakında (K-17):** mekâna 300 m'den uzaksan sayfa nedenini açıklar ("Bu mekâna 900 m uzaktasın…") ve düğme kapalı kalır ("Mekânda olmalısın"). Evden yer bildirip sohbete katılmak yok.
 
 **Referanslar:** [Swarm · Logging a check-in](https://mobbin.com/flows/b085bdb2-fca9-47b6-bb94-e32e8a110c48) · [Swarm · Changing a location](https://mobbin.com/flows/25bbbb32-f68b-494b-8e2a-f87bba8bdf25) · [Bump · Yakındaki yer seçici](https://mobbin.com/screens/fa69f7d0-7cdc-4965-933d-0b90d310d993) · [Live Nation · At the Venue?](https://mobbin.com/screens/cc8c52fe-fc15-4802-9539-54a0c562f4be) · [Instagram · New post](https://mobbin.com/screens/6d8a7cd3-a695-4fa4-a59a-a8c0d647cc8a) · [TikTok · Post](https://mobbin.com/screens/7b742cfa-b90e-467d-b73b-8fb9092857ce) · [BeReal · Select your Audience](https://mobbin.com/screens/6603693a-e64f-446b-990f-028e2a0a522b)
@@ -264,6 +265,8 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 **Referanslar:** [Snapchat · Kategoriye göre yer arama](https://mobbin.com/flows/3143f64c-7471-4da3-8439-4165e0d59598) · [Snapchat · Map](https://mobbin.com/flows/0c909e9c-8dad-453a-b88c-a494bc6c34ac) · [Meetup · Harita](https://mobbin.com/screens/488a6aef-3f0b-4474-a065-95eb75f0bffe) · [Swarm · Explore](https://mobbin.com/screens/f4d0f9b9-f7dc-4a20-99e9-1628f86e5044)
 
 ### 5.6 Mesajlar (gelen kutusu ve istekler)
+
+**Yeni düzen (T-21, 17.10.2026), [Instagram mesaj kutusu](https://mobbin.com/screens/fafb59d5-9aa6-4c27-8ead-ddd7098eb85b) gibi:** başlıkta kullanıcı adı ve sağda yeni mesaj düğmesi (takipleştiklerinden seçilir) → arama → **notlar şeridi** (senin notun ve tanıdıklarının üstünde şu an bulunduğu mekân baloncukta) → "Mesajlar" ve sağda "İstekler" + sayı rozeti → kartsız düz liste (mekân sohbetinde yuvarlatılmış kare mekân fotoğrafı; okunmamışta kalın ad ve fuşya nokta; yer bildirdiğin mekân en üstte) → **Önerilenler** (henüz yazışmadığın takipleştiklerin) → en altta tek satır "Sohbetler … sonra sıfırlanır". Tümü / Gruplar / Birebir seçicisi kaldırıldı. Aşağıdaki maddeler önceki düzeni anlatıyor.
 
 - Büyük başlık "Mesajlar", altında bir kez: "⏳ Tüm sohbetler 4 sa 12 dk sonra silinir". Satır başına sayaç yok.
 - En üstte "Şu an buradasın" kartı: mekân fotoğrafı (yuvarlatılmış kare, kişilerden ayrışsın), "142 kişi", canlı nokta.
@@ -353,6 +356,7 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-18 | **Zemin düzeni** | A üst ışıklar · B üst + sağ alt · C geniş (Revolut gibi) | **Karar bekliyor** | Kurucu: "açık modda renkler az belli; sağ alt ya da Revolut gibi geniş alan olabilir, deneyip karar vereceğiz" (§3.6). |
 | T-19 | **Ayarlar › Görünüm alanı** | 1 önizlemeli kartlar · 2 iOS gibi (Otomatik) · 3 menü satırı | **Karar bekliyor** | Kurucu: "başka bir şekilde yapalım, seçenekler sun" (§3.7). |
 | T-20 | **Ana sayfa kurgusu ve hiyerarşi** | (a) paylaşım akışı · (b) mekân odaklı bölümler | **(b)** | Kurucu: "görüntü profesyonel durmuyor". Uber Eats gibi: iri bölüm başlıkları, büyük fotoğraf, tek satır bilgi; paylaşım kartında katman azaldı (mekân kapsülü ve buton yerine bağlantı satırları). |
+| T-21 | **Mesajlar** | (a) cam kartlı liste + seçici · (b) Instagram mesaj kutusu | **(b)** | Kurucu isteği. Tanıdık kalıp; notlar şeridi HERE'ye uyarlandı: baloncukta kişinin şu anki mekânı. |
 
 ---
 
