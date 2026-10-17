@@ -380,7 +380,7 @@ Her adım iOS 27 simülatörlerinde (iPhone 18 Pro · iOS 27.0 ve iPhone Duo · 
 | 12 | DM Sans (T-16), sahte profil fotoğrafları, geçirgen paylaşım kartları (T-17), 04:00 yazıları (K-16), yakın mekân kuralı (K-17) | ✅ |
 | 13 | Zemin (T-18) ve görünüm alanı (T-19) denemeleri | 🟡 Uygulandı, karar bekliyor |
 
-Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (T-11…T-15 durumu; T-18 ve T-19 kararından sonra yenilenecek) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
+Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
 
 ### 7.1 Kullanılan yerel parçalar
 
