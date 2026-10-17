@@ -2,7 +2,7 @@
 
 > Ürün adı **HERE** (K-13). Veritabanı, rol ve servis adlarında hâlâ eski çalışma adı (`anlik_*`) geçiyor; Faz 2'deki şema güncellemesinde `here_*` olarak değiştirilecek.
 
-Konum bazlı, grup aktivitelerine odaklı bir sosyal medya uygulaması. Kullanıcı bulunduğu mekânda (konser alanı, restoran, park…) **yer bildirir** ve isterse fotoğraf ya da yorum paylaşır. Paylaşım ana sayfada görünür, kullanıcı da o mekânda yer bildirmiş kişilerle **mekânın grup sohbetine** katılır. **Her şey gece 04:00'te sıfırlanır.** Paylaşımlar, sohbetler, mesajlar, konum pinleri ve anonim kimlikler kalıcı olarak silinir. (Ürün modelindeki bu değişikliğin şemaya etkisi: §14.)
+Konum bazlı, grup aktivitelerine odaklı bir sosyal medya uygulaması. Kullanıcı bulunduğu mekânda (konser alanı, restoran, park…) **yer bildirir** ve isterse fotoğraf ya da yorum paylaşır. Paylaşım ana sayfada görünür, kullanıcı da o mekânda yer bildirmiş kişilerle **mekânın grup sohbetine** katılır. **Gece 04:00'te yalnızca sohbetler sıfırlanır** ([ROTA.md K-16](ROTA.md)): mekân sohbetleri, birebir mesajlar, mesaj istekleri ve sohbetteki planlar kalıcı olarak silinir. Paylaşımlar ve yer bildirimleri kalır. (Ürün modelindeki bu değişikliklerin şemaya etkisi: §14.)
 
 ---
 
@@ -10,8 +10,8 @@ Konum bazlı, grup aktivitelerine odaklı bir sosyal medya uygulaması. Kullanı
 
 | İlke | Teknik karşılığı |
 |---|---|
-| **Gece biter, her şey biter** (04:00 → 04:00) | Geçici veri "gece" (cycle) başına bölümlenir; 04:00'te RLS ile anında görünmez olur, ≤1 dk içinde `DROP` ile diskten silinir |
-| **Dijital ayak izi yok** | Ham GPS asla saklanmaz · Valkey kalıcılığı kapalı · log ve push'ta içerik yok · cihazdaki önbellek de 04:00'te silinir |
+| **Gece biter, sohbet biter** (04:00 → 04:00) | Sohbet verisi (mesajlar, üyelikler, istekler, planlar) "gece" (cycle) başına bölümlenir; 04:00'te RLS ile anında görünmez olur, ≤1 dk içinde `DROP` ile diskten silinir. Paylaşımlar ve yer bildirimleri kalıcıdır (K-16, §14) |
+| **Sohbet iz bırakmaz, ham konum saklanmaz** | Ham GPS asla saklanmaz · Valkey kalıcılığı kapalı · log ve push'ta içerik yok · cihazdaki sohbet önbelleği de 04:00'te silinir. Yer bildirimleri kalıcı olduğu için (K-16) kimin hangi gece hangi mekânda olduğu saklanır; saklama süresi KVKK için ayrıca belirlenecek |
 | **Yakındakini keşfet ama yerini ele verme** | Izgara maskeleme (~250 m / ~1 km) · mesafe yalnızca kova ("< 500 m") · "görmek için görünür ol" |
 | **Gerçekten orada olanlar konuşur** | Mekân sohbeti yalnızca o mekânda yer bildirenlere açık; yer bildirimi için mekâna ~300 m yakınlık sunucuda doğrulanır |
 | **Anlık ve anonim kalabilme** | Kalıcı profil + gecelik anonim persona (günler arası bağlanamaz) |
@@ -36,7 +36,7 @@ Konum bazlı, grup aktivitelerine odaklı bir sosyal medya uygulaması. Kullanı
 | Arka plan işleri | **BullMQ** worker | Medya temizliği, push bildirimi; pg_cron yoksa bakım turu. |
 | **Veritabanı** | **PostgreSQL 18 + PostGIS 3.6 + pg_cron** | Coğrafi indeks (GiST) ve KNN, bölümleme, RLS, yerleşik `uuidv7()`. |
 | Önbellek / pub-sub | **Valkey 8** (Redis uyumlu), *kalıcılık kapalı* | Fan-out, hız sınırı, kuyruklar. Geçici veri diske yazılmaz. |
-| Medya | S3 uyumlu depolama (Cloudflare R2 / AWS S3), ön imzalı URL | `c/<gece>/…` öneki sayesinde gece sonunda tek seferde silinir. |
+| Medya | S3 uyumlu depolama (Cloudflare R2 / AWS S3), ön imzalı URL | Sohbet medyası `c/<gece>/…` öneki sayesinde gece sonunda tek seferde silinir; paylaşım fotoğrafları kalıcıdır (K-16). |
 | Push | Expo Push → APNs / FCM | **İçeriksiz** bildirim ("Yeni mesajın var"). |
 | Migration | **dbmate** (saf SQL, up/down) | Bölümleme, RLS ve fonksiyonlar en iyi düz SQL'le ifade edilir. |
 | Monorepo | pnpm workspaces + Turborepo | Paylaşılan paketler, önbellekli derleme. |
@@ -113,7 +113,7 @@ anlik/
 
 ## 5. Veri modeli
 
-İki şema var ve sınırı nettir: **`core` asla sohbet içeriği veya konum tutmaz; `ephemeral` asla 04:00'ü geçmez.**
+İki şema var ve sınırı nettir: **`core` asla sohbet içeriği veya konum tutmaz; `ephemeral` asla 04:00'ü geçmez.** Aşağıdaki tablo ilk ürün modeline göre yazılan şemayı anlatır; K-16 gereği paylaşımlar ve yer bildirimleri `ephemeral`'a değil kalıcı tablolara eklenecek (§14).
 
 | Şema | Tablo | İçerik | Yaşam süresi |
 |---|---|---|---|
@@ -147,7 +147,7 @@ anlik/
 `cycle_of(t) = (t'nin yerel saati − 04:00) tarihi`. Örnekler: 17 Ekim 03:59 → `2026-10-16` gecesi; 17 Ekim 04:00 → `2026-10-17` gecesi. Saat dilimi ve başlangıç saati `ephemeral.config` tablosunda tutulur (varsayılan `Europe/Istanbul`, `04:00`). Hesap yerel duvar saatiyle yapıldığından yaz saati uygulayan bölgelerde gece 23 veya 25 saat sürebilir; sınır yine yerel 04:00 olur. Bu davranış testlerde Berlin için doğrulanmıştır.
 
 ### 6.2 Neden satır bazlı TTL değil de bölümleme?
-Bu üründe bir gecenin **bütün** verisi **aynı anda** ölür. Saat 04:00'te milyonlarca satırı `DELETE` ile silmek dakikalar sürer, büyük WAL yükü üretir, tablo şişer ve VACUUM baskısı oluşur. Silinen satırlar da bir süre veri sayfalarında kalır. Bunun yerine her tablo `cycle_date` ile **gece başına bir bölüme** ayrılır ve silme işlemi `DETACH` + `DROP` olur. Bu milisaniyeler sürer, bloat oluşmaz ve tablo dosyası diskten kalkar.
+Bu üründe bir gecenin **bütün** sohbet verisi **aynı anda** ölür (paylaşımlar ve yer bildirimleri K-16'dan beri kalıcı, §14). Saat 04:00'te milyonlarca satırı `DELETE` ile silmek dakikalar sürer, büyük WAL yükü üretir, tablo şişer ve VACUUM baskısı oluşur. Silinen satırlar da bir süre veri sayfalarında kalır. Bunun yerine her tablo `cycle_date` ile **gece başına bir bölüme** ayrılır ve silme işlemi `DETACH` + `DROP` olur. Bu milisaniyeler sürer, bloat oluşmaz ve tablo dosyası diskten kalkar.
 
 ### 6.3 Katmanlar
 
@@ -252,28 +252,31 @@ sequenceDiagram
 
 ## 13. Netleştirilmesi gereken ürün kararları
 
-- **Saat dilimi:** Lansmanın Türkiye'de (`Europe/Istanbul`, tek dilim) yapılacağı varsayıldı.
-- **Gece sonu sınırı:** 03:59'da başlayan bir sohbet 1 dakika sonra silinir. Bu, "04:00'te her şey sıfırlanır" kuralının doğal sonucudur. Uygulama 03:30'dan sonra bir uyarı gösterebilir.
-- **Anonimlik kapsamı:** Şu an gece başına tek persona var. Sohbet başına ayrı persona daha anonimdir ama gece içinde tutarlılık kaybolur.
-- **Yaş sınırı:** 18+ varsayıldı.
-- **Ana sayfa yaklaşımı:** akış, harita veya mekân kartları (bkz. [ROTA.md §7](ROTA.md)).
-- **"Burada" süresi:** Yer bildirimi ne kadar süre "burada" sayılır? Örneğin 3 saat ya da başka bir yerde bildirene kadar. "342 kişi burada" sayacı buna dayanır.
-- **Yer bildirimi yarıçapı:** 300 m varsayıldı.
-- **Sosyal bağ:** Arkadaş veya takip sistemi olacak mı?
-- **Birebir mesajlaşma:** DM kalacak mı, yoksa yalnızca grup sohbeti mi olacak?
+> Bu liste ilk taslaktan kaldı; ürün kararları artık [ROTA.md](ROTA.md) §6 ve §13'te. Her maddenin sonunda güncel durumu var.
+
+- **Saat dilimi:** Lansmanın Türkiye'de (`Europe/Istanbul`, tek dilim) yapılacağı varsayıldı. → Açık (ROTA K-10).
+- **Gece sonu sınırı:** 03:59'da başlayan bir sohbet 1 dakika sonra silinir. Bu, "04:00'te sohbetler sıfırlanır" kuralının (ROTA K-16) doğal sonucudur; paylaşımlar ve yer bildirimleri bundan etkilenmez. Uygulama 03:30'dan sonra bir uyarı gösterebilir. → Açık (ROTA K-10).
+- **Anonimlik kapsamı:** Şu an gece başına tek persona var. Sohbet başına ayrı persona daha anonimdir ama gece içinde tutarlılık kaybolur. → Açık (ROTA K-04); prototipte anonim yer bildirimi şu an yok (ROTA §14 S1).
+- **Yaş sınırı:** 18+ varsayıldı. → MVP için geçici karar: 18+ (ROTA K-01).
+- **Ana sayfa yaklaşımı:** akış, harita veya mekân kartları (bkz. [ROTA.md §7](ROTA.md)). → Karar: mekân odaklı bölümler, altında iki sekmeli paylaşım akışı (ROTA K-14, TASARIM T-20).
+- **"Burada" süresi:** Yer bildirimi ne kadar süre "burada" sayılır? Örneğin 3 saat ya da başka bir yerde bildirene kadar. "342 kişi burada" sayacı buna dayanır. → Açık (ROTA K-06, ROTA §14 S6).
+- **Yer bildirimi yarıçapı:** 300 m varsayıldı. → Karar: 300 m (ROTA K-17).
+- **Sosyal bağ:** Arkadaş veya takip sistemi olacak mı? → Karar: tek yönlü takip (ROTA K-03).
+- **Birebir mesajlaşma:** DM kalacak mı, yoksa yalnızca grup sohbeti mi olacak? → Karar: istek modeliyle mesajlaşma var (ROTA K-08).
 
 ## 14. Ürün güncellemesi: yer bildirimi ve mekân sohbeti
 
-Ürünün odağı tanışmadan **grup aktivitelerine** kaydı. Arayüz taslağı bu modele göre çizildi; şemadaki karşılıkları backend adımında eklenecek:
+Ürünün odağı tanışmadan **grup aktivitelerine** kaydı. Ardından K-16 (17.10.2026) ile 04:00'te yalnızca sohbetlerin sıfırlanmasına karar verildi; paylaşımlar ve yer bildirimleri kalıcı. Arayüz taslağı bu modele göre çizildi; şemadaki karşılıkları backend adımında (Faz 2) eklenecek:
 
 | Yeni kavram | Şemadaki karşılığı (planlanan) | Yaşam süresi |
 |---|---|---|
 | Mekân (konser alanı, restoran, park…) | `core.venues`: ad, kategori, konum, yer bildirimi yarıçapı | kalıcı (herkese açık yer) |
-| Yer bildirimi | `ephemeral.check_ins`: kullanıcı, mekân, persona. Yakınlık sunucuda doğrulanır, ham konum saklanmaz. | gece sonu |
-| Paylaşım (fotoğraf / yorum) | `ephemeral.posts` + `post_comments`, `post_reactions` | gece sonu |
+| Yer bildirimi | `core.check_ins`: kullanıcı, mekân, gece (anonim yer bildirimi açık: ROTA K-04, ROTA §14 S1). Yakınlık (300 m, K-17) sunucuda doğrulanır, ham konum saklanmaz. Profildeki "anı" sayısı ve anı takvimi buradan gelir (T-22). | **kalıcı** (K-16) |
+| Paylaşım (fotoğraf / yorum) | `core.posts` + `post_comments`, `post_reactions` | **kalıcı** (K-16) |
 | Mekân sohbeti | `conversations.kind = 'venue'` (mekân başına gecede tek). Üyelik yer bildirimiyle açılır. | gece sonu |
 | Plan (grup aktivitesi) | `ephemeral.plans` + `plan_participants`. Başlangıç saati 04:00'ü geçemez. | gece sonu |
 
-- Mevcut maskeleme, RLS ve 04:00 bölüm düşürme mekanizması yeni tablolara aynen uygulanır: her tablo `cycle_tables`'a kaydedilir ve RLS politikası alır.
-- Mekânlar herkese açık yerler olduğu için mekân konumu tam gösterilir. **Kişilerin** konumu ise yine gösterilmez: bir kişinin nerede olduğu yalnızca kendi yer bildirimiyle, anonim modda da kimliksiz görünür.
-- "Yakındaki kişiler" listesi ve birebir DM ikinci plana düşer; keşif kişiler yerine mekânlar üzerinden yapılır.
+- Mevcut maskeleme, RLS ve 04:00 bölüm düşürme mekanizması yeni gecelik tablolara (sohbet, plan) aynen uygulanır: her tablo `cycle_tables`'a kaydedilir ve RLS politikası alır. Kalıcı tablolar (yer bildirimi, paylaşım) bu motora girmez; paylaşımlar için saklama süresi (KVKK) ayrıca belirlenecek (ROTA K-16).
+- K-16'dan sonra kalıcı tablolar kişinin hangi gece hangi mekânda yer bildirdiğini de tutar (ham konum yine yok); §5'teki "`core` konum tutmaz" sınırı yeni şemada "ham konum tutmaz" olur. Bu geçmişi kimlerin göreceği açık (ROTA §14 S4).
+- Mekânlar herkese açık yerler olduğu için mekân konumu tam gösterilir. **Kişilerin** konumu ise yine gösterilmez: bir kişinin nerede olduğu yalnızca kendi yer bildirimiyle görünür. Anonim yer bildirimi (kimliksiz görünme) prototipte şu an yok; kapsamı açık (ROTA K-04, ROTA §14 S1).
+- "Yakındaki kişiler" listesi yok (K-02); keşif kişiler yerine mekânlar üzerinden yapılır. Birebir mesajlaşma istek modeliyle var (K-08); mesajlar da 04:00'te sıfırlanır.

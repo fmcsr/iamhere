@@ -1,6 +1,6 @@
 # HERE
 
-Konum bazlı, grup aktivitelerine odaklı sosyal uygulama. Bulunduğun mekânda yer bildir, fotoğraf ya da yorum paylaş, orada olanlarla mekânın grup sohbetine katıl. Sohbetler **her gece 04:00'te** sıfırlanır; paylaşımlar kalır.
+Konum bazlı, grup aktivitelerine odaklı sosyal uygulama. Bulunduğun mekânda yer bildir, fotoğraf ya da yorum paylaş, orada olanlarla mekânın grup sohbetine katıl. Sohbetler **her gece 04:00'te** sıfırlanır; paylaşımlar kalır. Prototipte paylaşım, yer bildirirken o an çekilen fotoğraftan ibaret; yorumun ne olacağı açık ([ROTA §14](docs/ROTA.md#14-sıradaki-adım), S3).
 
 Mağaza adı **I am Here** · etiket **#iamhere** · uygulama simgesinde ve içinde **HERE**.
 

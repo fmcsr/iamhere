@@ -54,8 +54,8 @@
 | Teknik mimari ve teknoloji yığını | ✅ Önerildi ([ARCHITECTURE.md](ARCHITECTURE.md)) — onaylanmayı bekliyor |
 | Veritabanı şeması + 04:00 silme motoru | ✅ Yazıldı, 80 test ile doğrulandı (ilk ürün modeline göre) |
 | Ürün modeli güncellemesi (yer bildirimi + mekân sohbeti) | 🟡 Belirlendi, şemaya henüz işlenmedi |
-| Arayüz | 🟡 Çalışan prototip var (`apps/mobile`, sahte veri). Mobbin araştırması ve tasarım sistemi hazır ([TASARIM.md](TASARIM.md)); sırada tasarım kararları ve Liquid Glass yeniden tasarımı |
-| Ürün kararları | 🟡 Çekirdek kararlar kapandı (§13); K-04, K-06, K-07, K-10, K-12 ve beta/lansman açık |
+| Arayüz | 🟡 Çalışan prototip var (`apps/mobile`, sahte veri), Liquid Glass ile yeniden tasarlandı ve iOS 27'de denendi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, boş durumlar, T-18 ve T-19 kararları |
+| Ürün kararları | 🟡 Çekirdek kararlar kapandı (§13); K-04, K-06, K-07, K-10, K-12 ve beta/lansman açık; incelemeden çıkan sorular S1–S7 açık (§14) |
 
 ---
 
@@ -99,8 +99,8 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 |---|---|---|
 | Yakındaki mekân listesi + arama | Olmazsa olmaz | Mekân verisi nereden? → K-05 |
 | Yakınlık doğrulama (~300 m) | Olmazsa olmaz | Sohbetin güveni buna bağlı |
-| Fotoğraf ve/veya yorum (isteğe bağlı) | Olmazsa olmaz | |
-| Profilimle / anonim seçimi | Olmazsa olmaz | Kapsamı → K-04 |
+| Fotoğraf ve/veya yorum (isteğe bağlı) | Olmazsa olmaz | Prototipte yalnızca o an çekilen fotoğraf (T-26); yazının eklenip eklenmeyeceği açık (§14 S3) |
+| Profilimle / anonim seçimi | Olmazsa olmaz | Kapsamı → K-04. Prototipte T-26'dan beri yok (§14 S1) |
 | "Yeni yer ekle" | Güçlü aday | Spam riski; moderasyon gerek |
 | Arkadaşlarla birlikte yer bildirme | Belki | Arkadaş sistemi gerektirir → K-03 |
 | Çıkış yapma ("Ayrıldım") | Güçlü aday | "Burada" sayacının doğruluğu → K-06 |
@@ -114,7 +114,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 | Paylaşıma yorum | Güçlü aday | Moderasyon yükü artar |
 | Yalnızca uygulama içi kamera (galeriden yükleme yok) | Olmazsa olmaz | Karar (T-26, 18.10.2026): yer bildirirken yalnızca o an çekilen fotoğraf. BeReal tarzı "gerçeklik"; sahte içeriği azaltır. Profil fotoğrafı ve kapak galeriden seçilebilir (T-28) |
 | Video (kısa) | Belki | Depolama + moderasyon maliyeti yüksek |
-| Paylaşımı kalıcı kaydetme | Yapmayalım | İlke 2'ye aykırı |
+| Paylaşımların kalıcı olması | Olmazsa olmaz | Karar (K-16, 17.10.2026): paylaşımlar ve yer bildirimleri kalır, 04:00'te yalnızca sohbetler sıfırlanır. Önceden "Yapmayalım" idi: 04:00'te her şey silinirken (16.10.2026) ilke 2'ye aykırıydı. Geçmiş profilde ve anı takviminde görünür (T-22); "Şimdi ve burada" ilkesiyle gerilimi §5.6'da. Paylaşımı sonradan silme açık (K-16) |
 
 ### 5.3 Mekân sohbeti
 | Fikir | Sınıf | Not |
@@ -151,7 +151,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 | Gecelik anonim takma ad | Olmazsa olmaz | |
 | Yer bildirimleri profilde | Olmazsa olmaz | Kalıcı (K-16) |
 | Arkadaş / takip | Açık | → K-03 |
-| Rozetler, seri (streak), istatistik | Belki | Denendi, profilden kaldırıldı ("çok karışık"). Kalan: profilde "anı" sayısı (yer bildirilen geceler) ve ondan açılan anı takvimi, yalnızca karşılıklı takipleşenlere (T-22). "Şimdi ve burada" ilkesiyle gerilim: takvim geçmişi gösterir, akış ve sohbet anlık kalır |
+| Rozetler, seri (streak), istatistik | Belki | Denendi, profilden kaldırıldı ("çok karışık"). Kalan: profilde "anı" sayısı (yer bildirilen geceler) ve ondan açılan anı takvimi, yalnızca karşılıklı takipleşenlere (T-22; kendi takviminde görünen etiket ise "Şu an burada kimler görsün" ayarına bağlı, hangisinin geçerli olacağı açık: §14 S4). "Şimdi ve burada" ilkesiyle gerilim: takvim geçmişi gösterir, akış ve sohbet anlık kalır |
 | Sık gidilen mekânlar | Belki | Profilden kaldırıldı; kurucu: "oraya daha sonra geliriz" |
 | "To-HERE": gitmek istenen mekânlar listesi | Güçlü aday | Prototipte (T-25): mekân sayfasında kaydet, profilde üçüncü sekme; arkadaşların da kaydettiği yerler görünür (birlikte plan için) |
 | Paylaşımda kişi etiketleme | Güçlü aday | Prototipte yalnızca veride (T-25): profilde "Etiketlenenler", kartta "kiminle" satırı. Paylaşırken etiketleme ekranı yok |
@@ -195,8 +195,8 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **C) Tek yönlü takip** — Sosyal medya hissi; ama "popüler hesap" dinamiği ve takip/izleme riski.
 - **Öneri:** MVP'de A, ardından B. "Arkadaşların bu gece nerede" güçlü bir geri dönüş nedeni olabilir.
 - ~~Karar: B · Karşılıklı arkadaşlık~~ → **güncellendi:**
-- **Karar:** ✅ **C · Tek yönlü takip, MVP'de var** (16.10.2026). Instagram / X gibi "takip et / takibi bırak". Kişiler birbirinin profilini görebilir. Takip ilişkisi kalıcıdır (`core` şeması); paylaşımlar ve sohbetler yine 04:00'te silinir.
-- **Kitle seçimi (karar):** Paylaşım ekranında kitle seçilir; **varsayılan "Herkes"**. Kullanıcı değiştirirse son seçimi hatırlanır ve sonraki paylaşımlarda o kullanılır.
+- **Karar:** ✅ **C · Tek yönlü takip, MVP'de var** (16.10.2026). Instagram / X gibi "takip et / takibi bırak". Kişiler birbirinin profilini görebilir. Takip ilişkisi kalıcıdır (`core` şeması); sohbetler yine 04:00'te silinir, paylaşımlar K-16'dan beri kalır.
+- **Kitle seçimi (karar):** Paylaşım ekranında kitle seçilir; **varsayılan "Herkes"**. Kullanıcı değiştirirse son seçimi hatırlanır ve sonraki paylaşımlarda o kullanılır. *Prototipte ayrı paylaşım ekranı T-26 ile kalktı; yer bildirme sayfasında kitle seçimi yok, çekilen fotoğraf herkese açık gider. Seçimin nereye ve nasıl döneceği açık (§14 S2).*
 - **Rehberden kişi bulma:** ❌ Şimdilik yok. Kişiler **kullanıcı adıyla** aranıp bulunur (bkz. K-15).
 - ⚠️ **Tek yönlü takibin riski:** Takip onay gerektirmediği için bir yabancı birini takip edip onun yer bildirimlerini anlık izleyebilir. Önlemler (**karar, 16.10.2026**, tümü kullanıcının tercihine bağlı):
   - **Gizli hesap:** isteğe bağlı bir ayar, varsayılan kapalı (hesaplar açık). Açılırsa takip istek/onay ile olur, onaylanmayan kişi paylaşımları görmez.
@@ -318,13 +318,13 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 ### K-16 · 04:00'te ne sıfırlanır? 🔴
 - **Karar:** ✅ **Yalnızca sohbetler** (17.10.2026). Mekân sohbetleri, birebir mesajlar, mesaj istekleri ve sohbetteki planlar her gece 04:00'te (İstanbul) sıfırlanır.
 - **Kalıcı:** paylaşımlar (yer bildirimleri, yorumlar, eklenen fotoğraflar). Ana sayfada, mekân sayfasında ve profilde görünmeye devam eder.
-- **Arayüz:** "Her şey 04:00'te silinir" yazıları kaldırıldı; ana sayfa ve Keşfet'teki genel sayaç kalktı. Sayaç ve "her gece 04:00'te sıfırlanır" notu yalnızca sohbetlerde (sohbet başlığı, Mesajlar).
+- **Arayüz:** "Her şey 04:00'te silinir" yazıları kaldırıldı; ana sayfa ve Keşfet'teki genel sayaç kalktı. Sayaç ve "her gece 04:00'te sıfırlanır" notu yalnızca sohbetlerde (sohbet başlığı, Mesajlar). İstisna: yer bildirmişken sekme aksesuarında da kalan süre görünüyor; kalıp kalmayacağı açık (§14 S7).
 - **Etkisi:** Veritabanında paylaşımlar ve yer bildirimleri `ephemeral` şemasından kalıcı tablolara taşınmalı (Faz 2). Gizlilik vaadi "sohbetler silinir" olarak yeniden yazılmalı; paylaşımlar için saklama süresi (KVKK) ayrıca belirlenmeli.
 - **Açık:** Paylaşımı kullanıcı sonradan silebilsin mi (öneri: evet, her paylaşımın ••• menüsünde)? Akış ne kadar eskiye gitsin (öneri: önce son 24 saat, sonra daha eski)?
 
 ### K-17 · Sohbete kim girebilir? 🔴
 - **Karar:** ✅ (17.10.2026) Mekân sohbetine **yalnızca yer bildirerek** girilir; yer bildirimi **yalnızca mekânın 300 m yakınında** yapılabilir. Evden "X mekânındayım" deyip sohbete katılmak yok.
-- **Prototipte:** Uzaktaki mekânda yer bildirim sayfası nedenini açıklar ve düğme kapalıdır ("Mekânda olmalısın"); kilitli sohbette de aynı. Kural veri katmanında da uygulanır (uzak mekânda yer bildirimi ve sohbete yazma reddedilir).
+- **Prototipte:** Uzaktaki mekânın sayfasında fuşya "Yer bildir" yine etkindir ve yer bildirme sayfasını (T-26) kilitli açar: mesafe yazılır ("300 m içinde değilsin · 900 m uzaktasın"), iğneli oluk gridir, yanında "Yol tarifi" var. Kilitli sohbette düğme kapalıdır ("Mekânda olmalısın"); Buradayım listesinde uzak mekânlar soluk ve kilitli, dokununca mekân sayfası açılır. Uzak mekân için tek bir davranış seçmek açık (§14 S5). Kural veri katmanında da uygulanır (uzak mekânda yer bildirimi ve sohbete yazma reddedilir).
 - **Üründe:** Konum sunucuda doğrulanır (konum + doğruluk yarıçapı); sahte konuma karşı önlemler §8 kapsamında.
 
 ### K-13 · Ürün adı ve kimliği 🟢
@@ -376,10 +376,10 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 
 | Konu | Neden önemli | Durum |
 |---|---|---|
-| **KVKK** | Konum kişisel veri; açık rıza + aydınlatma metni şart | Hukukçu görüşü gerekli |
-| **5651 sayılı Kanun** | Yer sağlayıcıya trafik kaydı (IP, zaman) saklama yükümlülüğü — "iz bırakma" vaadiyle gerilim | Hukukçu görüşü gerekli |
+| **KVKK** | Konum kişisel veri; açık rıza + aydınlatma metni şart. Kalıcı yer bildirimleri ve paylaşımlar için saklama süresi belirlenmeli (K-16) | Hukukçu görüşü gerekli |
+| **5651 sayılı Kanun** | Yer sağlayıcıya trafik kaydı (IP, zaman) saklama yükümlülüğü — "sohbet iz bırakmaz" vaadiyle gerilim | Hukukçu görüşü gerekli |
 | **Mağaza kuralları** | Kullanıcı içerikli uygulamalarda şikâyet, engelleme, filtre ve hızlı müdahale zorunlu | Şemada var |
-| **Konum güvenliği** | Takip/ısrarlı takip riski | Ham GPS saklanmıyor; kişiler haritada yok (K-02) |
+| **Konum güvenliği** | Takip/ısrarlı takip riski | Ham GPS saklanmıyor; kişiler haritada yok (K-02). Kalıcı yer bildirimleri (K-16) kişinin geçmişte nerede olduğunu da gösterir: anı takvimi yalnızca karşılıklı takipleşenlere açık (T-22); kapsamı açık (§14 S4) |
 | **Gizlilik vaadi** | "Sohbetler 04:00'te silinir" vaadi (K-16) teknik olarak doğru olmalı (yedekler, loglar, push, cihaz) | [ARCHITECTURE.md §6](ARCHITECTURE.md) |
 | **Moderasyon kapasitesi** | Gece yoğunluğunda şikâyetlere kim bakacak? | Plan yok → MVP öncesi netleşmeli |
 
@@ -409,7 +409,7 @@ Boş bir mekân sohbeti, uygulamayı öldürür. Fikirler:
 | Haftalık geri dönüş (W1 retention) | Ürün alışkanlık oluyor mu? | %25+ |
 | Şikâyet / 1 000 mesaj | Güvenlik sağlığı | Düşük ve düşen trend |
 
-> Metrikler **toplam/anonim** tutulur; kişi bazlı geçmiş tutmak ilke 2'ye aykırı.
+> Metrikler **toplam/anonim** tutulur. Kişi bazlı geçmiş artık üründe var (kalıcı yer bildirimleri ve anı takvimi, K-16 · T-22): bu geçmiş kullanıcıya gösterilir, metrikler yine toplam/anonim hesaplanır. Sohbet içeriği metriklere girmez (ilke 2).
 
 ---
 
@@ -421,13 +421,13 @@ Boş bir mekân sohbeti, uygulamayı öldürür. Fikirler:
 | R2 | Taciz / güvenliksiz ortam | Çok yüksek | 18+, engelleme, filtre, DM kısıtı (K-08) |
 | R3 | Konumla takip | Yüksek | Kişiler haritada yok, ham GPS yok |
 | R4 | Sahte yer bildirimi (GPS sahteciliği) | Orta | Hız kontrolü, cihaz bütünlüğü kontrolü |
-| R5 | Hukuki: 5651 / KVKK ile "iz bırakmama" çatışması | Yüksek | Erken hukuk görüşü |
-| R6 | Silinen içerik nedeniyle geri dönüş nedeni yok | Orta | Arkadaş sistemi (K-03), bildirimler |
+| R5 | Hukuki: 5651 / KVKK ile "sohbet iz bırakmaz" vaadinin çatışması; kalıcı yer bildirimlerinin saklama süresi (K-16) | Yüksek | Erken hukuk görüşü |
+| R6 | Sohbetler her gece silindiği için geri dönüş nedeni zayıf kalabilir | Orta | K-16 ile paylaşımlar ve yer bildirimleri kalıcı, profilde anı takvimi var (T-22); takip (K-03), To-HERE (T-25), bildirimler |
 | R7 | Mekân verisi maliyeti | Orta | K-05 |
 
 **Varsayımlar (doğrulanmalı):**
 - İnsanlar yabancılarla *aynı mekânda* olunca konuşmaya isteklidir.
-- 04:00 sıfırlanması bir kısıt değil, bir **cazibe** olarak algılanır.
+- Sohbetlerin 04:00'te sıfırlanması bir kısıt değil, bir **cazibe** olarak algılanır.
 - Grup planları, birebir tanışmadan daha güvenli ve daha çekici bulunur.
 
 → Bunları test etmek için: 5–10 hedef kullanıcıyla görüşme + basit tıklanabilir prototip.
@@ -466,7 +466,7 @@ Faz 6  Lansman
 - [ ] Ekran listesi / akış haritası
 - [x] Her akış için Mobbin referans seçimi ([TASARIM.md §5](TASARIM.md#5-ekran-ekran-öneriler))
 - [x] Ana sayfa yaklaşımı kararı (K-14)
-- [ ] Görsel dil (renk, tipografi, ikon) *(taslak hazır: [TASARIM.md §3–4](TASARIM.md#3-renk-sistemi); T-1…T-10 kararları bekliyor)*
+- [ ] Görsel dil (renk, tipografi, ikon) *(taslak hazır: [TASARIM.md §3–4](TASARIM.md#3-renk-sistemi); T-1…T-10 kabul edildi, T-18 ve T-19 karar bekliyor)*
 - [ ] Düşük çözünürlüklü taslak → yüksek çözünürlüklü tasarım
 - [ ] Liquid Glass yeniden tasarımı, iOS 27.1 simülatöründe ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası))
 
@@ -519,6 +519,7 @@ Faz 6  Lansman
 | 18.10.2026 | **T-27:** Mesajlar sekmesinde sayı rozeti yerine Instagram'daki gibi küçücük nokta (simgenin sağ altında): bekleyen istek ya da okunmamış birebir sohbet varken. Mekân sohbetleri saymaz | Kurucu isteği; rozet seçili Profil sekmesiyle çakışıyordu |
 | 18.10.2026 | **T-28: Profili düzenle.** Kapak (seçilmezse son gecenin fotoğrafı, bulanık), profil fotoğrafı, ad, kullanıcı adı, hakkında, en fazla 5 ilgi alanı; cihazda saklanır | Kurucu isteği |
 | 18.10.2026 | **İnceleme düzeltmeleri:** "şu an burada" yalnızca bu gecenin paylaşımlarından çıkar (önceki gecelerinki kimseyi "şu an" göstermez); "Sana özel" akış yeniden eskiye sıralı; mekân adına yanlış ek alan cümleler eksiz yazıldı ("Kule Teras'da" gibi); "Can de" → "Can da"; "şimdi önce" düzeldi; zaten yer bildirdiğin mekâna dokununca sohbet açılır (aynı fotoğraf iki kez paylaşılmaz); "Sohbete katıl" → "Sohbete git"; Buradayım listesi 1 km içi (aramada hepsi) | Uygulama içi inceleme; ürün soruları §14'te |
+| 18.10.2026 | **Belgeler son kararlarla hizalandı** (yeni karar yok): 04:00'te yalnızca sohbetlerin sıfırlandığı (K-16) ARCHITECTURE, TASARIM ve bu belgenin her yerine işlendi; eski paylaşım sayfasının yerine yer bildirme sayfası anlatılıyor (T-26); kalıcı paylaşıma ve kişi bazlı geçmişe karşı çıkan maddeler (§5.2, §10, R6) karara göre yeniden yazıldı (K-16, T-22); T-5 güncellendi (logo ortada, sayaç yok); takvim görünürlüğü, uzak mekân ve sekme aksesuarındaki sayaç açık soru olarak işaretlendi (§14 S4, S5, S7) | Uygulama içi inceleme |
 
 ---
 
