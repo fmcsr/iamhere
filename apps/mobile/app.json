@@ -39,7 +39,7 @@
         "expo-image-picker",
         {
           "cameraPermission": "Yer bildirirken o an çektiğin fotoğrafı eklemek için kamerana erişilir.",
-          "photosPermission": "Paylaşıma fotoğraf eklemek için fotoğraflarına erişilir.",
+          "photosPermission": "Profil fotoğrafını ve kapağını seçmek için fotoğraflarına erişilir.",
           "microphonePermission": false
         }
       ]

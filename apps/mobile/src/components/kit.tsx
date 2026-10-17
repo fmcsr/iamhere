@@ -301,7 +301,7 @@ export function PostCard({ post }: { post: Post }) {
             hitSlop={8}
             onPress={() => (iAmHere ? router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } }) : openVenue())}
             style={styles.action}>
-            <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{iAmHere ? 'Sohbete katıl' : 'Mekân'}</Text>
+            <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{iAmHere ? 'Sohbete git' : 'Mekân'}</Text>
             <Icon ios="chevron.right" md="chevron_right" size={12} color={theme.textSecondary} />
           </Pressable>
         )}

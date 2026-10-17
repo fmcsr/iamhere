@@ -12,7 +12,7 @@ import { Type } from '@/constants/theme';
 import { imageAspect, type Post, type User, type Venue } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
-import { genitive, joinNames } from '@/lib/tr';
+import { alsoName, genitive, joinNames } from '@/lib/tr';
 
 type Tab = 'posts' | 'tagged' | 'saved';
 
@@ -118,7 +118,7 @@ function VenueTile({ venue, friends, both }: { venue: Venue; friends: User[]; bo
     <Pressable
       onPress={() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } })}
       accessibilityRole="button"
-      accessibilityLabel={`${venue.name}, ${venue.area}${both ? ', ikiniz de gitmek istiyorsunuz' : ''}${friends.length ? `, ${joinNames(firstNames)} de kaydetti` : ''}`}
+      accessibilityLabel={`${venue.name}, ${venue.area}${both ? ', ikiniz de gitmek istiyorsunuz' : ''}${friends.length ? `, ${alsoName(joinNames(firstNames))} kaydetti` : ''}`}
       style={({ pressed }) => [styles.tile, { aspectRatio: tileAspect(venue), opacity: pressed ? 0.85 : 1 }]}>
       <Image source={{ uri: venue.coverUri }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
       <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.7)']} locations={[0.35, 1]} style={StyleSheet.absoluteFill} />
@@ -130,7 +130,7 @@ function VenueTile({ venue, friends, both }: { venue: Venue; friends: User[]; bo
         <View style={[styles.badge, styles.friendsBadge]}>
           <AvatarStack users={friends.slice(0, 2)} size={18} />
           <Text style={styles.badgeText} numberOfLines={1}>
-            {friends.length === 1 ? `${firstNames[0]} de` : `${firstNames[0]} +${friends.length - 1}`}
+            {friends.length === 1 ? alsoName(firstNames[0]) : `${firstNames[0]} +${friends.length - 1}`}
           </Text>
         </View>
       ) : null}

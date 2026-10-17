@@ -15,7 +15,7 @@ import { useApp } from '@/data/store';
 import { editProfile } from '@/lib/profile';
 
 /**
- * Kendi profilin (TASARIM.md §5.8, T-22, T-25): son gecenin fotoğrafından bulanık kapak, kimlik, sayılar ve
+ * Kendi profilin (TASARIM.md §5.8, T-22, T-25): seçtiğin kapak ya da son gecenin fotoğrafından bulanık kapak, kimlik, sayılar ve
  * etiketler; altında üç sekme: Paylaşımlar, Etiketlenenler, To-HERE. "anı" sayısına dokununca anı takvimi açılır.
  * Düzenle, paylaş ve ayarlar kapaktaki cam düğmelerde. Başlık çubuğu yok: kapak ekranın en üstünden başlar.
  */
@@ -29,7 +29,8 @@ export default function ProfileScreen() {
   const myPosts = posts.filter((p) => p.userId === 'me' && !p.anonAlias).sort((a, b) => b.createdAt - a.createdAt);
   const postById = (id: string) => posts.find((p) => p.id === id);
   const last = nights[0];
-  const cover = last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined;
+  // Seçtiğin kapak net; seçmediysen son gecenin fotoğrafı bulanık.
+  const cover = me.coverUri ?? (last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined);
 
   return (
     <View style={styles.screen} collapsable={false}>
@@ -41,6 +42,7 @@ export default function ProfileScreen() {
         onScroll={onScroll} scrollEventThrottle={32} contentContainerStyle={styles.scroll}>
         <ProfileCover
           uri={cover ?? me.avatarUri}
+          blur={!me.coverUri}
           title={`@${me.username}`}
           statusFade
           pull={pull}

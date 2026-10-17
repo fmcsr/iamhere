@@ -44,13 +44,14 @@ function parseEvent(event?: string) {
  */
 export default function HomeScreen() {
   const theme = useTheme();
-  const { me, posts, users, venues, following, isMutual, venueById, checkIn } = useApp();
+  const { me, posts, users, venues, following, isMutual, venueById, checkIn, tonightPostOf } = useApp();
   const [feed, setFeed] = useState<Feed>('ozel');
   const { ref, refreshControl, angle } = useHereRefresh();
 
   const interestCategories = new Set(me.interests.map((i) => INTEREST_CATEGORY[i]).filter(Boolean));
   const visible = posts.filter((p) => p.audience !== 'takipciler' || p.userId === 'me' || following.has(p.userId));
-  const data =
+  // İki akış da yeniden eskiye.
+  const data = (
     feed === 'ozel'
       ? visible.filter(
           (p) =>
@@ -58,13 +59,14 @@ export default function HomeScreen() {
             (!p.anonAlias && following.has(p.userId)) ||
             interestCategories.has(venueById(p.venueId)?.category as Category),
         )
-      : [...visible].sort((a, b) => b.createdAt - a.createdAt);
+      : [...visible]
+  ).sort((a, b) => b.createdAt - a.createdAt);
 
-  // "Şu an": yalnızca karşılıklı takipleştiklerinin en son (anonim olmayan) yer bildirimi.
+  // "Şu an": yalnızca karşılıklı takipleştiklerinin bu geceki son (anonim olmayan) paylaşımı.
   const nowHere = users
     .filter((u) => isMutual(u.id))
     .flatMap((u) => {
-      const post = posts.find((p) => p.userId === u.id && !p.anonAlias);
+      const post = tonightPostOf(u.id);
       return post ? [{ user: u, post }] : ([] as { user: User; post: Post }[]);
     });
   const friendsAt = (venueId: string) => nowHere.filter((n) => n.post.venueId === venueId).map((n) => n.user);

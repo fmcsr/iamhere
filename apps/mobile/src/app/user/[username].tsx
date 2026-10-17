@@ -60,7 +60,8 @@ export default function UserProfileScreen() {
   const theirNights = nightsOf(user.id, mutual ? {} : { onlyPosts: true, visiblePosts: theirPosts });
   const tonight = theirNights[0]?.key === tonightKey();
   const last = theirNights[0];
-  const cover = theirPosts.find((p) => p.imageUri)?.imageUri ?? (last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined);
+  const cover =
+    user.coverUri ?? theirPosts.find((p) => p.imageUri)?.imageUri ?? (last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined);
 
   const onFollowPress = () => {
     if (isFollowing) {
@@ -84,6 +85,7 @@ export default function UserProfileScreen() {
         onScroll={onScroll} scrollEventThrottle={32} contentContainerStyle={styles.scroll}>
         <ProfileCover
           uri={(locked ? undefined : cover) ?? user.avatarUri}
+          blur={locked || !user.coverUri}
           title={`@${user.username}`}
           left={<HeaderButton icon="chevron.left" md="arrow_back" label="Geri" onImage onPress={() => router.back()} />}
           right={<HeaderButton icon="ellipsis" md="more_horiz" label="Diğer seçenekler" onImage onPress={() => showSafetyMenu(`@${user.username}`)} />}

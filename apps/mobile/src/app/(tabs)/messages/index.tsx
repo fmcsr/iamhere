@@ -26,7 +26,7 @@ import { useNight } from '@/lib/night';
  */
 export default function MessagesScreen() {
   const theme = useTheme();
-  const { me, users, posts, venues, conversations, messages, venueById, userById, checkIn, isUnread, isMutual, openDirect } = useApp();
+  const { me, users, venues, conversations, messages, venueById, userById, checkIn, isUnread, isMutual, openDirect, tonightPostOf } = useApp();
   const { remaining } = useNight();
   const [query, setQuery] = useState('');
 
@@ -45,7 +45,7 @@ export default function MessagesScreen() {
 
   const mutuals = users.filter((u) => isMutual(u.id));
   // Grup sohbetleri şeridi: yer bildirdiğin mekân önde, sonra tanıdığın olanlar ve kalabalık.
-  const friendsAt = (venueId: string) => mutuals.filter((u) => posts.find((p) => p.userId === u.id && !p.anonAlias)?.venueId === venueId);
+  const friendsAt = (venueId: string) => mutuals.filter((u) => tonightPostOf(u.id)?.venueId === venueId);
   const groups = [...venues].sort(
     (a, b) =>
       Number(b.id === checkIn?.venueId) - Number(a.id === checkIn?.venueId) ||

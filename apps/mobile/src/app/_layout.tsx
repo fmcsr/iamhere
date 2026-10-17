@@ -90,6 +90,7 @@ function RootStack() {
           }}
         />
         <Stack.Screen name="settings" options={{ title: 'Ayarlar' }} />
+        <Stack.Screen name="edit-profile" options={{ presentation: 'modal', title: 'Profili düzenle' }} />
         <Stack.Screen name="new-message" options={{ title: 'Yeni mesaj' }} />
         <Stack.Screen name="follows" options={{ title: '' }} />
         <Stack.Screen name="posts" options={{ title: 'Paylaşımlar' }} />

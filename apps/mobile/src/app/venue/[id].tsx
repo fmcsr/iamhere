@@ -62,7 +62,7 @@ export default function VenueScreen() {
           <Stack.Toolbar.Button
             icon="square.and.arrow.up"
             accessibilityLabel="Mekânı paylaş"
-            onPress={() => Share.share({ message: `Bu gece ${venue.name}'dayız · HERE #iamhere` })}
+            onPress={() => Share.share({ message: `Bu gece buradayız: ${venue.name} · HERE #iamhere` })}
           />
         </Stack.Toolbar>
 
@@ -100,7 +100,7 @@ export default function VenueScreen() {
               <Text style={[Type.section, { color: theme.text }]}>Fotoğraflar</Text>
               <View style={styles.grid} onLayout={(e) => setGridWidth(e.nativeEvent.layout.width)}>
                 {photos.map((uri) => (
-                  <Image key={uri} source={{ uri }} style={{ width: cell, height: cell }} contentFit="cover" transition={150} accessibilityLabel="Bu geceden fotoğraf" />
+                  <Image key={uri} source={{ uri }} style={{ width: cell, height: cell }} contentFit="cover" transition={150} accessibilityLabel="Mekândan fotoğraf" />
                 ))}
               </View>
             </View>
@@ -136,7 +136,7 @@ export default function VenueScreen() {
           <View style={styles.section}>
             <Text style={[Type.section, { color: theme.text }]}>Paylaşımlar · {venuePosts.length}</Text>
             {venuePosts.length === 0 && (
-              <Text style={[Type.subheadline, { color: theme.textSecondary }]}>Henüz paylaşım yok. İlk sen paylaş.</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary }]}>Henüz paylaşım yok.</Text>
             )}
             {venuePosts.map((p) => (
               <PostCard key={p.id} post={p} />
@@ -149,7 +149,7 @@ export default function VenueScreen() {
         <View style={styles.barInner}>
           {isHere ? (
             <View style={styles.half}>
-              <ActionButton title="Sohbete katıl" systemImage="bubble.left.and.bubble.right.fill" variant="glassProminent" fullWidth onPress={joinChat} />
+              <ActionButton title="Sohbete git" systemImage="bubble.left.and.bubble.right.fill" variant="glassProminent" fullWidth onPress={joinChat} />
             </View>
           ) : (
             <>

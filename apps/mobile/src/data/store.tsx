@@ -25,7 +25,8 @@ import {
   type User,
   followsBetween,
 } from './mock';
-import { collectNights } from '@/lib/nights';
+import { collectNights, nightKeyOf, tonightKey } from '@/lib/nights';
+import { loadedPhoto, storedPhoto } from '@/lib/profile';
 
 export type PresenceVisibility = 'herkes' | 'karsilikli' | 'kimse';
 
@@ -41,13 +42,16 @@ export type AppearanceUI = 'onizleme' | 'ios' | 'menu';
 export type Trial = { backdrop: BackdropVariant; appearanceUI: AppearanceUI };
 
 const TRIAL_KEY = 'here.trial';
+/** Profilde düzenlenen alanlar (Profili düzenle); cihazda saklanır. */
+const PROFILE_KEY = 'here.profile';
+type ProfileEdit = Pick<User, 'displayName' | 'username' | 'bio' | 'interests' | 'avatarUri' | 'coverUri'>;
 const BACKDROPS: BackdropVariant[] = ['ust', 'kose', 'genis'];
 const APPEARANCE_UIS: AppearanceUI[] = ['onizleme', 'ios', 'menu'];
 
 type Settings = {
   privateAccount: boolean;
   presenceVisibility: PresenceVisibility;
-  /** Son seçilen kitle hatırlanır (varsayılan: herkes). */
+  /** Yer bildirirken paylaşımın kitlesi; yer bildirme sayfasında seçim yok, hep "herkes" (ROTA.md §14, S2). */
   lastAudience: Audience;
   appearance: AppearanceMode;
 };
@@ -57,8 +61,8 @@ function applyAppearance(mode: AppearanceMode) {
   Appearance.setColorScheme(mode === 'system' ? 'unspecified' : mode);
 }
 
-/** Uygulamadaki herkes: ben, paylaşımı olan kişiler ve takip listelerini dolduran diğerleri. */
-const EVERYONE: User[] = [ME, ...USERS, ...MORE_USERS];
+/** Benden başka herkes: paylaşımı olan kişiler ve takip listelerini dolduran diğerleri. */
+const OTHERS: User[] = [...USERS, ...MORE_USERS];
 
 type CheckIn = { venueId: string; anonAlias?: string; at: number };
 
@@ -67,6 +71,7 @@ type CheckInInput = { venueId: string; text: string; imageUri?: string; audience
 const ANON_ALIAS = 'Gezgin Martı 17';
 
 function useAppState() {
+  const [me, setMe] = useState<User>(ME);
   const [posts, setPosts] = useState<Post[]>(POSTS);
   const [liked, setLiked] = useState<Set<string>>(() => new Set(['p2']));
   const [following, setFollowing] = useState<Set<string>>(() => new Set(I_FOLLOW));
@@ -87,10 +92,18 @@ function useAppState() {
   const [appearanceLoaded, setAppearanceLoaded] = useState(false);
   const [trial, setTrialState] = useState<Trial>({ backdrop: 'ust', appearanceUI: 'onizleme' });
 
-  // Kayıtlı görünüm tercihini ve tasarım denemesini açılışta uygula.
+  // Kayıtlı görünüm tercihini, tasarım denemesini ve düzenlenen profili açılışta uygula.
   useEffect(() => {
-    Promise.all([AsyncStorage.getItem(APPEARANCE_KEY), AsyncStorage.getItem(TRIAL_KEY)])
-      .then(([value, saved]) => {
+    Promise.all([AsyncStorage.getItem(APPEARANCE_KEY), AsyncStorage.getItem(TRIAL_KEY), AsyncStorage.getItem(PROFILE_KEY)])
+      .then(([value, saved, profile]) => {
+        if (profile) {
+          try {
+            const edit = JSON.parse(profile) as Partial<ProfileEdit>;
+            setMe((m) => ({ ...m, ...edit, avatarUri: loadedPhoto(edit.avatarUri), coverUri: loadedPhoto(edit.coverUri) }));
+          } catch {
+            // Bozuk kayıt: varsayılan profille devam.
+          }
+        }
         if (value === 'light' || value === 'dark' || value === 'system') {
           applyAppearance(value);
           setSettings((s) => ({ ...s, appearance: value }));
@@ -117,7 +130,18 @@ function useAppState() {
     AsyncStorage.setItem(APPEARANCE_KEY, mode).catch(() => {});
   };
 
-  const userById = (id: string): User => (id === 'me' ? ME : EVERYONE.find((u) => u.id === id) ?? ME);
+  /** Profili düzenle › Kaydet. Fotoğraflar önceden belgeler klasörüne kopyalanmış olmalı (keepPhoto). */
+  const updateMe = (edit: ProfileEdit) => {
+    setMe((m) => ({ ...m, ...edit }));
+    const stored: ProfileEdit = { ...edit, avatarUri: storedPhoto(edit.avatarUri), coverUri: storedPhoto(edit.coverUri) };
+    AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(stored)).catch(() => {});
+  };
+
+  /** Kullanıcı adı başkasında var mı (büyük/küçük harf fark etmez). */
+  const usernameTaken = (username: string) => OTHERS.some((u) => u.username.toLowerCase() === username.toLowerCase());
+
+  const everyone = [me, ...OTHERS];
+  const userById = (id: string): User => (id === 'me' ? me : (OTHERS.find((u) => u.id === id) ?? me));
   const venueById = (id: string) => VENUES.find((v) => v.id === id);
   const followsMe = (userId: string) => FOLLOWS_ME.has(userId);
   const isMutual = (userId: string) => following.has(userId) && followsMe(userId);
@@ -125,8 +149,8 @@ function useAppState() {
   /** a, b'yi takip ediyor mu? Benimle ilgili kenarlar canlı durumdan, diğerleri sabit sahte grafikten. */
   const follows = (a: string, b: string) =>
     a === 'me' ? following.has(b) : b === 'me' ? followsMe(a) : followsBetween(a, b);
-  const followersOf = (userId: string) => EVERYONE.filter((u) => u.id !== userId && follows(u.id, userId));
-  const followingOf = (userId: string) => EVERYONE.filter((u) => u.id !== userId && follows(userId, u.id));
+  const followersOf = (userId: string) => everyone.filter((u) => u.id !== userId && follows(u.id, userId));
+  const followingOf = (userId: string) => everyone.filter((u) => u.id !== userId && follows(userId, u.id));
 
   /**
    * Kişinin geceleri (profil takvimi, özet, ortak geceler). `onlyPosts`: yalnızca paylaşım yaptığı geceler;
@@ -161,9 +185,20 @@ function useAppState() {
   const markRead = (conversationId: string) =>
     setReadConversations((prev) => (prev.has(conversationId) ? prev : new Set(prev).add(conversationId)));
 
+  /**
+   * Kişinin bu geceki son (anonim olmayan) paylaşımı; "şu an burada" bundan çıkar. Paylaşımlar kalıcı (K-16)
+   * ama önceki gecelerinkiler kimseyi "şu an" bir mekânda göstermez.
+   */
+  const tonightPostOf = (userId: string) => {
+    const tonight = tonightKey();
+    return posts
+      .filter((p) => p.userId === userId && !p.anonAlias && nightKeyOf(p.createdAt) === tonight)
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
+  };
+
   /** Bu gece bu mekânda görünen (anonim olmayan) kişiler; takip ettiklerin önde. */
   const peopleAt = (venueId: string): User[] =>
-    USERS.filter((u) => posts.find((p) => p.userId === u.id && !p.anonAlias)?.venueId === venueId).sort(
+    USERS.filter((u) => tonightPostOf(u.id)?.venueId === venueId).sort(
       (a, b) => Number(following.has(b.id)) - Number(following.has(a.id)),
     );
 
@@ -269,8 +304,10 @@ function useAppState() {
   };
 
   return {
-    me: ME,
-    users: EVERYONE.filter((u) => u.id !== 'me'),
+    me,
+    updateMe,
+    usernameTaken,
+    users: OTHERS,
     venues: VENUES,
     posts,
     liked,
@@ -297,6 +334,7 @@ function useAppState() {
     isMutual,
     isUnread,
     markRead,
+    tonightPostOf,
     peopleAt,
     togglePlan,
     toggleLike,

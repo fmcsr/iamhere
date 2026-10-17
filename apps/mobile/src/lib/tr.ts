@@ -7,6 +7,12 @@ export function genitive(name: string): string {
   return `${name}'${vowels.includes(lower.at(-1) ?? '') ? 'n' : ''}${vowel}n`;
 }
 
+/** "Zeynep de", "Can da": "de/da" bağlacı, son ünlüye uyar. */
+export function alsoName(name: string): string {
+  const last = [...name.toLocaleLowerCase('tr')].reverse().find((c) => 'aıoueiöü'.includes(c)) ?? 'e';
+  return `${name} ${'aıou'.includes(last) ? 'da' : 'de'}`;
+}
+
 /** "Can", "Can ve Deniz", "Can, Deniz ve Ece" */
 export function joinNames(names: string[]): string {
   return names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} ve ${names.at(-1)}`;

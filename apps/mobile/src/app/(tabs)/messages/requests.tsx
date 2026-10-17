@@ -53,7 +53,7 @@ export default function RequestsScreen() {
               {last && (
                 <View style={[styles.bubble, { backgroundColor: theme.fill }]}>
                   <Text style={[Type.body, { color: theme.text }]}>{last.text}</Text>
-                  <Text style={[Type.caption, { color: theme.textSecondary }]}>{minutesAgo(last.createdAt)} önce</Text>
+                  <Text style={[Type.caption, { color: theme.textSecondary }]}>{minutesAgo(last.createdAt)}</Text>
                 </View>
               )}
               <View style={styles.actions}>
@@ -69,7 +69,7 @@ export default function RequestsScreen() {
             <Icon ios="tray" md="inbox" size={34} color={theme.textSecondary} />
             <Text style={[Type.headline, { color: theme.text }]}>Bekleyen istek yok</Text>
             <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-              Yeni bir istek geldiğinde Mesajlar sekmesinde rozet görürsün.
+              Yeni bir istek geldiğinde Mesajlar simgesinin köşesinde küçük bir nokta görürsün.
             </Text>
           </View>
         )}

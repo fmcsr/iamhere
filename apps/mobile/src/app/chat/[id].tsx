@@ -160,8 +160,8 @@ export default function ChatScreen() {
           <Text style={[Type.title3, { color: theme.text }]}>Sohbet kilitli</Text>
           <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
             {nearby
-              ? `Bu sohbet yalnızca ${venue.name}’da yer bildirenlere açık.`
-              : `Bu sohbete katılmak için ${venue.name}’da olmalısın. Şu an ${formatDistance(venue.distanceM)} uzaktasın; yer bildirimi yalnızca 300 m içinde yapılabilir.`}
+              ? 'Bu sohbet yalnızca mekânda yer bildirenlere açık.'
+              : `Bu sohbete katılmak için mekânda olmalısın. Şu an ${formatDistance(venue.distanceM)} uzaktasın; yer bildirimi yalnızca 300 m içinde yapılabilir.`}
           </Text>
           <Text style={[Type.footnote, { color: theme.textSecondary }]}>
             {venue.here} kişi · {thread.length} mesaj{plans ? ` · ${plans} aktif plan` : ''}

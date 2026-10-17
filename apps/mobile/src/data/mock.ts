@@ -29,8 +29,17 @@ export type User = {
   avatarColor: string;
   /** Sahte profil fotoğrafı (randomuser.me portresi); yüklenene kadar baş harf görünür. */
   avatarUri?: string;
+  /** Kişinin seçtiği kapak fotoğrafı (net görünür). Yoksa kapak son gecenin fotoğrafı, bulanık. */
+  coverUri?: string;
   isPrivate?: boolean;
 };
+
+/** Profilde seçilebilen ilgi alanları (en fazla 5). */
+export const INTERESTS = [
+  'Canlı müzik', 'Elektronik', 'Caz', 'Dans', 'Bar', 'Kokteyl', 'Şarap', 'Meyhane', 'Yemek', 'Sokak lezzetleri',
+  'Kahve', 'Kutu oyunları', 'Stand-up', 'Tiyatro', 'Sinema', 'Fotoğraf', 'Kitap', 'Koşu', 'Açık hava', 'Sahil',
+];
+export const MAX_INTERESTS = 5;
 
 export type Audience = 'herkes' | 'takipciler' | 'anonim';
 
@@ -198,7 +207,7 @@ const ASPECT: Partial<Record<keyof typeof IMG, number>> = {
 };
 const ASPECT_BY_URI = new Map(Object.entries(ASPECT).map(([key, aspect]) => [IMG[key as keyof typeof IMG], aspect]));
 
-/** Görselin en/boy oranı; bilinmiyorsa paylaşım ekranının 4:5 kırpması. */
+/** Görselin en/boy oranı; bilinmiyorsa 4:5. */
 export const imageAspect = (uri?: string) => (uri && ASPECT_BY_URI.get(uri)) || 0.8;
 
 /** Prototipte kullanıcının (sahte) konumu: Kadıköy, Rıhtım civarı. */
@@ -305,8 +314,8 @@ export const SAVED_VENUES: Record<string, string[]> = {
 };
 
 /**
- * Geçmiş geceler (yer bildirimleri; paylaşım olmasa da sayılır): profil takvimi, "son 30 gün" özeti ve
- * "birlikte olduğunuz geceler" için. daysAgo 0 = bu gece. Paylaşımı olan geceler ayrıca paylaşımlardan da çıkar.
+ * Geçmiş geceler (yer bildirimleri; paylaşım olmasa da sayılır): profildeki "anı" sayısı ve anı takvimi için.
+ * daysAgo 0 = bu gece. Paylaşımı olan geceler ayrıca paylaşımlardan da çıkar.
  */
 const nights = (list: [number, string][]) => list.map(([daysAgo, venueId]) => ({ daysAgo, venueId }));
 export const NIGHT_HISTORY: Record<string, { daysAgo: number; venueId: string }[]> = {

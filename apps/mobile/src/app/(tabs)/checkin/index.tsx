@@ -16,19 +16,31 @@ import { CHECK_IN_RADIUS_M } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 
+/** Listede 1 km içindeki mekânlar (K-02); aranınca hepsi. */
+const LIST_RADIUS_M = 1000;
+
 /**
- * Buradayım (TASARIM.md §5.3): yalnızca yakındaki mekânlar listelenir (K-02). 300 m dışındakiler
- * gizlenmez, soluk görünür. Mekâna dokununca yer bildirme sayfası açılır.
+ * Buradayım (TASARIM.md §5.3): listede yalnızca yakındaki mekânlar (1 km içi, K-02); 300 m dışındakiler
+ * soluk ve kilitli. Harita gezilebilir, aramada tüm mekânlar çıkar. Yakındaki mekâna dokununca yer bildirme
+ * sayfası, uzağa dokununca mekân sayfası, zaten yer bildirdiğin mekâna dokununca sohbeti açılır.
  */
 export default function CheckInScreen() {
   const theme = useTheme();
   const { venues, checkIn, venueById } = useApp();
   const [query, setQuery] = useState('');
 
-  const nearby = [...venues]
+  const matches = [...venues]
     .sort((a, b) => a.distanceM - b.distanceM)
     .filter((v) => v.name.toLocaleLowerCase('tr').includes(query.toLocaleLowerCase('tr')));
+  const nearby = query.trim() ? matches : matches.filter((v) => v.distanceM <= LIST_RADIUS_M);
   const current = checkIn ? venueById(checkIn.venueId) : undefined;
+
+  // Zaten yer bildirdiğin mekân yeniden bildirilmez (aynı fotoğraf iki kez paylaşılmasın): sohbeti açılır.
+  const openVenue = (id: string) => {
+    if (id === checkIn?.venueId) return router.push({ pathname: '/chat/[id]', params: { id: `c-${id}` } });
+    const far = (venueById(id)?.distanceM ?? Infinity) > CHECK_IN_RADIUS_M;
+    router.push(far ? { pathname: '/venue/[id]', params: { id } } : { pathname: '/check-in/[venueId]', params: { venueId: id } });
+  };
 
   return (
     <View style={{ flex: 1 }} collapsable={false}>
@@ -60,17 +72,14 @@ export default function CheckInScreen() {
 
           <View style={styles.map}>
             <VenueMap
-              venues={nearby}
+              venues={matches}
               radius={CHECK_IN_RADIUS_M}
               showMe
               zoom={0.012}
               recenter
               // Harita gezilebilir; ama yer bildirimi yine yalnızca 300 m içinde (K-17): uzak pin mekân sayfasını açar,
               // yakındaki pin alttan yer bildirme sayfasını (iğneyi aşağı kaydır, T-26).
-              onSelect={(id) => {
-                const far = (venueById(id)?.distanceM ?? Infinity) > CHECK_IN_RADIUS_M;
-                router.push(far ? { pathname: '/venue/[id]', params: { id } } : { pathname: '/check-in/[venueId]', params: { venueId: id } });
-              }}
+              onSelect={openVenue}
             />
           </View>
           <View style={styles.note}>
@@ -92,11 +101,7 @@ export default function CheckInScreen() {
                     dimmed={tooFar}
                     subtitle={tooFar ? `${formatDistance(v.distanceM)} · Mekânda olmalısın` : undefined}
                     trailing={tooFar ? <Icon ios="lock.fill" md="lock" size={15} color={theme.textSecondary} /> : undefined}
-                    onPress={() =>
-                      tooFar
-                        ? router.push({ pathname: '/venue/[id]', params: { id: v.id } })
-                        : router.push({ pathname: '/check-in/[venueId]', params: { venueId: v.id } })
-                    }
+                    onPress={() => openVenue(v.id)}
                   />
                 </View>
               );

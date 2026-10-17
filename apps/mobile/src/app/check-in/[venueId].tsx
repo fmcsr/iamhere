@@ -153,10 +153,11 @@ export default function CheckInSheet() {
                   <Text style={[Type.subheadline, { color: theme.textSecondary }]}>
                     {CHECK_IN_RADIUS_M} m içinde değilsin · {formatDistance(venue.distanceM)} uzaktasın
                   </Text>
+                  {/* Cam sayfanın içinde cam düğme yok (§2.3 kural 1): gri dolgulu düğme. */}
                   <ActionButton
                     title="Yol tarifi"
                     systemImage="arrow.triangle.turn.up.right.diamond.fill"
-                    variant="glass"
+                    variant="tonal"
                     size="regular"
                     onPress={() => Linking.openURL(`https://maps.apple.com/?daddr=${venue.latitude},${venue.longitude}`)}
                   />

@@ -20,13 +20,14 @@ const MaskedView = MaskedViewBase as unknown as ComponentType<ViewProps & { mask
 export const COVER_HEIGHT = 196;
 
 /**
- * Profil kapağı (BeReal'deki büyük üst fotoğraf gibi): kişinin son gecesinin fotoğrafı bulanık, aşağı doğru
- * zemine karışır. Üstünde ortada kullanıcı adı, yanlarda cam düğmeler.
+ * Profil kapağı (BeReal'deki büyük üst fotoğraf gibi): kişinin seçtiği kapak fotoğrafı ya da (seçmediyse)
+ * son gecesinin fotoğrafı bulanık; aşağı doğru zemine karışır. Üstünde ortada kullanıcı adı, yanlarda cam düğmeler.
  * Ekranın en üstünden başlar: kaydırma görünümünün güvenli alan boşluğu kadar yukarı taşınır. Aşağı
  * çekince (`pull`) fotoğraf yukarı doğru uzar; üstte boşluk açılmaz.
  */
 export function ProfileCover({
   uri,
+  blur = true,
   title,
   left,
   right,
@@ -34,6 +35,8 @@ export function ProfileCover({
   pull,
 }: {
   uri?: string;
+  /** Otomatik kapak (son gecenin fotoğrafı) bulanık; kişinin seçtiği kapak net görünür. */
+  blur?: boolean;
   title: string;
   left?: ReactNode;
   right?: ReactNode;
@@ -55,7 +58,13 @@ export function ProfileCover({
           style={StyleSheet.absoluteFill}
           maskElement={<LinearGradient colors={['#000', '#000', 'transparent']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />}>
           {uri ? (
-            <Image source={{ uri }} style={styles.photo} contentFit="cover" blurRadius={22} transition={200} />
+            <Image
+              source={{ uri }}
+              style={blur ? styles.blurred : StyleSheet.absoluteFill}
+              contentFit="cover"
+              blurRadius={blur ? 22 : 0}
+              transition={200}
+            />
           ) : (
             <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.accentSoft }]} />
           )}
@@ -110,7 +119,8 @@ export function useCoverStatusBar({ setStyle = true }: { setStyle?: boolean } = 
 }
 
 const styles = StyleSheet.create({
-  photo: { position: 'absolute', top: -30, left: -30, right: -30, bottom: -30 },
+  // Bulanık fotoğrafın kenarları solmasın diye taşar.
+  blurred: { position: 'absolute', top: -30, left: -30, right: -30, bottom: -30 },
   shade: { backgroundColor: 'rgba(0, 0, 0, 0.18)' },
   fade: { position: 'absolute', top: 0, left: 0, right: 0 },
   bar: { position: 'absolute', left: 16, right: 16, height: 44, flexDirection: 'row', alignItems: 'center' },
