@@ -11,6 +11,8 @@ import {
   I_FOLLOW,
   ME,
   MESSAGES,
+  MORE_USERS,
+  NIGHT_HISTORY,
   POSTS,
   USERS,
   VENUES,
@@ -20,7 +22,9 @@ import {
   type Plan,
   type Post,
   type User,
+  followsBetween,
 } from './mock';
+import { collectNights } from '@/lib/nights';
 
 export type PresenceVisibility = 'herkes' | 'karsilikli' | 'kimse';
 
@@ -51,6 +55,9 @@ type Settings = {
 function applyAppearance(mode: AppearanceMode) {
   Appearance.setColorScheme(mode === 'system' ? 'unspecified' : mode);
 }
+
+/** Uygulamadaki herkes: ben, paylaşımı olan kişiler ve takip listelerini dolduran diğerleri. */
+const EVERYONE: User[] = [ME, ...USERS, ...MORE_USERS];
 
 type CheckIn = { venueId: string; anonAlias?: string; at: number };
 
@@ -107,10 +114,27 @@ function useAppState() {
     AsyncStorage.setItem(APPEARANCE_KEY, mode).catch(() => {});
   };
 
-  const userById = (id: string): User => (id === 'me' ? ME : USERS.find((u) => u.id === id) ?? ME);
+  const userById = (id: string): User => (id === 'me' ? ME : EVERYONE.find((u) => u.id === id) ?? ME);
   const venueById = (id: string) => VENUES.find((v) => v.id === id);
   const followsMe = (userId: string) => FOLLOWS_ME.has(userId);
   const isMutual = (userId: string) => following.has(userId) && followsMe(userId);
+
+  /** a, b'yi takip ediyor mu? Benimle ilgili kenarlar canlı durumdan, diğerleri sabit sahte grafikten. */
+  const follows = (a: string, b: string) =>
+    a === 'me' ? following.has(b) : b === 'me' ? followsMe(a) : followsBetween(a, b);
+  const followersOf = (userId: string) => EVERYONE.filter((u) => u.id !== userId && follows(u.id, userId));
+  const followingOf = (userId: string) => EVERYONE.filter((u) => u.id !== userId && follows(userId, u.id));
+
+  /**
+   * Kişinin geceleri (profil takvimi, özet, ortak geceler). `onlyPosts`: yalnızca paylaşım yaptığı geceler;
+   * karşılıklı takipleşmediğin birinin yer bildirimleri görünmez (gizlilik, TASARIM.md §5.8).
+   */
+  const nightsOf = (userId: string, { onlyPosts = false, visiblePosts }: { onlyPosts?: boolean; visiblePosts?: Post[] } = {}) =>
+    collectNights({
+      history: onlyPosts ? [] : (NIGHT_HISTORY[userId] ?? []),
+      posts: visiblePosts ?? posts.filter((p) => p.userId === userId && !p.anonAlias),
+      tonightVenueId: userId === 'me' && !onlyPosts ? checkIn?.venueId : undefined,
+    });
 
   /** Son mesaj karşı taraftansa ve sohbet açılmadıysa okunmamış sayılır. */
   const isUnread = (conversationId: string) => {
@@ -230,7 +254,7 @@ function useAppState() {
 
   return {
     me: ME,
-    users: USERS,
+    users: EVERYONE.filter((u) => u.id !== 'me'),
     venues: VENUES,
     posts,
     liked,
@@ -246,6 +270,10 @@ function useAppState() {
     userById,
     venueById,
     followsMe,
+    follows,
+    followersOf,
+    followingOf,
+    nightsOf,
     isMutual,
     isUnread,
     markRead,

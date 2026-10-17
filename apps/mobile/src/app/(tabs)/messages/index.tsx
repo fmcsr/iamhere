@@ -50,7 +50,9 @@ export default function MessagesScreen() {
       friendsAt(b.id).length - friendsAt(a.id).length ||
       b.here - a.here,
   );
-  const suggestions = mutuals.filter((u) => !conversations.some((c) => c.kind === 'direct' && c.userId === u.id) && matches(u.displayName));
+  const suggestions = mutuals
+    .filter((u) => !conversations.some((c) => c.kind === 'direct' && c.userId === u.id) && matches(u.displayName))
+    .slice(0, 5);
 
   const openDm = (u: User) => router.push({ pathname: '/chat/[id]', params: { id: openDirect(u.id) } });
 

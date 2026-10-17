@@ -293,17 +293,29 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 
 ### 5.8 Profil
 
-- **Kendi profilin:** 80 pt avatar → Title2 ad → @kullanıcı adı (gizli hesapta yanında kilit) → biyografi → satır içi sayılar ("128 takipçi · 87 takip") → nötr ilgi alanı çipleri → gri tonal "Profili düzenle" + "Paylaş". Sağ üstte cam paylaş ve çark.
-- **Sekme yok.** Tek bir **"Paylaşımların"** bölümü: paylaşımlar kalıcı (K-16); yer bildirmişsen en üstte "Şu an buradasın" kartı, hiç paylaşım yoksa boş durum metni ve **Buradayım**.
-- **Başkasının profili:** buton tek yerde durum değiştirir: **Takip et** (metin renginde dolu) → **İstek gönderildi** (gri, saat ikonlu; dokununca "İsteği geri çek") → **Takip ediliyor** (gri; "Takibi bırak" onay ister). **Mesaj** her zaman gri tonal. Sağ üstte •••: Engelle / Bildir / Sessize al.
-- **Gizli hesap:** başlık ve sayılar görünür; içerik yerine kilit + "Bu hesap gizli. Bu geceki yer bildirimlerini görmek için takip et."
+**Yeni düzen (T-22, 17.10.2026): "gece pasaportu".** Profil bir paylaşım listesi değil, kişinin gecelerinin özeti: nereye, ne sıklıkla, kimlerle aynı yerde. Başlık çubuğu yok; her şey içerikle kayar.
 
-**Referanslar:** [X · Profil](https://mobbin.com/screens/04adbd4e-9a4b-4bf4-9027-0ee4b817b4f3) · [BeReal · Profil (koyu)](https://mobbin.com/screens/72d3854d-97be-4541-a917-64a0100ce65d) · [Instagram · Gizli hesap](https://mobbin.com/screens/9c930acd-4fd6-4400-b628-d1b44bbe66a9) · [Garmin · Takip akışı](https://mobbin.com/flows/e6f8a69c-9cc6-4e05-8f6e-ac426806da49) · [BeReal · Arkadaşlık isteği](https://mobbin.com/flows/eec0c11e-0489-4632-9cd0-52641503ca20)
+- **Kapak:** son gecenin fotoğrafı bulanık; ekranın en üstünden başlar, aşağı doğru zemine karışır (BeReal gibi). Ortada @kullanıcı adı, sağda cam paylaş ve çark, altta küçük cam etiket "Son gece · Çınar Meyhane" (yer bildirmişsen "Bu gece · …"). Saat her fotoğrafta okunsun diye en üstte ince geçiş.
+- **Kimlik:** avatar kapağa biner → Title2 ad (gizli hesapta kilit) → @kullanıcı adı → biyografi → üç sayı: **takipçi** · **takip** (dokununca liste açılır) · **gece · 30 gün** → nötr ilgi alanı etiketleri.
+- **Profili düzenle küçüldü:** avatarın sağında küçük "Düzenle" kapsülü; ayrıca Ayarlar › Hesap'ta bir satır. Düzenleme ekranı prototipte henüz yok.
+- **Bu gece kartı:** yer bildirmişsen "Şu an buradasın" + Sohbet; değilsen "Bu gece · Neredesin?" + Buradayım.
+- **Son 30 gün:** gece · mekân · semt sayıları, en çok gittiğin mekân ve haftalık seri (🔥, en az 2 hafta).
+- **Gece takvimi:** ay ay gezilir; gidilen gecelerde o gecenin fotoğrafı, bugün fuşya halkalı. Bir geceye dokununca altında mekân, paylaşım sayısı ve o gece orada olan karşılıklı takipleştiklerin ("Deniz de oradaydı"); karttan paylaşıma ya da mekâna gidilir. Sağ üstteki kilit takvimi kimlerin gördüğünü söyler ("Şu an burada kimler görsün" ayarına bağlı) ve Ayarlar'a götürür.
+- **Sık gittiklerin:** yatay mekân kartları, "7 kez" rozeti.
+- **Paylaşımlar Pinterest gibi:** başlıksız, iki sütunlu ızgara; fotoğraf kendi oranında, yazı paylaşımı alıntı kartı. Dokununca Instagram'daki gibi **dikey akış** açılır (ana sayfadaki kartlarla) ve dokunulan paylaşımdan başlar.
+- **Takipçi / takip listeleri:** sayıya dokununca açılan sayfa: üstte "19 takipçi | 16 takip" seçici, arama, önce karşılıklı takipleştiklerin. Satırda ipucu ("Karşılıklı takipleşiyorsunuz", "Seni takip ediyor") ve durum kapsülü. Başkalarının listeleri de açılır.
+- **Başkasının profili:** aynı düzen; kapakta solda geri, sağda •••: Bildir / Engelle / Sessize al. Avatarın yanında **Mesaj** ve takip kapsülü: **Takip et** (metin renginde dolu; seni takip ediyorsa **Geri takip et**, gizli hesapta **İstek gönder**) → **İstek gönderildi** (dokununca geri çekilir) → **Takip ediliyor** ("Takibi bırak" onay ister). Karşılıklı takipleşmiyorsanız "mesajın İstekler'e düşer" notu.
+  - **Birlikte olduğunuz geceler:** aynı gece aynı mekânda olduğunuz geceler (fotoğraflı kareler) ve ikinizin de gittiği mekânlar.
+  - **Gizlilik:** son 30 gün, takvim ve "şu an burada" yalnızca **karşılıklı takipleşenlere** açık. Diğerleri "Geceleri gizli" kartını görür; ortak mekânlar yalnızca görebildikleri paylaşımlardan çıkar.
+- **Gizli hesap:** başlık ve sayılar görünür; içerik yerine kilit + "Bu hesap gizli".
+
+**Referanslar:** [BeReal · Profil](https://mobbin.com/screens/3fb9df84-791d-41c2-9cac-f085fb4fce11) ve [takvim](https://mobbin.com/screens/f8e4b2ea-2b0e-4837-91db-2d1acad43e06) · [Beli · Son 30 gün](https://mobbin.com/screens/a781ec47-ae86-43c1-b6c7-22188056138b) ve [ikinizin de gitmek istediği](https://mobbin.com/screens/b8fbe405-8cea-493e-8cf5-c039cdedf431) · [Partiful · Ortak etkinlikler](https://mobbin.com/screens/13def998-1383-4c12-a9b8-3fd3d06b87f4) · [Posh · Etkinlik ızgarası](https://mobbin.com/screens/8ff3a28f-8b5f-4fbd-8049-7be17ee078c3) · [Strava · Profil](https://mobbin.com/screens/5954f4ba-c9bb-4f3a-b2fb-ee51ccd561b0) · [Swarm · Mekân listeleri](https://mobbin.com/screens/16122aa2-d298-496b-ae9c-2ad066cab0e0) · [corner · Profil](https://mobbin.com/screens/977a211f-072a-41a6-8620-a2c661063008) · [Instagram · Gizli hesap](https://mobbin.com/screens/9c930acd-4fd6-4400-b628-d1b44bbe66a9) · [Garmin · Takip akışı](https://mobbin.com/flows/e6f8a69c-9cc6-4e05-8f6e-ac426806da49) · [BeReal · Arkadaşlık isteği](https://mobbin.com/flows/eec0c11e-0489-4632-9cd0-52641503ca20)
 
 ### 5.9 Ayarlar
 
 - iOS "insetGrouped" liste; zemin marka gradyanı, satırlar onun rengini alan yarı saydam dolgu.
-- **Tasarım denemesi** grubu (geçici, en üstte): "Görünüm alanı" (1 · 2 · 3, T-19) ve "Zemin" (A · B · C, T-18) menüleri. Karar verilince kalkacak.
+- **Hesap** grubu (en üstte): "Profili düzenle" (T-22; profilde de küçük "Düzenle" kapsülü var).
+- **Tasarım denemesi** grubu (geçici, Hesap'ın altında): "Görünüm alanı" (1 · 2 · 3, T-19) ve "Zemin" (A · B · C, T-18) menüleri. Karar verilince kalkacak.
 - **Görünüm** grubu: seçili tasarıma göre önizlemeli kartlar, iOS gibi Otomatik anahtarı ya da menü satırı (T-15, T-19, §3.7). "Her şey gece 04:00'te silinir" satırı kaldırıldı.
 - Tüm satır, başlık ve dipnotlar DM Sans; satırlar gradyanın rengini alan yarı saydam dolgu.
 - **Gizlilik** grubu:
@@ -357,6 +369,7 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-19 | **Ayarlar › Görünüm alanı** | 1 önizlemeli kartlar · 2 iOS gibi (Otomatik) · 3 menü satırı | **Karar bekliyor** | Kurucu: "başka bir şekilde yapalım, seçenekler sun" (§3.7). |
 | T-20 | **Ana sayfa kurgusu ve hiyerarşi** | (a) paylaşım akışı · (b) mekân odaklı bölümler | **(b)** | Kurucu: "görüntü profesyonel durmuyor". Uber Eats gibi: iri bölüm başlıkları, büyük fotoğraf, tek satır bilgi; paylaşım kartında katman azaldı (mekân kapsülü ve buton yerine bağlantı satırları). |
 | T-21 | **Mesajlar** | (a) cam kartlı liste + seçici · (b) Instagram mesaj kutusu | **(b)** | Kurucu isteği. Tanıdık kalıp; notlar şeridi HERE'ye uyarlandı: baloncukta kişinin şu anki mekânı. |
+| T-22 | **Profil** | (a) paylaşım listesi · (b) "gece pasaportu": kapak, son 30 gün, gece takvimi, sık gidilenler, ortak geceler | **(b)** | Kurucu: "sıradan olmasın ama kullanışlı olsun". Profil HERE'nin asıl verisini (geceler, mekânlar) gösterir; takvim ve istatistik yalnızca karşılıklı takipleşenlere açık. Kurucunun düzeltmeleri: Profili düzenle küçük kapsül, "Paylaşımların" başlığı yok, etiketler kalır, takipçi/takip listeleri açılır, paylaşımlar Pinterest ızgarası, dokununca Instagram gibi dikey akış (§5.8). |
 
 ---
 
@@ -379,8 +392,9 @@ Her adım iOS 27 simülatörlerinde (iPhone 18 Pro · iOS 27.0 ve iPhone Duo · 
 | 11 | Gradyan zemin, kayan üst bar, cam kartlar, net cam, görünüm ayarı (T-11…T-15) | ✅ |
 | 12 | DM Sans (T-16), sahte profil fotoğrafları, geçirgen paylaşım kartları (T-17), 04:00 yazıları (K-16), yakın mekân kuralı (K-17) | ✅ |
 | 13 | Zemin (T-18) ve görünüm alanı (T-19) denemeleri | 🟡 Uygulandı, karar bekliyor |
+| 14 | Profil "gece pasaportu" (T-22): kapak, son 30 gün, gece takvimi, sık gittiklerin, Pinterest ızgarası, dikey paylaşım akışı, takipçi/takip listeleri, ortak geceler; Ayarlar › Hesap | ✅ Profil düzenleme ekranı yok (yalnızca uyarı) |
 
-Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
+Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · T-22 sonrası profil ve ayarlar: [ekranlar/09-profil.jpg](ekranlar/09-profil.jpg), [ekranlar/10-ayarlar.jpg](ekranlar/10-ayarlar.jpg) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
 
 ### 7.1 Kullanılan yerel parçalar
 

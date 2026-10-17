@@ -151,7 +151,8 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 | Gecelik anonim takma ad | Olmazsa olmaz | |
 | Yer bildirimleri profilde | Olmazsa olmaz | Kalıcı (K-16) |
 | Arkadaş / takip | Açık | → K-03 |
-| Rozetler, seri (streak), istatistik | Belki | Geçmiş tutmayı gerektirir — ilke 2 ile gerilim |
+| Rozetler, seri (streak), istatistik | Belki | Prototipte "gece pasaportu" olarak (T-22): son 30 gün, haftalık seri, gece takvimi; yalnızca karşılıklı takipleşenler görür. Geçmiş K-16 ile zaten tutuluyor; "Şimdi ve burada" ilkesiyle gerilim: profil geçmişi gösterir, akış ve sohbet anlık kalır |
+| Birlikte olunan geceler | Belki | Prototipte (T-22): aynı gece aynı mekânda olunan geceler ve ortak mekânlar, başkasının profilinde |
 
 ### 5.7 Güvenlik
 | Fikir | Sınıf | Not |
@@ -504,6 +505,7 @@ Faz 6  Lansman
 | 17.10.2026 | Zemin varyantları (T-18: A üst ışıklar · B üst + sağ alt · C geniş, Revolut gibi) ve ayarlardaki görünüm alanının üç seçeneği (T-19) Ayarlar › Tasarım denemesi'nde denenebilir | **Karar bekliyor** |
 | 17.10.2026 | **K-14 güncellendi: ana sayfa mekân odaklı** (T-20): Takipleştiklerin şu an → Şu an canlı mekânlar → Bu gece etkinlikler → Paylaşımlar (Sana özel / Çevrende). Prototip verisi gerçekçi mekân fotoğrafları ve yorumlarla yenilendi | Kurucuyla tartışma: ürün "bir sosyal medya daha" gibi değil, "bu gece nereye?" sorusunun cevabı gibi görünmeli |
 | 17.10.2026 | Mesajlar Instagram mesaj kutusu düzeninde yeniden kuruldu (T-21); Keşfet haritası gezilebilir hâle getirildi (yatay çip şeridi dokunuşları yutuyordu); Buradayım büyük başlığı kaldırıldı | Kurucu isteği |
+| 17.10.2026 | **Profil = "gece pasaportu"** (T-22): son gecenin fotoğrafından kapak, son 30 gün (gece · mekân · semt, haftalık seri), gece takvimi, sık gidilen mekânlar, başlıksız Pinterest ızgarası (dokununca dikey akış), takipçi/takip listeleri; başkasının profilinde birlikte olunan geceler. Takvim ve istatistik yalnızca karşılıklı takipleşenlere açık. "Profili düzenle" küçük kapsül + Ayarlar › Hesap satırı | Kurucu: "sıradan olmasın ama kullanışlı olsun"; Mobbin öneri panosu üzerine kurucunun düzeltmeleriyle |
 
 ---
 
@@ -513,7 +515,7 @@ Faz 6  Lansman
 
 **Sıradaki adımlar:**
 1. ~~[TASARIM.md §6](TASARIM.md#6-raporlar-arasındaki-çelişkiler-ve-karar-önerileri)'daki tasarım kararlarını (T-1…T-10) birlikte ver.~~ ✅ Hepsi kabul edildi (17.10.2026).
-2. 🟡 **Büyük ölçüde tamam (17.10.2026):** Mevcut ekranlar Liquid Glass ile yeniden tasarlandı ve iOS 27 simülatörlerinde test edildi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, boş durumların tamamı, erişilebilirlik testleri.
+2. 🟡 **Büyük ölçüde tamam (17.10.2026):** Mevcut ekranlar Liquid Glass ile yeniden tasarlandı ve iOS 27 simülatörlerinde test edildi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, profil düzenleme ekranı, boş durumların tamamı, erişilebilirlik testleri.
 3. Faz 2: şemayı yeni ürün modeline göre güncelle (mekânlar, yer bildirimi, paylaşımlar, planlar, takip, kullanıcı adı, mesaj istekleri; `anlik_*` adları `here_*` olacak). **K-16 gereği** paylaşımlar ve yer bildirimleri kalıcı tablolara taşınır; 04:00 silme motoru yalnızca sohbetleri (mesajlar, üyelik, istekler, planlar) kapsar.
 4. 🟡 **Karar bekliyor:** T-18 (zemin A/B/C) ve T-19 (görünüm alanı 1/2/3). Ayarlar › Tasarım denemesi'nde denenip seçilecek; seçilmeyenler ve deneme bölümü kaldırılacak.
 

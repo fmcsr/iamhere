@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 
 // Gece 04:00'te (İstanbul, UTC+3, yaz saati yok) sohbetler sıfırlanır; paylaşımlar kalır (K-16).
 // Üretimde bu an sunucudan gelir (ephemeral.cycle_expires_at); burada yalnızca prototip için hesaplanır.
-const ISTANBUL_OFFSET_MS = 3 * 60 * 60 * 1000;
-const RESET_HOUR = 4;
+export const ISTANBUL_OFFSET_MS = 3 * 60 * 60 * 1000;
+export const RESET_HOUR = 4;
 
 export function nextReset(now: Date): Date {
   const local = new Date(now.getTime() + ISTANBUL_OFFSET_MS);

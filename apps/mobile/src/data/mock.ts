@@ -26,8 +26,6 @@ export type User = {
   displayName: string;
   bio: string;
   interests: string[];
-  followers: number;
-  following: number;
   avatarColor: string;
   /** Sahte profil fotoğrafı (randomuser.me portresi); yüklenene kadar baş harf görünür. */
   avatarUri?: string;
@@ -82,6 +80,13 @@ export const CATEGORY_LABEL: Record<Category, string> = {
 export const CHECK_IN_RADIUS_M = 300;
 
 const min = (m: number) => Date.now() - m * 60_000;
+
+const ISTANBUL_MS = 3 * 3_600_000;
+/** d gece önceki gecenin 22:00'si (İstanbul) + dakika. Gece 04:00'e kadar sürer; 0 = bu gece. */
+const night = (d: number, minutes = 0) => {
+  const local = new Date(Date.now() + ISTANBUL_MS - 4 * 3_600_000);
+  return Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - d, 22) - ISTANBUL_MS + minutes * 60_000;
+};
 const face = (id: string) => `https://randomuser.me/api/portraits/${id}.jpg`;
 
 export const ME: User = {
@@ -90,22 +95,46 @@ export const ME: User = {
   displayName: 'Elif Yılmaz',
   bio: 'Canlı müzik, koşu ve iyi kahve. Hafta sonları Moda.',
   interests: ['Canlı müzik', 'Kahve', 'Koşu'],
-  followers: 128,
-  following: 96,
   avatarColor: '#3B5BDB',
   avatarUri: face('women/44'),
 };
 
 export const USERS: User[] = [
-  { id: 'u1', username: 'zeynep.k', displayName: 'Zeynep Kaya', bio: 'Konser fotoğrafçısı. Ön sıra benim.', interests: ['Canlı müzik', 'Fotoğraf'], followers: 2410, following: 310, avatarColor: '#7048E8', avatarUri: face('women/68') },
-  { id: 'u2', username: 'mertdmr', displayName: 'Mert Demir', bio: 'Ocakbaşı uzmanı, meyhane müdavimi.', interests: ['Meyhane', 'Yemek'], followers: 540, following: 402, avatarColor: '#C2410C', avatarUri: face('men/32') },
-  { id: 'u3', username: 'canozturk', displayName: 'Can Öztürk', bio: 'Gece yürüyüşleri ve sahil.', interests: ['Koşu', 'Açık hava'], followers: 212, following: 180, avatarColor: '#0B7285', avatarUri: face('men/75') },
-  { id: 'u4', username: 'selin', displayName: 'Selin Aydın', bio: 'DJ setleri, çatı katları.', interests: ['Elektronik', 'Bar'], followers: 3890, following: 120, avatarColor: '#A61E4D', avatarUri: face('women/21'), isPrivate: true },
-  { id: 'u5', username: 'arda_y', displayName: 'Arda Yıldız', bio: 'Kahve, kitap, kutu oyunları.', interests: ['Kahve', 'Kutu oyunları'], followers: 98, following: 140, avatarColor: '#2B8A3E', avatarUri: face('men/46') },
-  { id: 'u6', username: 'denizarslan', displayName: 'Deniz Arslan', bio: 'Meze haritası çıkarıyorum. Fava konusunda tartışmam.', interests: ['Meyhane', 'Yemek'], followers: 1280, following: 410, avatarColor: '#5F3DC4', avatarUri: face('women/32') },
-  { id: 'u7', username: 'burakkoc', displayName: 'Burak Koç', bio: 'Burger ve gece sineması.', interests: ['Yemek', 'Kahve'], followers: 640, following: 520, avatarColor: '#1864AB', avatarUri: face('men/22') },
-  { id: 'u8', username: 'ece.sahin', displayName: 'Ece Şahin', bio: 'Küçük sahneler, akustik geceler.', interests: ['Canlı müzik'], followers: 905, following: 300, avatarColor: '#C92A2A', avatarUri: face('women/90') },
-  { id: 'u9', username: 'kerempolat', displayName: 'Kerem Polat', bio: 'Rakı-balık ehli.', interests: ['Meyhane'], followers: 77, following: 95, avatarColor: '#5C940D', avatarUri: face('men/11') },
+  { id: 'u1', username: 'zeynep.k', displayName: 'Zeynep Kaya', bio: 'Konser fotoğrafçısı. Ön sıra benim.', interests: ['Canlı müzik', 'Fotoğraf'], avatarColor: '#7048E8', avatarUri: face('women/68') },
+  { id: 'u2', username: 'mertdmr', displayName: 'Mert Demir', bio: 'Ocakbaşı uzmanı, meyhane müdavimi.', interests: ['Meyhane', 'Yemek'], avatarColor: '#C2410C', avatarUri: face('men/32') },
+  { id: 'u3', username: 'canozturk', displayName: 'Can Öztürk', bio: 'Gece yürüyüşleri ve sahil.', interests: ['Koşu', 'Açık hava'], avatarColor: '#0B7285', avatarUri: face('men/75') },
+  { id: 'u4', username: 'selin', displayName: 'Selin Aydın', bio: 'DJ setleri, çatı katları.', interests: ['Elektronik', 'Bar'], avatarColor: '#A61E4D', avatarUri: face('women/21'), isPrivate: true },
+  { id: 'u5', username: 'arda_y', displayName: 'Arda Yıldız', bio: 'Kahve, kitap, kutu oyunları.', interests: ['Kahve', 'Kutu oyunları'], avatarColor: '#2B8A3E', avatarUri: face('men/46') },
+  { id: 'u6', username: 'denizarslan', displayName: 'Deniz Arslan', bio: 'Meze haritası çıkarıyorum. Fava konusunda tartışmam.', interests: ['Meyhane', 'Yemek'], avatarColor: '#5F3DC4', avatarUri: face('women/32') },
+  { id: 'u7', username: 'burakkoc', displayName: 'Burak Koç', bio: 'Burger ve gece sineması.', interests: ['Yemek', 'Kahve'], avatarColor: '#1864AB', avatarUri: face('men/22') },
+  { id: 'u8', username: 'ece.sahin', displayName: 'Ece Şahin', bio: 'Küçük sahneler, akustik geceler.', interests: ['Canlı müzik'], avatarColor: '#C92A2A', avatarUri: face('women/90') },
+  { id: 'u9', username: 'kerempolat', displayName: 'Kerem Polat', bio: 'Rakı-balık ehli.', interests: ['Meyhane'], avatarColor: '#5C940D', avatarUri: face('men/11') },
+];
+
+/** Takip listelerini dolduran diğer kişiler (paylaşımları yok; profil ve listelerde görünürler). */
+const person = (id: string, username: string, displayName: string, portrait: string, avatarColor: string, bio = '', interests: string[] = []): User => ({
+  id, username, displayName, bio, interests, avatarColor, avatarUri: face(portrait),
+});
+
+export const MORE_USERS: User[] = [
+  person('e1', 'meliseren', 'Melis Eren', 'women/12', '#D6336C', 'Plak dükkânı, caz geceleri.', ['Canlı müzik']),
+  person('e2', 'emrecelik', 'Emre Çelik', 'men/3', '#1971C2', 'Hafta içi kod, hafta sonu konser.', ['Canlı müzik', 'Bar']),
+  person('e3', 'iremaksoy', 'İrem Aksoy', 'women/26', '#9C36B5', 'Moda’da yaşıyorum, sahil benim.', ['Koşu', 'Kahve']),
+  person('e4', 'oguzkaplan', 'Oğuz Kaplan', 'men/14', '#E8590C', 'Ocakbaşı > her şey.', ['Yemek']),
+  person('e5', 'duygutan', 'Duygu Tan', 'women/47', '#0C8599', 'Kahve demleme takıntılısı.', ['Kahve']),
+  person('e6', 'bariskurt', 'Barış Kurt', 'men/28', '#2F9E44', 'Gece koşuları ve sabah kahvesi.', ['Koşu']),
+  person('e7', 'cerenuysal', 'Ceren Uysal', 'women/57', '#C2255C', 'Teras barları listesi tutuyorum.', ['Bar']),
+  person('e8', 'tolgaer', 'Tolga Er', 'men/36', '#3B5BDB', '', ['Elektronik']),
+  person('e9', 'nazlierdem', 'Nazlı Erdem', 'women/63', '#AE3EC9', 'Fasıl olan her yerdeyim.', ['Meyhane']),
+  person('e10', 'kaandogan', 'Kaan Doğan', 'men/52', '#F08C00', 'Burger kritikleri.', ['Yemek']),
+  person('e11', 'busekilic', 'Buse Kılıç', 'women/79', '#E64980', 'Akustik her şey.', ['Canlı müzik']),
+  person('e12', 'onursimsek', 'Onur Şimşek', 'men/60', '#1098AD'),
+  person('e13', 'pinargunes', 'Pınar Güneş', 'women/85', '#7950F2', 'Kadıköy’ün kahvecilerini geziyorum.', ['Kahve']),
+  person('e14', 'serkanyavuz', 'Serkan Yavuz', 'men/67', '#495057', 'Rakı, balık, muhabbet.', ['Meyhane']),
+  person('e15', 'gizemacar', 'Gizem Acar', 'women/95', '#D9480F', 'DJ, Yeldeğirmeni.', ['Elektronik', 'Bar']),
+  person('e16', 'utkubilgin', 'Utku Bilgin', 'men/83', '#5C7CFA', 'Stand-up ve küçük sahneler.', ['Canlı müzik']),
+  person('e17', 'senabulut', 'Sena Bulut', 'women/5', '#12B886', '', ['Koşu']),
+  person('e18', 'alptekin', 'Alp Tekin', 'men/91', '#868E96', 'Gece fotoğrafçılığı.', ['Fotoğraf']),
 ];
 
 /** Unsplash fotoğrafları (ücretsiz lisans), kategoriye göre seçildi: konser, ocakbaşı, meyhane, kahve… */
@@ -155,6 +184,20 @@ const IMG = {
   burgerKoyu: photo('1571091718767-18b5b1457add'),
   burgerMarul: photo('1586190848861-99aa4a171e90'),
 };
+
+/** Fotoğrafların en/boy oranı. Üründe sunucu görselle birlikte gönderir; burada ölçülüp yazıldı. */
+const ASPECT: Partial<Record<keyof typeof IMG, number>> = {
+  konserIsik: 1.5, konserSahne: 1.5, konserKalabalik: 1.5, konserEller: 1.33, konserRenk: 1.33, konserTuruncu: 1.5, konserGitar: 0.67,
+  konserKonfeti: 1.5, sahneSolist: 0.67, sahneMikrofon: 0.67, sahneGrup: 0.67, sahneBar: 0.75, kafeVitrin: 1.52, kafeLatte: 1.79,
+  kafeMasa: 0.67, kafeDortFincan: 0.67, kafeFincan: 0.75, sahilBank: 1.57, sahilIsiklar: 1.5, sahilKopru: 0.75, sahilKizKulesi: 1.5,
+  ocakIzgara: 0.67, ocakKarisik: 0.67, ocakSis: 0.75, ocakTavuk: 1.5, ocakAdana: 1.5, barTeras: 0.75, barGunbatimi: 1.5, barManzara: 1.5,
+  barKokteyl: 1.43, barKadeh: 0.67, barDj: 1.5, meyhaneRaki: 0.56, meyhaneMeze: 0.56, meyhaneTabak: 1.48, meyhaneSalata: 1.47,
+  meyhaneMasa: 0.67, burgerTepsi: 0.8, burgerDouble: 1.41, burgerKlasik: 1.2, burgerKoyu: 1.5, burgerMarul: 1.0,
+};
+const ASPECT_BY_URI = new Map(Object.entries(ASPECT).map(([key, aspect]) => [IMG[key as keyof typeof IMG], aspect]));
+
+/** Görselin en/boy oranı; bilinmiyorsa paylaşım ekranının 4:5 kırpması. */
+export const imageAspect = (uri?: string) => (uri && ASPECT_BY_URI.get(uri)) || 0.8;
 
 /** Prototipte kullanıcının (sahte) konumu: Kadıköy, Rıhtım civarı. */
 export const ME_LOCATION = { latitude: 40.9897, longitude: 29.0236 };
@@ -209,7 +252,33 @@ export const POSTS: Post[] = [
   { id: 'p13', userId: 'u7', venueId: 'v2', text: 'Akşam kahvesi molası: dört fincan, dört farklı desen. Barista bugün formunda.', imageUri: IMG.kafeDortFincan, createdAt: min(190), likes: 27, audience: 'herkes' },
   { id: 'p11', userId: 'u6', venueId: 'v4', text: 'Dün akşamki karışık ızgara hâlâ aklımda. Kuzu şiş yumuşacıktı, lavaş da sıcak geldi.', imageUri: IMG.ocakKarisik, createdAt: min(26 * 60), likes: 132, audience: 'herkes' },
   { id: 'p12', userId: 'u2', venueId: 'v5', text: 'Kule Teras’ın yeni kokteyl menüsü: fesleğenli gin çok iyi, fiyatlar biraz yüksek.', imageUri: IMG.barKokteyl, createdAt: min(30 * 60), likes: 44, audience: 'herkes' },
+  // Elif'in (ben) geçmiş gecelerden paylaşımları: profilde Pinterest tipi ızgara.
+  { id: 'pm1', userId: 'me', venueId: 'v6', text: 'Fasıl ekibi bu gece çok iyiydi; son şarkıda bütün meyhane eşlik etti.', imageUri: IMG.meyhaneMasa, createdAt: night(1, 95), likes: 34, audience: 'herkes' },
+  { id: 'pm2', userId: 'me', venueId: 'v5', text: 'Gün batımında terasa çıktık; DJ gelmeden önceki en güzel saat.', imageUri: IMG.barGunbatimi, createdAt: night(2, -150), likes: 51, audience: 'herkes' },
+  { id: 'pm3', userId: 'me', venueId: 'v7', text: 'Konser öncesi hızlı bir burger. Turşular ev yapımı, patates çıtır.', imageUri: IMG.burgerKlasik, createdAt: night(3, -60), likes: 22, audience: 'herkes' },
+  { id: 'pm4', userId: 'me', venueId: 'v2', text: 'Gece kahvesi ve kitap. Arka masada yine kutu oyunu turnuvası var.', imageUri: IMG.kafeFincan, createdAt: night(6, 30), likes: 18, audience: 'herkes' },
+  { id: 'pm5', userId: 'me', venueId: 'v8', text: 'Akustik gecede ilk kez dinlediğim bir grup; adlarını not ettim.', imageUri: IMG.sahneMikrofon, createdAt: night(9, 70), likes: 40, audience: 'herkes' },
+  { id: 'pm6', userId: 'me', venueId: 'v6', text: 'Çınar’da “Ben de varım” dediğim ilk plan: dokuz kişi olduk, masa iki kez uzadı.', createdAt: night(11, 120), likes: 27, audience: 'herkes' },
+  { id: 'pm7', userId: 'me', venueId: 'v3', text: 'Koşudan sonra iskelede soluklandık. Karşı kıyının ışıkları bir harika.', imageUri: IMG.sahilKizKulesi, createdAt: night(13, 80), likes: 63, audience: 'herkes' },
+  { id: 'pm8', userId: 'me', venueId: 'v1', text: 'Bis’te konfeti yağdı, sesimiz kısıldı.', imageUri: IMG.konserKonfeti, createdAt: night(14, 40), likes: 88, audience: 'herkes' },
+  { id: 'pm9', userId: 'me', venueId: 'v5', text: 'Fesleğenli gin’i denedim; Mert haklıymış.', imageUri: IMG.barKadeh, createdAt: night(16, 60), likes: 29, audience: 'takipciler' },
 ];
+
+/**
+ * Geçmiş geceler (yer bildirimleri; paylaşım olmasa da sayılır): profil takvimi, "son 30 gün" özeti ve
+ * "birlikte olduğunuz geceler" için. daysAgo 0 = bu gece. Paylaşımı olan geceler ayrıca paylaşımlardan da çıkar.
+ */
+const nights = (list: [number, string][]) => list.map(([daysAgo, venueId]) => ({ daysAgo, venueId }));
+export const NIGHT_HISTORY: Record<string, { daysAgo: number; venueId: string }[]> = {
+  me: nights([[1, 'v6'], [2, 'v5'], [3, 'v7'], [4, 'v6'], [6, 'v2'], [7, 'v6'], [8, 'v4'], [9, 'v8'], [11, 'v6'], [13, 'v3'], [14, 'v1'], [15, 'v6'], [16, 'v5'],
+    [19, 'v1'], [22, 'v6'], [26, 'v5'], [29, 'v3'], [33, 'v8'], [36, 'v6'], [40, 'v2']]),
+  u1: nights([[0, 'v1'], [2, 'v5'], [7, 'v6'], [9, 'v8'], [14, 'v1'], [19, 'v1'], [24, 'v8']]),
+  u2: nights([[0, 'v4'], [8, 'v4'], [16, 'v5'], [20, 'v4']]),
+  u3: nights([[0, 'v3'], [6, 'v2'], [13, 'v3'], [21, 'v3'], [29, 'v3']]),
+  u6: nights([[0, 'v6'], [1, 'v6'], [4, 'v6'], [5, 'v4'], [11, 'v6'], [22, 'v6']]),
+  u7: nights([[0, 'v7'], [3, 'v7'], [6, 'v2'], [12, 'v7']]),
+  u8: nights([[0, 'v8'], [9, 'v8'], [18, 'v8'], [33, 'v8']]),
+};
 
 export const CONVERSATIONS: Conversation[] = [
   { id: 'c-v1', kind: 'venue', venueId: 'v1' },
@@ -241,6 +310,17 @@ export const MESSAGES: Message[] = [
 ];
 
 /** Beni takip edenler (karşılıklı takibi hesaplamak için). */
-export const FOLLOWS_ME = new Set(['u1', 'u3', 'u6', 'u7', 'u8']);
+export const FOLLOWS_ME = new Set(['u1', 'u3', 'u6', 'u7', 'u8', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8', 'e9', 'e10', 'e11', 'e12', 'e13', 'e14']);
 /** Benim takip ettiklerim (başlangıç). */
-export const I_FOLLOW = ['u1', 'u2', 'u3', 'u6', 'u7', 'u8'];
+export const I_FOLLOW = ['u1', 'u2', 'u3', 'u6', 'u7', 'u8', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e15', 'e16', 'e17', 'e18'];
+
+/** Bilinen takip ilişkileri (ben dışındaki kişiler arasında); gerisi aşağıdaki sabit kurala göre. */
+const KNOWN_FOLLOWS = new Set(['u1>u8', 'u8>u1', 'u6>u9', 'u9>u6', 'u2>u6', 'u6>u2', 'u7>u2', 'u3>u5', 'u5>u3', 'u4>e15', 'e15>u4']);
+
+/** a, b'yi takip ediyor mu (ben dışındaki kişiler için)? Her açılışta aynı sonucu veren basit bir karma. */
+export function followsBetween(a: string, b: string): boolean {
+  if (KNOWN_FOLLOWS.has(`${a}>${b}`)) return true;
+  let h = 7;
+  for (const c of `${a}>${b}`) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return h % 100 < 36;
+}

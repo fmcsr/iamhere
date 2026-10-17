@@ -23,13 +23,25 @@ export function ScreenHeader({ title, right }: { title: string; right?: ReactNod
   );
 }
 
-/** Başlıktaki cam daire düğme (iOS 26 başlık düğmeleri gibi). */
-export function HeaderButton({ icon, md, label, onPress }: { icon: SFSymbolName; md: Parameters<typeof Icon>[0]['md']; label: string; onPress: () => void }) {
+/** Başlıktaki cam daire düğme (iOS 26 başlık düğmeleri gibi). `onImage`: fotoğraf üstünde (profil kapağı), simge beyaz. */
+export function HeaderButton({
+  icon,
+  md,
+  label,
+  onPress,
+  onImage,
+}: {
+  icon: SFSymbolName;
+  md: Parameters<typeof Icon>[0]['md'];
+  label: string;
+  onPress: () => void;
+  onImage?: boolean;
+}) {
   const theme = useTheme();
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label} hitSlop={6}>
       <Glass style={styles.button} interactive>
-        <Icon ios={icon} md={md} size={18} color={theme.text} />
+        <Icon ios={icon} md={md} size={18} color={onImage ? '#fff' : theme.text} />
       </Glass>
     </Pressable>
   );

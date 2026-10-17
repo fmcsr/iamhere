@@ -70,7 +70,8 @@ function RootStack() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="venue/[id]" options={{ title: '' }} />
         <Stack.Screen name="chat/[id]" options={{ title: 'Sohbet' }} />
-        <Stack.Screen name="user/[username]" options={{ title: '' }} />
+        {/* Profil kapağı ekranın en üstünden başlar; geri ve ••• düğmeleri kapağın üstünde (kendi profilin gibi). */}
+        <Stack.Screen name="user/[username]" options={{ headerShown: false }} />
         <Stack.Screen name="compose" options={{ presentation: 'modal', title: 'Buradayım' }} />
         {/* Yarım yükseklikte cam sayfa: zemin şeffaf kalır ki iOS 26+ camı görünsün. */}
         <Stack.Screen
@@ -85,6 +86,8 @@ function RootStack() {
         />
         <Stack.Screen name="settings" options={{ title: 'Ayarlar' }} />
         <Stack.Screen name="new-message" options={{ title: 'Yeni mesaj' }} />
+        <Stack.Screen name="follows" options={{ title: '' }} />
+        <Stack.Screen name="posts" options={{ title: 'Paylaşımlar' }} />
       </Stack>
     </ThemeProvider>
   );

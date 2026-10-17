@@ -17,6 +17,7 @@ import { NativeFonts, type BackdropVariant } from '@/constants/theme';
 import { type AppearanceMode, type AppearanceUI, type PresenceVisibility, useApp } from '@/data/store';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
+import { editProfile } from '@/lib/profile';
 
 // DM Sans (T-16). textStyle sayesinde yazılar Dynamic Type ile büyür.
 const BODY = font({ family: NativeFonts.regular, size: 17, textStyle: 'body' });
@@ -44,6 +45,10 @@ export function SettingsForm() {
     <Host style={{ flex: 1 }} useViewportSizeMeasurement>
       {/* Onay işaretleri fuşya (§3.4); anahtar ise sistem yeşilinde kalır (T-3). Zemin şeffaf: marka gradyanı görünür. */}
       <Form modifiers={[scrollContentBackground('hidden'), tint(theme.accentInk)]}>
+        <Section header={header('Hesap')}>
+          <Button label="Profili düzenle" systemImage="pencil" onPress={editProfile} modifiers={[foregroundStyle(theme.text), BODY, row]} />
+        </Section>
+
         <Section
           header={header('Tasarım denemesi')}
           footer={footer('Geçici: seçenekleri karşılaştırmak için. Karar verilince bu bölüm kalkacak.')}>

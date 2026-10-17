@@ -1,5 +1,5 @@
 // Android ve web için ayar listesi. iOS sürümü: settings-form.ios.tsx (SwiftUI Form).
-import { ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import { AppearancePreviews } from '@/components/appearance-previews';
 import { GlassCard } from '@/components/glass';
@@ -9,6 +9,7 @@ import { Text } from '@/components/text';
 import { Type, type BackdropVariant } from '@/constants/theme';
 import { type PresenceVisibility, useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { editProfile } from '@/lib/profile';
 
 export function SettingsForm() {
   const theme = useTheme();
@@ -18,6 +19,13 @@ export function SettingsForm() {
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={styles.content}>
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>HESAP</Text>
+      <GlassCard style={styles.group}>
+        <Pressable onPress={editProfile} accessibilityRole="button" style={styles.row}>
+          <Text style={[Type.body, { color: theme.text, flex: 1 }]}>Profili düzenle</Text>
+        </Pressable>
+      </GlassCard>
+
       <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>TASARIM DENEMESİ · ZEMİN</Text>
       <GlassCard style={styles.group}>
         <SegmentedPicker<BackdropVariant>
