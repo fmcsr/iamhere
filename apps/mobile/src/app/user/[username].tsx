@@ -16,12 +16,12 @@ import { Text } from '@/components/text';
 import { Gap, Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
-import { nightsInLast, tonightKey } from '@/lib/nights';
+import { tonightKey } from '@/lib/nights';
 
 /**
  * Başkasının profili (TASARIM.md §5.8, T-22, T-25): kendi profilinle aynı düzen; Mesaj ve Takip et küçük
- * kapsüllerde, etiketlerin altında üç sekme (Paylaşımlar, Etiketlenenler, To-HERE). "gece" sayısı ve takvim (birlikte
- * olduğunuz gecelerle) yalnızca karşılıklı takipleşenlere açık. Bildir / Engelle / Sessize al kapaktaki •••'de.
+ * kapsüllerde, etiketlerin altında üç sekme (Paylaşımlar, Etiketlenenler, To-HERE). "anı" sayısı ve anı takvimi
+ * yalnızca karşılıklı takipleşenlere açık. Bildir / Engelle / Sessize al kapaktaki •••'de.
  */
 export default function UserProfileScreen() {
   const theme = useTheme();
@@ -96,10 +96,10 @@ export default function UserProfileScreen() {
               isPrivate={user.isPrivate}
               followers={followersOf(user.id).length}
               following={followingOf(user.id).length}
-              nights={mutual ? nightsInLast(theirNights) : undefined}
+              memories={mutual ? theirNights.length : undefined}
               onFollowers={() => router.push({ pathname: '/follows', params: { user: user.id, tab: 'followers' } })}
               onFollowing={() => router.push({ pathname: '/follows', params: { user: user.id, tab: 'following' } })}
-              onNights={() => router.push({ pathname: '/nights', params: { user: user.id } })}
+              onMemories={() => router.push({ pathname: '/nights', params: { user: user.id } })}
               actions={
                 <>
                   <Pill

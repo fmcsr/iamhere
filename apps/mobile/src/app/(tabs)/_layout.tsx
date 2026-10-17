@@ -14,8 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
  */
 export default function TabsLayout() {
   const theme = useTheme();
-  const { conversations, checkIn } = useApp();
-  const requests = conversations.filter((c) => c.kind === 'direct' && c.status === 'request').length;
+  const { checkIn } = useApp();
 
   return (
     <NativeTabs
@@ -47,7 +46,7 @@ export default function TabsLayout() {
           sf={{ default: 'bubble.left.and.bubble.right', selected: 'bubble.left.and.bubble.right.fill' }}
           md="forum"
         />
-        {requests > 0 && <NativeTabs.Trigger.Badge>{String(requests)}</NativeTabs.Trigger.Badge>}
+        {/* İstek rozeti şimdilik yok: seçili sekmenin camıyla çakışıyordu, başka bir çözüm aranacak. İstekler Mesajlar içinde. */}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>

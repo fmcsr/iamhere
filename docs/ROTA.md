@@ -151,11 +151,11 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 | Gecelik anonim takma ad | Olmazsa olmaz | |
 | Yer bildirimleri profilde | Olmazsa olmaz | Kalıcı (K-16) |
 | Arkadaş / takip | Açık | → K-03 |
-| Rozetler, seri (streak), istatistik | Belki | Denendi, profilden kaldırıldı ("çok karışık"). Kalan: profilde "gece · 30 gün" sayısı ve ondan açılan gece takvimi, yalnızca karşılıklı takipleşenlere (T-22). "Şimdi ve burada" ilkesiyle gerilim: takvim geçmişi gösterir, akış ve sohbet anlık kalır |
+| Rozetler, seri (streak), istatistik | Belki | Denendi, profilden kaldırıldı ("çok karışık"). Kalan: profilde "anı" sayısı (yer bildirilen geceler) ve ondan açılan anı takvimi, yalnızca karşılıklı takipleşenlere (T-22). "Şimdi ve burada" ilkesiyle gerilim: takvim geçmişi gösterir, akış ve sohbet anlık kalır |
 | Sık gidilen mekânlar | Belki | Profilden kaldırıldı; kurucu: "oraya daha sonra geliriz" |
 | "To-HERE": gitmek istenen mekânlar listesi | Güçlü aday | Prototipte (T-25): mekân sayfasında kaydet, profilde üçüncü sekme; arkadaşların da kaydettiği yerler görünür (birlikte plan için) |
 | Paylaşımda kişi etiketleme | Güçlü aday | Prototipte yalnızca veride (T-25): profilde "Etiketlenenler", kartta "kiminle" satırı. Paylaşırken etiketleme ekranı yok |
-| Birlikte olunan geceler | Belki | Prototipte (T-22): karşılıklı takipleştiğin birinin takvim sayfasında; aynı gece aynı mekânda olunan geceler ve ortak mekânlar |
+| Birlikte olunan geceler | Belki | Denendi, kaldırıldı (18.10.2026): anı takviminin altında yalnızca takvim kalsın |
 
 ### 5.7 Güvenlik
 | Fikir | Sınıf | Not |
@@ -514,6 +514,7 @@ Faz 6  Lansman
 | 18.10.2026 | **T-23 güncellendi:** logo metalik değil, fuşya renkli parlak balon; simgede de tek satır HERE, zemin fuşya. **T-25:** profilde üç sekme: Paylaşımlar, Etiketlenenler, To-HERE (gitmek istenen mekânlar; mekân sayfasında kaydedilir) | Kurucu isteği |
 | 18.10.2026 | **T-26: Yer bildirme kaydırarak onaylanır.** Mekân sayfasında "Yol tarifi"nin üstünde fuşya "Yer bildir"; alttan açılan sayfada iğne yukarıdan aşağı kaydırılır, zemine saplanır, sohbete katılınır (Luma'nın "Slide to Confirm"ı gibi). 300 m kuralı aynı (K-17): uzaktaysa oluk kilitli | Kurucu isteği; yanlışlıkla yer bildirmeyi önler |
 | 18.10.2026 | **T-26 güncellendi:** iğne saplanınca doğrudan mekân sohbetine geçilir; fotoğraf isteğe bağlı, yalnızca o an kamerayla çekilir (galeriden eklenmez), sayfanın üstündeki kamera dairesinden. Sayfa yaylanmadan açılır, yazılar azaltıldı | Kurucu isteği: insanları sohbete teşvik etmek; anlık fotoğraf "Şimdi ve burada" ilkesine uyar |
+| 18.10.2026 | Profilde "gece · 30 gün" yerine **"anı"** (yer bildirilen tüm geceler); dokununca "Anıların" takvimi, altında başka bir şey yok (bir geceye dokununca o gece açılır). Mesajlar sekmesindeki istek rozeti şimdilik kaldırıldı | Kurucu isteği; rozet seçili Profil sekmesiyle çakışıyordu, başka çözüm aranacak |
 
 ---
 

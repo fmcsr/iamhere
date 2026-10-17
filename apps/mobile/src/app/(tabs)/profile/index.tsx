@@ -12,12 +12,11 @@ import { HeaderButton } from '@/components/screen-header';
 import { StatusBarBlur } from '@/components/status-bar-blur';
 import { Gap } from '@/constants/theme';
 import { useApp } from '@/data/store';
-import { nightsInLast } from '@/lib/nights';
 import { editProfile } from '@/lib/profile';
 
 /**
  * Kendi profilin (TASARIM.md §5.8, T-22, T-25): son gecenin fotoğrafından bulanık kapak, kimlik, sayılar ve
- * etiketler; altında üç sekme: Paylaşımlar, Etiketlenenler, To-HERE. "gece" sayısına dokununca gece takvimi açılır.
+ * etiketler; altında üç sekme: Paylaşımlar, Etiketlenenler, To-HERE. "anı" sayısına dokununca anı takvimi açılır.
  * Düzenle, paylaş ve ayarlar kapaktaki cam düğmelerde. Başlık çubuğu yok: kapak ekranın en üstünden başlar.
  */
 export default function ProfileScreen() {
@@ -66,10 +65,10 @@ export default function ProfileScreen() {
             isPrivate={settings.privateAccount}
             followers={followersOf('me').length}
             following={followingOf('me').length}
-            nights={nightsInLast(nights)}
+            memories={nights.length}
             onFollowers={() => router.push({ pathname: '/follows', params: { user: 'me', tab: 'followers' } })}
             onFollowing={() => router.push({ pathname: '/follows', params: { user: 'me', tab: 'following' } })}
-            onNights={() => router.push({ pathname: '/nights', params: { user: 'me' } })}
+            onMemories={() => router.push({ pathname: '/nights', params: { user: 'me' } })}
           />
 
           <ProfileTabs userId="me" posts={myPosts} />

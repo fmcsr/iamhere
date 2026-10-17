@@ -11,7 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 /**
  * Profil kimliği (X düzeni, K-15). Avatar kapağın üstüne biner; başkasının profilinde sağında Mesaj ve
  * Takip et. Görünen ad büyük, @kullanıcı adı küçük. Sayılar tek satırda (Strava gibi): takipçi ve takip
- * dokununca liste, "gece" dokununca takvim açılır. İlgi alanı çipleri nötr.
+ * dokununca liste, "anı" (yer bildirilen geceler) dokununca anı takvimi açılır. İlgi alanı çipleri nötr.
  */
 export function ProfileHeader({
   user,
@@ -19,10 +19,10 @@ export function ProfileHeader({
   isPrivate,
   followers,
   following,
-  nights,
+  memories,
   onFollowers,
   onFollowing,
-  onNights,
+  onMemories,
   actions,
 }: {
   user: User;
@@ -31,12 +31,12 @@ export function ProfileHeader({
   isPrivate?: boolean;
   followers: number;
   following: number;
-  /** Son 30 gündeki gece sayısı (görünmüyorsa verilmez). */
-  nights?: number;
+  /** Anı sayısı: yer bildirilen ya da paylaşım yapılan geceler (görünmüyorsa verilmez). */
+  memories?: number;
   onFollowers: () => void;
   onFollowing: () => void;
-  /** Gece takvimini açar. */
-  onNights?: () => void;
+  /** Anı takvimini açar. */
+  onMemories?: () => void;
   actions?: ReactNode;
 }) {
   const theme = useTheme();
@@ -61,7 +61,7 @@ export function ProfileHeader({
       <View style={styles.counts}>
         <Count value={followers} label="takipçi" onPress={onFollowers} />
         <Count value={following} label="takip" onPress={onFollowing} />
-        {nights !== undefined && <Count value={nights} label="gece · 30 gün" onPress={onNights} />}
+        {memories !== undefined && <Count value={memories} label="anı" onPress={onMemories} />}
       </View>
 
       {user.interests.length > 0 && (

@@ -42,12 +42,6 @@ export function longDate(key: string): string {
   return `${WEEKDAYS[(d.getUTCDay() + 6) % 7]}, ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
 }
 
-/** "16 Eki" */
-export function shortDate(key: string): string {
-  const d = new Date(dayNumber(key) * DAY_MS);
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()].slice(0, 3)}`;
-}
-
 /** Kişinin geceleri: geçmiş yer bildirimleri, paylaşımlarından çıkan geceler ve bu geceki yer bildirimi. Yeniden eskiye. */
 export function collectNights({
   history = [],
@@ -73,18 +67,6 @@ export function collectNights({
   for (const p of posts) at(nightKeyOf(p.createdAt), p.venueId).postIds.push(p.id);
   if (tonightVenueId) byKey.set(keyFromDayNumber(today), { ...at(keyFromDayNumber(today), tonightVenueId), venueId: tonightVenueId });
   return [...byKey.values()].sort((a, b) => b.key.localeCompare(a.key));
-}
-
-/** Son `days` gündeki gece sayısı (profildeki "gece · 30 gün"). */
-export function nightsInLast(nights: Night[], days = 30, now = Date.now()): number {
-  const today = dayNumber(tonightKey(now));
-  return nights.filter((n) => today - dayNumber(n.key) < days).length;
-}
-
-/** İki kişinin aynı gece aynı mekânda olduğu geceler. */
-export function sharedNights(mine: Night[], theirs: Night[]): Night[] {
-  const theirKeys = new Map(theirs.map((n) => [n.key, n.venueId]));
-  return mine.filter((n) => theirKeys.get(n.key) === n.venueId);
 }
 
 /** Takvim için ayın düzeni: ilk günün haftadaki yeri (Pazartesi = 0) ve gün sayısı. */
