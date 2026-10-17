@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useIsFocused, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Linking, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,8 +17,8 @@ import { useTheme } from '@/hooks/use-theme';
 
 /**
  * Mekân sayfası (TASARIM.md §5.4): kapak fotoğrafı cam geri düğmesinin altında, "kimler burada",
- * bu gecenin fotoğrafları, sohbet önizlemesi. Altta fuşya "Yer bildir" (alttan açılan sayfada iğne
- * aşağı kaydırılır, T-26) ve altında "Yol tarifi"; yer bildirdiysen yalnızca "Sohbete katıl".
+ * bu gecenin fotoğrafları, sohbet önizlemesi. Altta yan yana solda cam "Yol tarifi", sağda fuşya
+ * "Yer bildir" (alttan açılan sayfada iğne aşağı kaydırılır, T-26); yer bildirdiysen yalnızca "Sohbete katıl".
  */
 export default function VenueScreen() {
   const theme = useTheme();
@@ -28,6 +28,8 @@ export default function VenueScreen() {
   const cell = Math.floor((gridWidth - 8) / 3);
   const { venueById, posts, messages, checkIn, following, peopleAt, savedOf, toggleSaved } = useApp();
   const venue = venueById(id);
+  // Yer bildirme sayfası açıkken alttaki düğmeler gizlenir: cam sayfanın ardında fuşya leke kalmasın.
+  const focused = useIsFocused();
 
   if (!venue) return <Text style={{ color: theme.text, padding: 16 }}>Mekân bulunamadı.</Text>;
 
@@ -48,7 +50,7 @@ export default function VenueScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: isHere ? 120 : 180 }}>
+      <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: 120 }}>
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button
             icon={isSaved ? 'bookmark.fill' : 'bookmark'}
@@ -143,26 +145,26 @@ export default function VenueScreen() {
         </PageColumn>
       </ScrollView>
 
-      <SafeAreaView edges={['bottom']} style={styles.bottomBar} pointerEvents="box-none">
+      <SafeAreaView edges={['bottom']} style={[styles.bottomBar, !focused && styles.hidden]} pointerEvents="box-none">
         <View style={styles.barInner}>
           {isHere ? (
-            <ActionButton title="Sohbete katıl" systemImage="bubble.left.and.bubble.right.fill" variant="glassProminent" fullWidth onPress={joinChat} />
+            <View style={styles.half}>
+              <ActionButton title="Sohbete katıl" systemImage="bubble.left.and.bubble.right.fill" variant="glassProminent" fullWidth onPress={joinChat} />
+            </View>
           ) : (
             <>
-              <ActionButton
-                title="Yer bildir"
-                systemImage="mappin.and.ellipse"
-                variant="glassProminent"
-                fullWidth
-                onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id } })}
-              />
-              <ActionButton
-                title={`Yol tarifi · ${formatDistance(venue.distanceM)}`}
-                systemImage="arrow.triangle.turn.up.right.diamond.fill"
-                variant="glass"
-                fullWidth
-                onPress={directions}
-              />
+              <View style={styles.half}>
+                <ActionButton title="Yol tarifi" systemImage="arrow.triangle.turn.up.right.diamond.fill" variant="glass" fullWidth onPress={directions} />
+              </View>
+              <View style={styles.half}>
+                <ActionButton
+                  title="Yer bildir"
+                  systemImage="mappin.and.ellipse"
+                  variant="glassProminent"
+                  fullWidth
+                  onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id } })}
+                />
+              </View>
             </>
           )}
         </View>
@@ -184,5 +186,7 @@ const styles = StyleSheet.create({
   skeleton: { gap: 8 },
   skeletonLine: { height: 14, borderRadius: 7 },
   bottomBar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 8, alignItems: 'center' },
-  barInner: { width: '100%', maxWidth: 600, gap: 10 },
+  barInner: { width: '100%', maxWidth: 600, flexDirection: 'row', gap: 10 },
+  half: { flex: 1 },
+  hidden: { opacity: 0 },
 });

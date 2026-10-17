@@ -49,7 +49,7 @@ export function PinSlider({ locked, onPinned }: { locked: boolean; onPinned: () 
   // Topuzu dibe oturtur, iğneyi zemine saplar.
   const pin = () => {
     'worklet';
-    y.set(withSpring(TRAVEL, { damping: 15, stiffness: 240 }));
+    y.set(withSpring(TRAVEL, { damping: 28, stiffness: 300 }));
     pinned.set(withDelay(90, withTiming(1, { duration: 560, easing: Easing.out(Easing.back(2.2)) })));
   };
 
@@ -68,7 +68,8 @@ export function PinSlider({ locked, onPinned }: { locked: boolean; onPinned: () 
         pin();
         scheduleOnRN(onPinned);
       }
-      else y.set(withSpring(0, { damping: 17, stiffness: 210 }));
+      // Yerine sakin döner; yalnızca çok hafif esner.
+      else y.set(withSpring(0, { damping: 30, stiffness: 320 }));
     },
   });
 

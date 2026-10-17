@@ -29,7 +29,7 @@ const PHOTO = 112;
  * Solda yalnızca mekân ve kamera dairesi: istersen o an fotoğraf çekersin (galeri yok), çektiğin
  * fotoğraf dairenin içine oturur. Sağda fuşya oluk: iğneyi aşağı kaydırınca zemine saplanır, yer
  * bildirilir (fotoğraf varsa paylaşımıyla) ve doğrudan mekân sohbetine geçilir. 300 m'den uzaksa
- * oluk kilitli (K-17). Arka plana dokununca ya da "Vazgeç"le kapanır.
+ * oluk kilitli (K-17). Sayfa Liquid Glass: ardındaki mekân sayfası görünür. Üstteki boş alana dokununca kapanır.
  */
 export default function CheckInSheet() {
   const theme = useTheme();
@@ -98,8 +98,8 @@ export default function CheckInSheet() {
       </Animated.View>
 
       <Animated.View style={[styles.sheetWrap, { paddingBottom: Math.max(insets.bottom - 18, 10) }, sheet]}>
-        {/* Cam, alttaki fuşya düğmeyi göstermesin diye zemin rengiyle tonlu. */}
-        <Glass variant="regular" tint={dark ? 'rgba(24, 22, 28, 0.82)' : 'rgba(255, 255, 255, 0.82)'} style={styles.sheet}>
+        {/* Liquid Glass: ardındaki sayfa görünür (mekân sayfasının düğmeleri bu sırada gizli). */}
+        <Glass variant="regular" tint={dark ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.18)'} style={styles.sheet}>
           <View style={[styles.grabber, { backgroundColor: theme.separator }]} />
           <View style={styles.row}>
             <View style={styles.info}>
@@ -163,9 +163,6 @@ export default function CheckInSheet() {
                 </View>
               )}
 
-              <Pressable onPress={() => close()} hitSlop={10} accessibilityRole="button" style={styles.cancel}>
-                <Text style={[Type.subheadline, { color: theme.textSecondary, fontWeight: '600' }]}>Vazgeç</Text>
-              </Pressable>
             </View>
 
             <PinSlider locked={!near} onPinned={onPinned} />
@@ -178,7 +175,7 @@ export default function CheckInSheet() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: { backgroundColor: 'rgba(0,0,0,0.32)' },
+  backdrop: { backgroundColor: 'rgba(0,0,0,0.16)' },
   sheetWrap: { paddingHorizontal: 10 },
   sheet: { borderRadius: 36, padding: 20, paddingTop: 10, gap: 14, overflow: 'hidden' },
   grabber: { alignSelf: 'center', width: 38, height: 5, borderRadius: 3 },
@@ -193,5 +190,4 @@ const styles = StyleSheet.create({
   removeWrap: { position: 'absolute', top: 2, right: 2 },
   remove: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   farArea: { flex: 1, justifyContent: 'center', gap: 12, alignItems: 'flex-start' },
-  cancel: { alignSelf: 'flex-start' },
 });
