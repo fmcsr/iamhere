@@ -2,8 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/text';
-import { Wordmark } from '@/components/wordmark';
-import { Backdrops, Colors, type BackdropVariant } from '@/constants/theme';
+import { HereMark } from '@/components/here-mark';
+import { Backdrops, type BackdropVariant } from '@/constants/theme';
 import type { AppearanceMode } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -70,12 +70,11 @@ export function AppearancePreviews({
 
 /** Küçültülmüş ana sayfa: zemin, HERE, iki cam kart ve sekme çubuğu. */
 function MiniScreen({ scheme, variant }: { scheme: 'light' | 'dark'; variant: BackdropVariant }) {
-  const c = Colors[scheme];
   const card = scheme === 'dark' ? 'rgba(255, 255, 255, 0.10)' : 'rgba(255, 255, 255, 0.62)';
   const line = scheme === 'dark' ? 'rgba(255, 255, 255, 0.28)' : 'rgba(11, 12, 16, 0.16)';
   return (
     <View style={[styles.screen, Backdrops[variant][scheme]]}>
-      <Wordmark height={8} color={c.text} />
+      <HereMark height={11} />
       <View style={[styles.card, { backgroundColor: card }]}>
         <View style={[styles.line, { backgroundColor: line, width: '70%' }]} />
         <View style={[styles.photo, { backgroundColor: line }]} />

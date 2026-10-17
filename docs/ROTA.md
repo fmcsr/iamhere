@@ -151,8 +151,9 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 | Gecelik anonim takma ad | Olmazsa olmaz | |
 | Yer bildirimleri profilde | Olmazsa olmaz | Kalıcı (K-16) |
 | Arkadaş / takip | Açık | → K-03 |
-| Rozetler, seri (streak), istatistik | Belki | Prototipte "gece pasaportu" olarak (T-22): son 30 gün, haftalık seri, gece takvimi; yalnızca karşılıklı takipleşenler görür. Geçmiş K-16 ile zaten tutuluyor; "Şimdi ve burada" ilkesiyle gerilim: profil geçmişi gösterir, akış ve sohbet anlık kalır |
-| Birlikte olunan geceler | Belki | Prototipte (T-22): aynı gece aynı mekânda olunan geceler ve ortak mekânlar, başkasının profilinde |
+| Rozetler, seri (streak), istatistik | Belki | Denendi, profilden kaldırıldı ("çok karışık"). Kalan: profilde "gece · 30 gün" sayısı ve ondan açılan gece takvimi, yalnızca karşılıklı takipleşenlere (T-22). "Şimdi ve burada" ilkesiyle gerilim: takvim geçmişi gösterir, akış ve sohbet anlık kalır |
+| Sık gidilen mekânlar | Belki | Profilden kaldırıldı; kurucu: "oraya daha sonra geliriz" |
+| Birlikte olunan geceler | Belki | Prototipte (T-22): karşılıklı takipleştiğin birinin takvim sayfasında; aynı gece aynı mekânda olunan geceler ve ortak mekânlar |
 
 ### 5.7 Güvenlik
 | Fikir | Sınıf | Not |
@@ -328,7 +329,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **Karar:** ✅ (16.10.2026)
   - **Mağaza adı:** **I am Here** (App Store Connect / Google Play'deki uygulama adı)
   - **Etiket / kampanya:** **#iamhere**
-  - **Simge ve uygulama içi:** **HERE**. Ana ekranda simgenin altında "HERE" yazar (`app.json` → `name`); simgede ve ana sayfada vektör HERE logosu var (`scripts/generate-brand.py`).
+  - **Simge ve uygulama içi:** **HERE**. Ana ekranda simgenin altında "HERE" yazar (`app.json` → `name`); simgede (iki satır "HE / RE") ve ana sayfada corner'ın simgesindeki gibi krom balon HERE logosu var (T-23, `scripts/generate-brand.py`).
   - **Renkler:** Winter Haze #D9DEE5 + Wild Fuchsia #E11D49 (açık mod); siyah + fuşya (koyu mod). Kurallar ve ayrıntılar [TASARIM.md](TASARIM.md)'de.
 - ⚠️ **Marka ve mağaza riski (yayından önce kontrol edilmeli):**
   - "HERE", konum ve harita alanında çok bilinen bir marka: HERE Technologies (HERE WeGo uygulaması). Bizim ürün de konum bazlı olduğu için aynı sınıflarda (yazılım, konum hizmetleri) marka çakışması riski var. TÜRKPATENT ve EUIPO'da marka araştırması yapılmalı, gerekirse bir marka avukatına danışılmalı.
@@ -506,6 +507,8 @@ Faz 6  Lansman
 | 17.10.2026 | **K-14 güncellendi: ana sayfa mekân odaklı** (T-20): Takipleştiklerin şu an → Şu an canlı mekânlar → Bu gece etkinlikler → Paylaşımlar (Sana özel / Çevrende). Prototip verisi gerçekçi mekân fotoğrafları ve yorumlarla yenilendi | Kurucuyla tartışma: ürün "bir sosyal medya daha" gibi değil, "bu gece nereye?" sorusunun cevabı gibi görünmeli |
 | 17.10.2026 | Mesajlar Instagram mesaj kutusu düzeninde yeniden kuruldu (T-21); Keşfet haritası gezilebilir hâle getirildi (yatay çip şeridi dokunuşları yutuyordu); Buradayım büyük başlığı kaldırıldı | Kurucu isteği |
 | 17.10.2026 | **Profil = "gece pasaportu"** (T-22): son gecenin fotoğrafından kapak, son 30 gün (gece · mekân · semt, haftalık seri), gece takvimi, sık gidilen mekânlar, başlıksız Pinterest ızgarası (dokununca dikey akış), takipçi/takip listeleri; başkasının profilinde birlikte olunan geceler. Takvim ve istatistik yalnızca karşılıklı takipleşenlere açık. "Profili düzenle" küçük kapsül + Ayarlar › Hesap satırı | Kurucu: "sıradan olmasın ama kullanışlı olsun"; Mobbin öneri panosu üzerine kurucunun düzeltmeleriyle |
+| 17.10.2026 | **Profil sadeleşti** (T-22): Bu gece kartı, Son gece etiketi, Son 30 gün ve Sık gittiklerin kalktı; Düzenle kapaktaki cam kaleme taşındı; gece takvimi "gece" sayısına dokununca açılan ayrı sayfada; paylaşım ızgarasında fotoğrafların altında yazı yok | Kurucu: "profil sayfası çok karışık olmuş"; sık gidilenlere sonra dönülecek |
+| 17.10.2026 | **T-23: Logo ve simge krom balon harfler** (corner'ın simgesindeki gibi); simgede iki satır "HE / RE", zemin fuşya kaldı. **T-24:** aşağı çekip yenilerken yükleniyor çarkı yerine krom HERE 360° soldan sağa döner | Kurucu isteği; K-13'teki ad ve renkler değişmedi |
 
 ---
 

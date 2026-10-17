@@ -1,15 +1,17 @@
 import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import { GlassCard } from '@/components/glass';
+import { HereMark } from '@/components/here-mark';
+import { useHereRefresh } from '@/components/here-refresh';
 import { Icon } from '@/components/icon';
 import { Avatar, EventRow, PostCard, VenueCard } from '@/components/kit';
 import { SegmentedPicker } from '@/components/native-controls';
 import { PageColumn } from '@/components/page-column';
 import { StatusBarBlur } from '@/components/status-bar-blur';
 import { Text } from '@/components/text';
-import { Wordmark } from '@/components/wordmark';
 import { Gap, Radius, Type } from '@/constants/theme';
 import { type Category, type Post, type User } from '@/data/mock';
 import { useApp } from '@/data/store';
@@ -35,7 +37,8 @@ function parseEvent(event?: string) {
 /**
  * Ana sayfa (TASARIM.md §5.2, T-20): "Bu gece nereye gitsem, kim nerede?" sorusunu cevaplar.
  * Sırayla: takipleştiklerin nerede → şu an canlı mekânlar → bu geceki etkinlikler → paylaşımlar.
- * Başlık çubuğu yok: HERE satırı akışla birlikte kayar; Dynamic Island çevresinde yalnızca bulanıklık.
+ * Başlık çubuğu yok: krom HERE logosu akışla birlikte kayar; Dynamic Island çevresinde yalnızca bulanıklık.
+ * Aşağı çekip yenileyince yükleniyor çarkı yerine bu logo soldan sağa döner (T-24).
  * Paylaşımlar kalıcı; 04:00'te yalnızca sohbetler sıfırlanır, bu yüzden burada sayaç yok (K-16).
  * Akış ScrollView ilk çocuk: yerel sekme çubuğu yalnızca böyle kaydırınca küçülür.
  */
@@ -43,6 +46,7 @@ export default function HomeScreen() {
   const theme = useTheme();
   const { me, posts, users, venues, following, isMutual, venueById, checkIn } = useApp();
   const [feed, setFeed] = useState<Feed>('ozel');
+  const { ref, refreshControl, angle } = useHereRefresh();
 
   const interestCategories = new Set(me.interests.map((i) => INTEREST_CATEGORY[i]).filter(Boolean));
   const visible = posts.filter((p) => p.audience !== 'takipciler' || p.userId === 'me' || following.has(p.userId));
@@ -76,11 +80,11 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.screen} collapsable={false}>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
+      <Animated.ScrollView ref={ref} refreshControl={refreshControl} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
         <PageColumn style={styles.content}>
           <View style={styles.header}>
             <View accessible accessibilityRole="header" accessibilityLabel="HERE">
-              <Wordmark height={24} color={theme.text} />
+              <HereMark angle={angle} />
             </View>
           </View>
 
@@ -164,7 +168,7 @@ export default function HomeScreen() {
           </Section>
           <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>Şimdilik bu kadar.</Text>
         </PageColumn>
-      </ScrollView>
+      </Animated.ScrollView>
       <StatusBarBlur />
     </View>
   );

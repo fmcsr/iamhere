@@ -5,10 +5,9 @@ import { useFocusEffect } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { useCallback, useState, type ComponentType, type ReactElement, type ReactNode } from 'react';
 import { StyleSheet, View, type NativeScrollEvent, type NativeSyntheticEvent, type ViewProps } from 'react-native';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Glass } from '@/components/glass';
-import { Icon } from '@/components/icon';
 import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -22,50 +21,55 @@ export const COVER_HEIGHT = 196;
 
 /**
  * Profil kapağı (BeReal'deki büyük üst fotoğraf gibi): kişinin son gecesinin fotoğrafı bulanık, aşağı doğru
- * zemine karışır. Üstünde ortada kullanıcı adı, yanlarda cam düğmeler; altta küçük "Son gece" etiketi.
- * Ekranın en üstünden başlar: kaydırma görünümünün güvenli alan boşluğu kadar yukarı taşınır.
+ * zemine karışır. Üstünde ortada kullanıcı adı, yanlarda cam düğmeler.
+ * Ekranın en üstünden başlar: kaydırma görünümünün güvenli alan boşluğu kadar yukarı taşınır. Aşağı
+ * çekince (`pull`) fotoğraf yukarı doğru uzar; üstte boşluk açılmaz.
  */
 export function ProfileCover({
   uri,
   title,
   left,
   right,
-  chip,
   statusFade,
+  pull,
 }: {
   uri?: string;
   title: string;
   left?: ReactNode;
   right?: ReactNode;
-  chip?: string;
   /** Durum çubuğu rengi değiştirilemiyorsa (sekme içindeki ekranlar): saat her fotoğrafta okunsun diye üstte temaya uygun ince geçiş. */
   statusFade?: boolean;
+  /** Aşağı çekme mesafesi (useHereRefresh). */
+  pull?: SharedValue<number>;
 }) {
   const theme = useTheme();
   const dark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
   const height = insets.top + COVER_HEIGHT;
+  const stretch = useAnimatedStyle(() => ({ top: pull ? -pull.get() : 0 }));
 
   return (
     <View style={{ height, marginTop: -insets.top }}>
-      <MaskedView
-        style={StyleSheet.absoluteFill}
-        maskElement={<LinearGradient colors={['#000', '#000', 'transparent']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />}>
-        {uri ? (
-          <Image source={{ uri }} style={styles.photo} contentFit="cover" blurRadius={22} transition={200} />
-        ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.accentSoft }]} />
+      <Animated.View style={[StyleSheet.absoluteFill, stretch]}>
+        <MaskedView
+          style={StyleSheet.absoluteFill}
+          maskElement={<LinearGradient colors={['#000', '#000', 'transparent']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />}>
+          {uri ? (
+            <Image source={{ uri }} style={styles.photo} contentFit="cover" blurRadius={22} transition={200} />
+          ) : (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.accentSoft }]} />
+          )}
+          {/* Hafif karartma: beyaz kullanıcı adı ve durum çubuğu her fotoğrafta okunsun. */}
+          <View style={[StyleSheet.absoluteFill, styles.shade]} />
+        </MaskedView>
+        {statusFade && (
+          <LinearGradient
+            pointerEvents="none"
+            colors={dark ? ['rgba(0,0,0,0.5)', 'rgba(0,0,0,0)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
+            style={[styles.fade, { height: insets.top + 6 }]}
+          />
         )}
-        {/* Hafif karartma: beyaz kullanıcı adı ve durum çubuğu her fotoğrafta okunsun. */}
-        <View style={[StyleSheet.absoluteFill, styles.shade]} />
-      </MaskedView>
-      {statusFade && (
-        <LinearGradient
-          pointerEvents="none"
-          colors={dark ? ['rgba(0,0,0,0.5)', 'rgba(0,0,0,0)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
-          style={[styles.fade, { height: insets.top + 6 }]}
-        />
-      )}
+      </Animated.View>
 
       <View style={[styles.bar, { top: insets.top + 4 }]}>
         <View style={styles.side}>{left}</View>
@@ -75,14 +79,6 @@ export function ProfileCover({
         <View style={[styles.side, styles.sideRight]}>{right}</View>
       </View>
 
-      {chip && (
-        <Glass style={[styles.chip, { top: height - 104 }]}>
-          <Icon ios="mappin.and.ellipse" md="location_on" size={12} color="#fff" />
-          <Text style={styles.chipText} numberOfLines={1}>
-            {chip}
-          </Text>
-        </Glass>
-      )}
     </View>
   );
 }
@@ -121,6 +117,4 @@ const styles = StyleSheet.create({
   side: { width: 92, flexDirection: 'row', gap: 8 },
   sideRight: { justifyContent: 'flex-end' },
   title: { flex: 1, textAlign: 'center', color: '#fff', textShadowColor: 'rgba(0,0,0,0.35)', textShadowRadius: 6 },
-  chip: { position: 'absolute', right: 16, flexDirection: 'row', alignItems: 'center', gap: 5, height: 28, paddingHorizontal: 10, borderRadius: 14, maxWidth: 220 },
-  chipText: { color: '#fff', fontSize: 12, fontWeight: '600' },
 });

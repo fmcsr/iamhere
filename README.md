@@ -40,7 +40,7 @@ cd apps/mobile && npx expo start
 
   Yerel kodlu yeni bir paket eklendiğinde (ör. 17.10.2026'da expo-blur, masked-view, AsyncStorage, segmented-control) derleme yeniden alınmalı; eski derleme açılışta "AsyncStorage is null" gibi bir hata verir.
 
-- **Logo ve simge:** `apps/mobile/scripts/generate-brand.py` hepsini tek kaynaktan üretir (Pillow gerekir). HERE simgesi Expo Go'da görünmez; geliştirme veya mağaza derlemesinde görünür.
+- **Logo ve simge:** `apps/mobile/scripts/generate-brand.py` hepsini tek kaynaktan üretir: krom balon harfli simge, açılış ekranı ve aşağı çekince dönen logonun 60 karesi (Pillow ve numpy gerekir, yaklaşık bir dakika sürer). HERE simgesi Expo Go'da görünmez; geliştirme veya mağaza derlemesinde görünür.
 
 ## Hızlı başlangıç (Docker)
 

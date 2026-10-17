@@ -42,7 +42,7 @@
 - **Kullanıcı ayarı:** iOS 27'de kullanıcılar Ayarlar'dan camı **daha şeffaf ↔ daha renkli (tinted)** arasında bir kaydırıcıyla ayarlayabiliyor. Tasarımımız iki uçta da okunur olmalı.
 - **Okunabilirlik:** Apple camın arkadaki karmaşık içeriği daha iyi bulanıklaştıracak ve daha fazla derinlik/ayrım sağlayacak şekilde ayarlandığını söylüyor; varsayılan şeffaflık da azaltıldı.
 - **Kaçış yok:** Haberlere göre iOS 26'da yerel bileşenlerin Liquid Glass görünümünü kapatmaya yarayan ayar (`UIDesignRequiresCompatibility`), **Xcode 27 ile derlenen uygulamalarda artık çalışmıyor.** Yani camla uyumlu tasarlamak tercih değil, zorunluluk.
-- **Simgeler:** Uygulama simgeleri daha tanınır olacak şekilde yeniden düzenlendi. HERE simgesi bu yüzden Apple'ın katmanlı simge biçiminde (Icon Composer `.icon`) hazırlandı: fuşya zemin + beyaz HERE logo katmanı. Cam ışığını ve koyu/renkli/şeffaf varyantları sistem üretir.
+- **Simgeler:** Uygulama simgeleri daha tanınır olacak şekilde yeniden düzenlendi. HERE simgesi bu yüzden Apple'ın katmanlı simge biçiminde (Icon Composer `.icon`) hazırlandı: fuşya zemin + iki satır krom "HE / RE" katmanı (T-23). Kromun ışıkları görüntüde hazır olduğu için bu katmanda sistemin cam efekti kapalı; gölgeyi ve koyu/renkli/şeffaf varyantları sistem üretir.
 
 Bu Mac'te **Xcode 27.1** ve **iOS 27.1 simülatörü** kurulu; tüm ekranlar iOS 27 üzerinde test edilecek. iOS 27.1 simülatörü yalnızca katlanabilir **iPhone Duo** cihazını destekliyor; standart iPhone ekranı için iOS 27.0'daki **iPhone 18 Pro** kullanılır.
 
@@ -185,7 +185,7 @@ Görünüm alanının tasarımı için üç seçenek (**T-19, karar bekliyor**; 
 | Caption1 | 12 | Çipler, rozetler |
 
 - **Sayaç:** sabit genişlikli rakamlar (`tabular-nums`), dakikada bir güncellenir.
-- **Logo:** vektör HERE (`src/components/wordmark.tsx`); yalnızca ana sayfada, metin renginde (fuşya değil). Diğer sekmelerde iOS büyük başlık.
+- **Logo:** corner'ın simgesindeki gibi şişirilmiş krom balon harfler (T-23, `src/components/here-mark.tsx`). Üç boyutlu logo `scripts/generate-brand.py` ile 60 açıdan önceden çizilir; aşağı çekip yenilerken soldan sağa döner (T-24). Ana sayfada ortada; diğer sekmelerde yalnızca yenilerken görünür. Düz tek renkli sürüm: `assets/brand/here-wordmark.svg`.
 - **İkonlar:** SF Symbols. Pasifken çizgi, aktifken dolu; renk metin rengi, fuşya yalnızca canlı durumlarda. Geri sayım ikonu `hourglass`.
 - **Köşeler:** butonlar ve çipler kapsül · cam kartlar 22, paylaşım kartı 26 · fotoğraf küçük resimleri 12 · avatarlar daire · ayar listeleri iOS "insetGrouped".
 - **Avatarlar:** akış 36 pt · sohbet 28–32 pt · "şu an" şeridi 64 pt halkalı · profil 80 pt.
@@ -223,7 +223,7 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 - **Fotoğraflar:** prototipte kategoriye uygun Unsplash fotoğrafları (konser, ocakbaşı, meyhane, kahve, sahil, çatı barı, burger); yorumlar mekânla ve yemekle ilgili.
 - Önceki düzen (aşağıdaki maddeler) bu sırayla birleşti: "Çevrende" şeridi yerine her zaman "Şu an canlı".
 
-- **Üst bar:** HERE logosu (metin renginde). Sayaç yok: paylaşımlar kalıcı, 04:00'te yalnızca sohbetler sıfırlanır (K-16). Sabit başlık çubuğu yok: logo ve sekmeler içerikle birlikte yukarı kayıp kaybolur; geriye yalnızca Dynamic Island ve durum çubuğunun altında, aşağı doğru yumuşakça kaybolan bir bulanıklık kalır ([Instagram, Ekim 2026](https://mobbin.com/screens/f5ce72ad-1ae5-47d3-abde-989324593482), T-12). DM ve "+" ikonu yok; ikisinin de kendi sekmesi var.
+- **Üst bar:** krom HERE logosu (T-23); aşağı çekip yenilerken yükleniyor çarkının yerine bu logo döner (T-24). Sayaç yok: paylaşımlar kalıcı, 04:00'te yalnızca sohbetler sıfırlanır (K-16). Sabit başlık çubuğu yok: logo ve sekmeler içerikle birlikte yukarı kayıp kaybolur; geriye yalnızca Dynamic Island ve durum çubuğunun altında, aşağı doğru yumuşakça kaybolan bir bulanıklık kalır ([Instagram, Ekim 2026](https://mobbin.com/screens/f5ce72ad-1ae5-47d3-abde-989324593482), T-12). DM ve "+" ikonu yok; ikisinin de kendi sekmesi var.
 - **Sekmeler:** "Sana özel | Çevrende" (T-4, T-9).
 - **Şerit:**
   - *Sana özel:* "Takipleştiklerin şu an": 64 pt halkalı avatar + altında mekân adı; aynı mekândakiler tek baloncukta ("Rıhtım · 3"). İlk öğe senin fotoğrafın: yer bildirmediysen fuşya "+" rozeti ("Yer bildir"), bildirdiysen fuşya halka (Instagram'daki "Hikâyen" gibi).
@@ -293,28 +293,23 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 
 ### 5.8 Profil
 
-**Yeni düzen (T-22, 17.10.2026): "gece pasaportu".** Profil bir paylaşım listesi değil, kişinin gecelerinin özeti: nereye, ne sıklıkla, kimlerle aynı yerde. Başlık çubuğu yok; her şey içerikle kayar.
+**Sadeleşen düzen (T-22, 17.10.2026):** kimlik, sayılar, etiketler ve hemen altında Pinterest gibi paylaşımlar. Başlık çubuğu yok; her şey içerikle kayar. İlk "gece pasaportu" denemesindeki "Bu gece / Neredesin?" kartı, "Son gece" etiketi, "Son 30 gün" kartı ve "Sık gittiklerin" kurucunun isteğiyle kalktı ("profil sayfası çok karışık olmuş"); sık gidilenlere sonra dönülecek.
 
-- **Kapak:** son gecenin fotoğrafı bulanık; ekranın en üstünden başlar, aşağı doğru zemine karışır (BeReal gibi). Ortada @kullanıcı adı, sağda cam paylaş ve çark, altta küçük cam etiket "Son gece · Çınar Meyhane" (yer bildirmişsen "Bu gece · …"). Saat her fotoğrafta okunsun diye en üstte ince geçiş.
-- **Kimlik:** avatar kapağa biner → Title2 ad (gizli hesapta kilit) → @kullanıcı adı → biyografi → üç sayı: **takipçi** · **takip** (dokununca liste açılır) · **gece · 30 gün** → nötr ilgi alanı etiketleri.
-- **Profili düzenle küçüldü:** avatarın sağında küçük "Düzenle" kapsülü; ayrıca Ayarlar › Hesap'ta bir satır. Düzenleme ekranı prototipte henüz yok.
-- **Bu gece kartı:** yer bildirmişsen "Şu an buradasın" + Sohbet; değilsen "Bu gece · Neredesin?" + Buradayım.
-- **Son 30 gün:** gece · mekân · semt sayıları, en çok gittiğin mekân ve haftalık seri (🔥, en az 2 hafta).
-- **Gece takvimi:** ay ay gezilir; gidilen gecelerde o gecenin fotoğrafı, bugün fuşya halkalı. Bir geceye dokununca altında mekân, paylaşım sayısı ve o gece orada olan karşılıklı takipleştiklerin ("Deniz de oradaydı"); karttan paylaşıma ya da mekâna gidilir. Sağ üstteki kilit takvimi kimlerin gördüğünü söyler ("Şu an burada kimler görsün" ayarına bağlı) ve Ayarlar'a götürür.
-- **Sık gittiklerin:** yatay mekân kartları, "7 kez" rozeti.
-- **Paylaşımlar Pinterest gibi:** başlıksız, iki sütunlu ızgara; fotoğraf kendi oranında, yazı paylaşımı alıntı kartı. Dokununca Instagram'daki gibi **dikey akış** açılır (ana sayfadaki kartlarla) ve dokunulan paylaşımdan başlar.
+- **Kapak:** son gecenin fotoğrafı bulanık; ekranın en üstünden başlar, aşağı doğru zemine karışır (BeReal gibi). Ortada @kullanıcı adı. Sol üstte cam **Düzenle** (kalem), sağ üstte cam paylaş ve çark. Aşağı çekince fotoğraf yukarı doğru uzar, üstünde krom HERE döner (T-24).
+- **Kimlik:** avatar kapağa biner → Title2 ad (gizli hesapta kilit) → @kullanıcı adı → biyografi → üç sayı: **takipçi** · **takip** (dokununca liste) · **gece · 30 gün** (dokununca gece takvimi) → nötr ilgi alanı etiketleri.
+- **Paylaşımlar Pinterest gibi:** etiketlerin hemen altında, başlıksız iki sütun; yalnızca fotoğraflar, kendi oranlarında, altlarında yazı yok. Fotoğrafsız paylaşım, yazısının kendisi olan bir alıntı kartı. Dokununca Instagram'daki gibi **dikey akış** açılır (ana sayfadaki kartlarla) ve dokunulan paylaşımdan başlar.
+- **Gece takvimi (ayrı sayfa):** "gece" sayısına dokununca açılır. Başlık ayın adı, yanında oklar; gidilen gecelerde o gecenin fotoğrafı, bugün fuşya halkalı. Bir geceye dokununca altında mekân, paylaşım sayısı ve o gece orada olan karşılıklı takipleştiklerin ("Deniz de oradaydı"); karttan paylaşıma ya da mekâna gidilir. Üstteki kilit takvimi kimlerin gördüğünü söyler ("Şu an burada kimler görsün" ayarına bağlı) ve Ayarlar'a götürür.
 - **Takipçi / takip listeleri:** sayıya dokununca açılan sayfa: üstte "19 takipçi | 16 takip" seçici, arama, önce karşılıklı takipleştiklerin. Satırda ipucu ("Karşılıklı takipleşiyorsunuz", "Seni takip ediyor") ve durum kapsülü. Başkalarının listeleri de açılır.
 - **Başkasının profili:** aynı düzen; kapakta solda geri, sağda •••: Bildir / Engelle / Sessize al. Avatarın yanında **Mesaj** ve takip kapsülü: **Takip et** (metin renginde dolu; seni takip ediyorsa **Geri takip et**, gizli hesapta **İstek gönder**) → **İstek gönderildi** (dokununca geri çekilir) → **Takip ediliyor** ("Takibi bırak" onay ister). Karşılıklı takipleşmiyorsanız "mesajın İstekler'e düşer" notu.
-  - **Birlikte olduğunuz geceler:** aynı gece aynı mekânda olduğunuz geceler (fotoğraflı kareler) ve ikinizin de gittiği mekânlar.
-  - **Gizlilik:** son 30 gün, takvim ve "şu an burada" yalnızca **karşılıklı takipleşenlere** açık. Diğerleri "Geceleri gizli" kartını görür; ortak mekânlar yalnızca görebildikleri paylaşımlardan çıkar.
+  - **Gizlilik:** "gece" sayısı, takvim ve "şu an burada" halkası yalnızca **karşılıklı takipleşenlere** açık. Onların takvim sayfasında "Sen de oradaydın" ve **Birlikte olduğunuz geceler** (aynı gece aynı mekân, fotoğraflı kareler) ile ikinizin de gittiği mekânlar.
 - **Gizli hesap:** başlık ve sayılar görünür; içerik yerine kilit + "Bu hesap gizli".
 
-**Referanslar:** [BeReal · Profil](https://mobbin.com/screens/3fb9df84-791d-41c2-9cac-f085fb4fce11) ve [takvim](https://mobbin.com/screens/f8e4b2ea-2b0e-4837-91db-2d1acad43e06) · [Beli · Son 30 gün](https://mobbin.com/screens/a781ec47-ae86-43c1-b6c7-22188056138b) ve [ikinizin de gitmek istediği](https://mobbin.com/screens/b8fbe405-8cea-493e-8cf5-c039cdedf431) · [Partiful · Ortak etkinlikler](https://mobbin.com/screens/13def998-1383-4c12-a9b8-3fd3d06b87f4) · [Posh · Etkinlik ızgarası](https://mobbin.com/screens/8ff3a28f-8b5f-4fbd-8049-7be17ee078c3) · [Strava · Profil](https://mobbin.com/screens/5954f4ba-c9bb-4f3a-b2fb-ee51ccd561b0) · [Swarm · Mekân listeleri](https://mobbin.com/screens/16122aa2-d298-496b-ae9c-2ad066cab0e0) · [corner · Profil](https://mobbin.com/screens/977a211f-072a-41a6-8620-a2c661063008) · [Instagram · Gizli hesap](https://mobbin.com/screens/9c930acd-4fd6-4400-b628-d1b44bbe66a9) · [Garmin · Takip akışı](https://mobbin.com/flows/e6f8a69c-9cc6-4e05-8f6e-ac426806da49) · [BeReal · Arkadaşlık isteği](https://mobbin.com/flows/eec0c11e-0489-4632-9cd0-52641503ca20)
+**Referanslar:** [Pinterest · Pano ızgarası](https://mobbin.com/screens/fe2ff85e-abfa-4575-8493-774306138a2f) · [BeReal · Profil](https://mobbin.com/screens/3fb9df84-791d-41c2-9cac-f085fb4fce11) ve [takvim](https://mobbin.com/screens/f8e4b2ea-2b0e-4837-91db-2d1acad43e06) · [Beli · İkinizin de gitmek istediği](https://mobbin.com/screens/b8fbe405-8cea-493e-8cf5-c039cdedf431) · [Partiful · Ortak etkinlikler](https://mobbin.com/screens/13def998-1383-4c12-a9b8-3fd3d06b87f4) · [corner · Profil](https://mobbin.com/screens/977a211f-072a-41a6-8620-a2c661063008) · [Instagram · Gizli hesap](https://mobbin.com/screens/9c930acd-4fd6-4400-b628-d1b44bbe66a9) · [Garmin · Takip akışı](https://mobbin.com/flows/e6f8a69c-9cc6-4e05-8f6e-ac426806da49) · [BeReal · Arkadaşlık isteği](https://mobbin.com/flows/eec0c11e-0489-4632-9cd0-52641503ca20)
 
 ### 5.9 Ayarlar
 
 - iOS "insetGrouped" liste; zemin marka gradyanı, satırlar onun rengini alan yarı saydam dolgu.
-- **Hesap** grubu (en üstte): "Profili düzenle" (T-22; profilde de küçük "Düzenle" kapsülü var).
+- **Hesap** grubu (en üstte): "Profili düzenle" (T-22; profilde de kapağın sol üstündeki cam kalem).
 - **Tasarım denemesi** grubu (geçici, Hesap'ın altında): "Görünüm alanı" (1 · 2 · 3, T-19) ve "Zemin" (A · B · C, T-18) menüleri. Karar verilince kalkacak.
 - **Görünüm** grubu: seçili tasarıma göre önizlemeli kartlar, iOS gibi Otomatik anahtarı ya da menü satırı (T-15, T-19, §3.7). "Her şey gece 04:00'te silinir" satırı kaldırıldı.
 - Tüm satır, başlık ve dipnotlar DM Sans; satırlar gradyanın rengini alan yarı saydam dolgu.
@@ -353,7 +348,7 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-3 | **Ayar anahtarı rengi** | (a) fuşya · (b) iOS sistem yeşili | **(b) sistem yeşili** | Fuşya kırmızıya yakın; açık bir anahtar uyarı gibi okunuyor. iOS Ayarlar ile tam uyum. |
 | T-4 | **Akış sekmelerinin stili** | (a) yerel segment (cam) · (b) X tarzı yazı sekmeleri + fuşya alt çizgi | **(a) yerel segment** | iOS 27'de cam segment yerel ve kullanıcıların tanıdığı kalıp; X tarzı sekme özel bileşen gerektirir. |
 | T-5 | **Logo konumu** | (a) solda · (b) ortada, sayaç altında (BeReal) | **(a) solda, sayaç sağda cam kapsülde** | Büyük harfli dört harflik logo solda büyük başlık gibi duruyor ([HYPE](https://mobbin.com/screens/d5f404ad-b66f-47fc-8332-f05ca2638b5c)); sayaç sağda cam öğe olarak yüzüyor. |
-| T-6 | **Logo rengi** | (a) fuşya · (b) metin rengi | **(b) metin rengi** | Fuşyayı birincil eyleme saklamak için. |
+| T-6 | **Logo rengi** | (a) fuşya · (b) metin rengi | **(b) metin rengi** | Fuşyayı birincil eyleme saklamak için. **T-23 ile değişti:** logo artık krom. |
 | T-7 | **Takip et butonu** | (a) fuşya · (b) metin renginde dolu (siyah/beyaz) | **(b)** | Fuşya ekran başına tek birincil eylem; profilde o eylem değil. |
 | T-8 | ~~**Açık mod sayfa zemini**~~ | (a) Winter Haze `#D9DEE5` · (b) açık ton `#EEF1F5` | ~~Akışta (b), ayarlar gibi gruplu listelerde (a)~~ → **T-11 ile değişti** | Düz zemin, cam kartlar gelince yerini gradyana bıraktı. |
 | T-9 | **"Rastgele" sekmesinin adı** | "Rastgele" · "Çevrende" | **"Çevrende"** | İçerik rastgele değil, çevrendeki herkese açık paylaşımlar; "Sana özel" ile de eşleşiyor. "Yakında" elendi: Türkçede "yakında geliyor" gibi okunuyor. |
@@ -369,7 +364,9 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-19 | **Ayarlar › Görünüm alanı** | 1 önizlemeli kartlar · 2 iOS gibi (Otomatik) · 3 menü satırı | **Karar bekliyor** | Kurucu: "başka bir şekilde yapalım, seçenekler sun" (§3.7). |
 | T-20 | **Ana sayfa kurgusu ve hiyerarşi** | (a) paylaşım akışı · (b) mekân odaklı bölümler | **(b)** | Kurucu: "görüntü profesyonel durmuyor". Uber Eats gibi: iri bölüm başlıkları, büyük fotoğraf, tek satır bilgi; paylaşım kartında katman azaldı (mekân kapsülü ve buton yerine bağlantı satırları). |
 | T-21 | **Mesajlar** | (a) cam kartlı liste + seçici · (b) Instagram mesaj kutusu | **(b)** | Kurucu isteği. Tanıdık kalıp; notlar şeridi HERE'ye uyarlandı: baloncukta kişinin şu anki mekânı. |
-| T-22 | **Profil** | (a) paylaşım listesi · (b) "gece pasaportu": kapak, son 30 gün, gece takvimi, sık gidilenler, ortak geceler | **(b)** | Kurucu: "sıradan olmasın ama kullanışlı olsun". Profil HERE'nin asıl verisini (geceler, mekânlar) gösterir; takvim ve istatistik yalnızca karşılıklı takipleşenlere açık. Kurucunun düzeltmeleri: Profili düzenle küçük kapsül, "Paylaşımların" başlığı yok, etiketler kalır, takipçi/takip listeleri açılır, paylaşımlar Pinterest ızgarası, dokununca Instagram gibi dikey akış (§5.8). |
+| T-22 | **Profil** | (a) paylaşım listesi · (b) "gece pasaportu" kartları · (c) sade: kimlik, sayılar, etiketler, Pinterest ızgarası; takvim "gece" sayısının arkasında | **(c)** | Kurucu: "sıradan olmasın ama kullanışlı olsun"; (b) denendi, "çok karışık olmuş". Bu gece kartı, Son gece etiketi, Son 30 gün ve Sık gittiklerin kalktı; Düzenle kapaktaki cam kaleme taşındı; ızgarada fotoğrafların altında yazı yok (§5.8). |
+| T-23 | **Logo ve simge** | (a) düz geometrik HERE · (b) corner'ın simgesindeki gibi şişirilmiş krom balon harfler | **(b)** | Kurucu: "corner'ın simgesindeki yazıyı aynen HERE'ye uygulayalım; zemin rengimiz sabit". Simgede iki satır "HE / RE" (corner'daki "COR / NER" gibi), uygulama içinde ve açılış ekranında tek satır. Kaynak: `scripts/generate-brand.py` ([corner simgesi](https://apps.apple.com/app/id1668282277)). |
+| T-24 | **Aşağı çekip yenileme** | (a) iOS çarkı · (b) dönen krom HERE | **(b)** | Kurucu isteği: logo 3B olduğu için yükleniyor işareti yerine 360° soldan sağa döner. Çekerken çekilen mesafe kadar, yenilerken sürekli döner, bitince öne bakarak durur. Ana sayfada başlıktaki logo döner; Mesajlar ve Profil'de çekince açılan boşlukta görünür. |
 
 ---
 
@@ -392,9 +389,10 @@ Her adım iOS 27 simülatörlerinde (iPhone 18 Pro · iOS 27.0 ve iPhone Duo · 
 | 11 | Gradyan zemin, kayan üst bar, cam kartlar, net cam, görünüm ayarı (T-11…T-15) | ✅ |
 | 12 | DM Sans (T-16), sahte profil fotoğrafları, geçirgen paylaşım kartları (T-17), 04:00 yazıları (K-16), yakın mekân kuralı (K-17) | ✅ |
 | 13 | Zemin (T-18) ve görünüm alanı (T-19) denemeleri | 🟡 Uygulandı, karar bekliyor |
-| 14 | Profil "gece pasaportu" (T-22): kapak, son 30 gün, gece takvimi, sık gittiklerin, Pinterest ızgarası, dikey paylaşım akışı, takipçi/takip listeleri, ortak geceler; Ayarlar › Hesap | ✅ Profil düzenleme ekranı yok (yalnızca uyarı) |
+| 14 | Profil (T-22): sade düzen, Pinterest ızgarası, dikey paylaşım akışı, takipçi/takip listeleri, "gece" sayısından açılan takvim ve ortak geceler; Ayarlar › Hesap | ✅ Profil düzenleme ekranı yok (yalnızca uyarı) |
+| 15 | Krom HERE logosu ve simge (T-23), aşağı çekince dönen logo (T-24) | ✅ Ana sayfa, Mesajlar, Profil |
 
-Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · T-22 sonrası profil ve ayarlar: [ekranlar/09-profil.jpg](ekranlar/09-profil.jpg), [ekranlar/10-ayarlar.jpg](ekranlar/10-ayarlar.jpg) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
+Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · T-22…T-24 sonrası ana sayfa, profil ve ayarlar: [ekranlar/01-ana-sayfa.jpg](ekranlar/01-ana-sayfa.jpg), [ekranlar/09-profil.jpg](ekranlar/09-profil.jpg), [ekranlar/10-ayarlar.jpg](ekranlar/10-ayarlar.jpg) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
 
 ### 7.1 Kullanılan yerel parçalar
 

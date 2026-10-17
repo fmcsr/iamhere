@@ -2,7 +2,9 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
+import { HereRefreshIndicator, useHereRefresh } from '@/components/here-refresh';
 import { Icon } from '@/components/icon';
 import { Avatar, VenueCard, messagePreview, minutesAgo } from '@/components/kit';
 import { PageColumn } from '@/components/page-column';
@@ -55,10 +57,16 @@ export default function MessagesScreen() {
     .slice(0, 5);
 
   const openDm = (u: User) => router.push({ pathname: '/chat/[id]', params: { id: openDirect(u.id) } });
+  const { ref, refreshControl, angle, pull } = useHereRefresh();
 
   return (
     <View style={{ flex: 1 }} collapsable={false}>
-      <ScrollView contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+      <Animated.ScrollView
+        ref={ref}
+        refreshControl={refreshControl}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scroll}>
         <PageColumn style={styles.content}>
           <ScreenHeader
             title={me.username}
@@ -142,7 +150,8 @@ export default function MessagesScreen() {
             <Text style={[Type.footnote, { color: theme.textSecondary }]}>Sohbetler {remaining} sonra sıfırlanır</Text>
           </View>
         </PageColumn>
-      </ScrollView>
+      </Animated.ScrollView>
+      <HereRefreshIndicator pull={pull} angle={angle} />
       <StatusBarBlur />
     </View>
   );

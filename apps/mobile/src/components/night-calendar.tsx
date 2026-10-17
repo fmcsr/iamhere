@@ -15,10 +15,10 @@ const GAP = 6;
 
 /**
  * Gece takvimi (BeReal'in takvimi gibi): dışarıda olunan gecelerde o gecenin fotoğrafı küçük bir kare,
- * bu gece fuşya çerçeveli. Bir güne dokununca altta o gecenin özeti açılır. Aylar arasında geçilebilir.
+ * bu gece fuşya çerçeveli. Bir güne dokununca altta o gecenin özeti açılır. Başlık ayın adı; yanındaki
+ * oklarla aylar arasında geçilir.
  */
 export function NightCalendar({
-  title = 'Gecelerin',
   nights,
   venueById,
   photoOf,
@@ -26,7 +26,6 @@ export function NightCalendar({
   onOpenNight,
   privacy,
 }: {
-  title?: string;
   nights: Night[];
   venueById: (id: string) => Venue | undefined;
   photoOf: (night: Night) => string | undefined;
@@ -62,22 +61,25 @@ export function NightCalendar({
   return (
     <View style={styles.wrap}>
       <SectionTitle
-        title={title}
+        title={`${MONTHS[month.month]} ${month.year}`}
         right={
           <View style={styles.monthNav}>
-            <Pressable onPress={() => shift(-1)} hitSlop={10} accessibilityRole="button" accessibilityLabel="Önceki ay">
-              <Icon ios="chevron.left" md="chevron_left" size={15} color={theme.text} />
+            <Pressable
+              onPress={() => shift(-1)}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel="Önceki ay"
+              style={[styles.monthButton, { backgroundColor: theme.fill }]}>
+              <Icon ios="chevron.left" md="chevron_left" size={14} color={theme.text} />
             </Pressable>
-            <Text style={[Type.subheadline, styles.monthLabel, { color: theme.text }]}>
-              {MONTHS[month.month]} {month.year}
-            </Text>
             <Pressable
               onPress={() => !isCurrentMonth && shift(1)}
-              hitSlop={10}
+              hitSlop={6}
               disabled={isCurrentMonth}
               accessibilityRole="button"
-              accessibilityLabel="Sonraki ay">
-              <Icon ios="chevron.right" md="chevron_right" size={15} color={isCurrentMonth ? theme.separator : theme.text} />
+              accessibilityLabel="Sonraki ay"
+              style={[styles.monthButton, { backgroundColor: theme.fill }]}>
+              <Icon ios="chevron.right" md="chevron_right" size={14} color={isCurrentMonth ? theme.separator : theme.text} />
             </Pressable>
           </View>
         }
@@ -158,8 +160,8 @@ export function NightCalendar({
 
 const styles = StyleSheet.create({
   wrap: { gap: 12 },
-  monthNav: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  monthLabel: { fontWeight: '600', minWidth: 92, textAlign: 'center' },
+  monthNav: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  monthButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   privacy: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, height: 24, borderRadius: 12, marginTop: -4 },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
   weekday: { textAlign: 'center', fontWeight: '600' },

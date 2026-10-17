@@ -6,8 +6,9 @@
     {
       "layers": [
         {
-          "image-name": "here-wordmark.svg",
-          "name": "here-wordmark",
+          "glass": false,
+          "image-name": "here-chrome.png",
+          "name": "here-chrome",
           "position": {
             "scale": 1,
             "translation-in-points": [
@@ -20,10 +21,6 @@
       "shadow": {
         "kind": "neutral",
         "opacity": 0.5
-      },
-      "translucency": {
-        "enabled": true,
-        "value": 0.5
       }
     }
   ],

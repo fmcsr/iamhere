@@ -1,4 +1,4 @@
-import type { Post, Venue } from '@/data/mock';
+import type { Post } from '@/data/mock';
 import { ISTANBUL_OFFSET_MS, RESET_HOUR } from '@/lib/night';
 
 /**
@@ -75,54 +75,10 @@ export function collectNights({
   return [...byKey.values()].sort((a, b) => b.key.localeCompare(a.key));
 }
 
-/** Pazartesi başlayan hafta numarası. */
-const weekOf = (key: string) => Math.floor((dayNumber(key) + 3) / 7); // 1 Ocak 1970 perşembe
-
-export type NightSummary = {
-  nights: number;
-  venues: number;
-  areas: number;
-  top?: { venue: Venue; count: number };
-  /** Kaç haftadır her hafta en az bir gece dışarıda (bu hafta henüz yoksa geçen haftadan sayılır). */
-  streakWeeks: number;
-};
-
-/** Son `days` günün özeti (Beli'nin "son 30 gün" kartı gibi). */
-export function summarize(nights: Night[], venueById: (id: string) => Venue | undefined, days = 30, now = Date.now()): NightSummary {
+/** Son `days` gündeki gece sayısı (profildeki "gece · 30 gün"). */
+export function nightsInLast(nights: Night[], days = 30, now = Date.now()): number {
   const today = dayNumber(tonightKey(now));
-  const recent = nights.filter((n) => today - dayNumber(n.key) < days);
-  const counts = new Map<string, number>();
-  for (const n of recent) counts.set(n.venueId, (counts.get(n.venueId) ?? 0) + 1);
-  const [topId, topCount] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0] ?? [];
-  const topVenue = topId ? venueById(topId) : undefined;
-  const areas = new Set(recent.map((n) => venueById(n.venueId)?.area).filter(Boolean));
-
-  const weeks = new Set(nights.map((n) => weekOf(n.key)));
-  const thisWeek = weekOf(keyFromDayNumber(today));
-  let week = weeks.has(thisWeek) ? thisWeek : thisWeek - 1;
-  let streakWeeks = 0;
-  while (weeks.has(week)) {
-    streakWeeks += 1;
-    week -= 1;
-  }
-
-  return {
-    nights: recent.length,
-    venues: counts.size,
-    areas: areas.size,
-    top: topVenue && topCount ? { venue: topVenue, count: topCount } : undefined,
-    streakWeeks,
-  };
-}
-
-/** En çok gidilen mekânlar (tüm geçmiş). */
-export function frequentVenues(nights: Night[], limit = 6): { venueId: string; count: number }[] {
-  const counts = new Map<string, number>();
-  for (const n of nights) counts.set(n.venueId, (counts.get(n.venueId) ?? 0) + 1);
-  return [...counts.entries()]
-    .map(([venueId, count]) => ({ venueId, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, limit);
+  return nights.filter((n) => today - dayNumber(n.key) < days).length;
 }
 
 /** İki kişinin aynı gece aynı mekânda olduğu geceler. */

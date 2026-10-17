@@ -88,6 +88,7 @@ function RootStack() {
         <Stack.Screen name="new-message" options={{ title: 'Yeni mesaj' }} />
         <Stack.Screen name="follows" options={{ title: '' }} />
         <Stack.Screen name="posts" options={{ title: 'Paylaşımlar' }} />
+        <Stack.Screen name="nights" options={{ title: 'Geceler' }} />
       </Stack>
     </ThemeProvider>
   );

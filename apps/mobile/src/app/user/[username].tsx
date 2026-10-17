@@ -4,27 +4,24 @@ import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { GlassCard } from '@/components/glass';
 import { Icon } from '@/components/icon';
 import { showSafetyMenu } from '@/components/kit';
-import { NightCalendar } from '@/components/night-calendar';
 import { PageColumn } from '@/components/page-column';
 import { Pill } from '@/components/pill';
 import { PostMasonry } from '@/components/post-masonry';
 import { ProfileCover, useCoverStatusBar } from '@/components/profile-cover';
 import { ProfileHeader } from '@/components/profile-header';
-import { LockedNights, NightSummaryCard, NowCard, SharedNights, nightPhoto } from '@/components/profile-sections';
+import { nightPhoto } from '@/components/profile-sections';
 import { HeaderButton } from '@/components/screen-header';
 import { StatusBarBlur } from '@/components/status-bar-blur';
 import { Text } from '@/components/text';
 import { Gap, Type } from '@/constants/theme';
-import type { Venue } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
-import { sharedNights, summarize, tonightKey, type Night } from '@/lib/nights';
+import { nightsInLast, tonightKey } from '@/lib/nights';
 
 /**
- * Başkasının profili (TASARIM.md §5.8, T-22): kendi profilinle aynı düzen. Takip et ve Mesaj küçük
- * kapsüllerde; altında "Birlikte olduğunuz geceler". Takvim ve istatistikler yalnızca karşılıklı
- * takipleşenlere açık; diğerleri yalnızca paylaşımları ve paylaşım yapılan ortak geceleri görür.
- * Engelle / Bildir / Sessize al kapaktaki ••• düğmesinde.
+ * Başkasının profili (TASARIM.md §5.8, T-22): kendi profilinle aynı düzen; Mesaj ve Takip et küçük
+ * kapsüllerde, etiketlerin hemen altında Pinterest gibi paylaşımlar. "gece" sayısı ve takvim (birlikte
+ * olduğunuz gecelerle) yalnızca karşılıklı takipleşenlere açık. Bildir / Engelle / Sessize al kapaktaki •••'de.
  */
 export default function UserProfileScreen() {
   const theme = useTheme();
@@ -58,25 +55,12 @@ export default function UserProfileScreen() {
     .filter((p) => p.userId === user.id && !p.anonAlias && (p.audience === 'herkes' || isFollowing))
     .sort((a, b) => b.createdAt - a.createdAt);
   const postById = (id: string) => posts.find((p) => p.id === id);
-  const photoOf = (night: Night) => nightPhoto(night, postById, venueById(night.venueId));
 
   // Karşılıklı değilse yer bildirimleri görünmez; yalnızca görebildiğin paylaşımların geceleri.
   const theirNights = nightsOf(user.id, mutual ? {} : { onlyPosts: true, visiblePosts: theirPosts });
-  const myNights = nightsOf('me');
-  const shared = locked ? [] : sharedNights(myNights, theirNights);
-  const myVenues = new Set(myNights.map((n) => n.venueId));
-  const bothVenues = locked
-    ? []
-    : [...new Set(theirNights.map((n) => n.venueId))]
-        .filter((id) => myVenues.has(id))
-        .map((id) => venueById(id))
-        .filter((v): v is Venue => Boolean(v));
-  const summary = summarize(theirNights, venueById);
-  const tonight = theirNights[0]?.key === tonightKey() ? venueById(theirNights[0].venueId) : undefined;
+  const tonight = theirNights[0]?.key === tonightKey();
   const last = theirNights[0];
-  const lastVenue = last ? venueById(last.venueId) : undefined;
-  const cover = theirPosts.find((p) => p.imageUri)?.imageUri ?? (last ? photoOf(last) : undefined);
-  const chip = mutual && last && lastVenue ? `${tonight ? 'Bu gece' : 'Son gece'} · ${lastVenue.name}` : undefined;
+  const cover = theirPosts.find((p) => p.imageUri)?.imageUri ?? (last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined);
 
   const onFollowPress = () => {
     if (isFollowing) {
@@ -101,7 +85,6 @@ export default function UserProfileScreen() {
         <ProfileCover
           uri={(locked ? undefined : cover) ?? user.avatarUri}
           title={`@${user.username}`}
-          chip={chip}
           left={<HeaderButton icon="chevron.left" md="arrow_back" label="Geri" onImage onPress={() => router.back()} />}
           right={<HeaderButton icon="ellipsis" md="more_horiz" label="Diğer seçenekler" onImage onPress={() => showSafetyMenu(`@${user.username}`)} />}
         />
@@ -109,13 +92,14 @@ export default function UserProfileScreen() {
           <View style={{ gap: 10 }}>
             <ProfileHeader
               user={user}
-              ring={Boolean(tonight) && mutual}
+              ring={tonight && mutual}
               isPrivate={user.isPrivate}
               followers={followersOf(user.id).length}
               following={followingOf(user.id).length}
-              nights={mutual ? summary.nights : undefined}
+              nights={mutual ? nightsInLast(theirNights) : undefined}
               onFollowers={() => router.push({ pathname: '/follows', params: { user: user.id, tab: 'followers' } })}
               onFollowing={() => router.push({ pathname: '/follows', params: { user: user.id, tab: 'following' } })}
+              onNights={() => router.push({ pathname: '/nights', params: { user: user.id } })}
               actions={
                 <>
                   <Pill
@@ -147,51 +131,15 @@ export default function UserProfileScreen() {
                 Paylaşımlarını ve gecelerini görmek için takip isteği gönder.
               </Text>
             </GlassCard>
+          ) : theirPosts.length > 0 ? (
+            <View style={styles.grid}>
+              <PostMasonry
+                posts={theirPosts}
+                onOpen={(post) => router.push({ pathname: '/posts', params: { user: user.id, start: post.id } })}
+              />
+            </View>
           ) : (
-            <>
-              {mutual && tonight && (
-                <NowCard
-                  venue={tonight}
-                  caption="Şu an burada"
-                  title={tonight.name}
-                  action={{ title: 'Mekân', onPress: () => router.push({ pathname: '/venue/[id]', params: { id: tonight.id } }) }}
-                />
-              )}
-
-              {(shared.length > 0 || bothVenues.length > 0) && (
-                <SharedNights nights={shared} bothVenues={bothVenues} photoOf={photoOf} venueById={venueById} />
-              )}
-
-              {mutual ? (
-                <>
-                  <NightSummaryCard summary={summary} subject="o" />
-                  <NightCalendar
-                    title="Geceleri"
-                    nights={theirNights}
-                    venueById={venueById}
-                    photoOf={photoOf}
-                    detailOf={(night) => (night.postIds.length ? `${night.postIds.length} paylaşım` : 'Paylaşım yok')}
-                    onOpenNight={(night) =>
-                      night.postIds.length
-                        ? router.push({ pathname: '/posts', params: { user: user.id, start: night.postIds[0] } })
-                        : router.push({ pathname: '/venue/[id]', params: { id: night.venueId } })
-                    }
-                    privacy={{ label: 'Karşılıklı takipleştiğiniz için görüyorsun' }}
-                  />
-                </>
-              ) : (
-                <LockedNights following={isFollowing || requested} onFollow={onFollowPress} />
-              )}
-
-              {theirPosts.length > 0 ? (
-                <PostMasonry
-                  posts={theirPosts}
-                  onOpen={(post) => router.push({ pathname: '/posts', params: { user: user.id, start: post.id } })}
-                />
-              ) : (
-                <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>Henüz paylaşım yok.</Text>
-              )}
-            </>
+            <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>Henüz paylaşım yok.</Text>
           )}
         </PageColumn>
       </ScrollView>
@@ -203,6 +151,8 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { paddingBottom: 48 },
-  content: { paddingHorizontal: Gap.page, gap: 26 },
+  content: { paddingHorizontal: Gap.page, gap: 20 },
+  // Pinterest gibi kenarlara daha yakın.
+  grid: { marginHorizontal: -6 },
   lockedBox: { alignItems: 'center', gap: 8, padding: 24, borderRadius: 22 },
 });

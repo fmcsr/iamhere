@@ -1,79 +1,54 @@
 import { router } from 'expo-router';
-import { ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Share, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import { NightCalendar } from '@/components/night-calendar';
+import { HereRefreshIndicator, useHereRefresh } from '@/components/here-refresh';
 import { PageColumn } from '@/components/page-column';
-import { Pill } from '@/components/pill';
 import { PostMasonry } from '@/components/post-masonry';
 import { ProfileCover, useCoverStatusBar } from '@/components/profile-cover';
 import { ProfileHeader } from '@/components/profile-header';
-import { FrequentVenues, NightSummaryCard, NowCard, nightPhoto } from '@/components/profile-sections';
+import { nightPhoto } from '@/components/profile-sections';
 import { HeaderButton } from '@/components/screen-header';
 import { StatusBarBlur } from '@/components/status-bar-blur';
-import { Gap } from '@/constants/theme';
-import type { Venue } from '@/data/mock';
+import { Text } from '@/components/text';
+import { Gap, Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
-import { frequentVenues, summarize, tonightKey, type Night } from '@/lib/nights';
+import { useTheme } from '@/hooks/use-theme';
+import { nightsInLast } from '@/lib/nights';
 import { editProfile } from '@/lib/profile';
 
-/** Gece takviminin kimlere açık olduğu, "Şu an burada kimler görsün" ayarına bağlı (TASARIM.md §5.8). */
-const NIGHTS_VISIBILITY = {
-  herkes: 'Herkes görebilir',
-  karsilikli: 'Yalnızca karşılıklı takipleştiklerin görür',
-  kimse: 'Yalnızca sen görürsün',
-} as const;
-
 /**
- * Kendi profilin, "gece pasaportu" (TASARIM.md §5.8, T-22): son gecenin fotoğrafından kapak, küçük
- * Düzenle düğmesi, şu an kartı, son 30 gün özeti, gece takvimi, sık gittiklerin ve Pinterest tipi
- * paylaşımlar. Başlık çubuğu yok: kapak ekranın en üstünden başlar, içerikle birlikte kayar.
+ * Kendi profilin (TASARIM.md §5.8, T-22): son gecenin fotoğrafından bulanık kapak, kimlik, sayılar ve
+ * etiketler; hemen altında Pinterest gibi paylaşımlar. "gece" sayısına dokununca gece takvimi açılır.
+ * Düzenle, paylaş ve ayarlar kapaktaki cam düğmelerde. Başlık çubuğu yok: kapak ekranın en üstünden başlar.
  */
 export default function ProfileScreen() {
-  const { me, users, posts, settings, checkIn, venueById, followersOf, followingOf, nightsOf, isMutual } = useApp();
+  const theme = useTheme();
+  const { me, posts, settings, checkIn, venueById, followersOf, followingOf, nightsOf } = useApp();
   // Sekme içinde iOS durum çubuğu rengini değiştirmiyor; kapak üstünde ince geçiş kullanılıyor.
   const { onScroll, overCover } = useCoverStatusBar({ setStyle: false });
+  const { ref, refreshControl, angle, pull } = useHereRefresh();
 
   const nights = nightsOf('me');
-  const summary = summarize(nights, venueById);
-  const frequent = frequentVenues(nights)
-    .map(({ venueId, count }) => ({ venue: venueById(venueId), count }))
-    .filter((f): f is { venue: Venue; count: number } => Boolean(f.venue));
   const myPosts = posts.filter((p) => p.userId === 'me' && !p.anonAlias).sort((a, b) => b.createdAt - a.createdAt);
   const postById = (id: string) => posts.find((p) => p.id === id);
-  const photoOf = (night: Night) => nightPhoto(night, postById, venueById(night.venueId));
-
-  const current = checkIn ? venueById(checkIn.venueId) : undefined;
   const last = nights[0];
-  const lastVenue = last ? venueById(last.venueId) : undefined;
-  const chip = last && lastVenue ? `${last.key === tonightKey() ? 'Bu gece' : 'Son gece'} · ${lastVenue.name}` : undefined;
-
-  // O gece orada olan karşılıklı takipleştiklerin ("Deniz de oradaydı").
-  const mutuals = users.filter((u) => isMutual(u.id));
-  const detailOf = (night: Night) => {
-    const count = night.postIds.length;
-    const friends = mutuals
-      .filter((u) => nightsOf(u.id).some((n) => n.key === night.key && n.venueId === night.venueId))
-      .map((u) => u.displayName.split(' ')[0]);
-    const parts = [count ? `${count} paylaşım` : 'Paylaşım yok'];
-    if (friends.length) parts.push(`${friends.slice(0, 2).join(' ve ')}${friends.length > 2 ? ` +${friends.length - 2}` : ''} de oradaydı`);
-    return parts.join(' · ');
-  };
-  const openNight = (night: Night) =>
-    night.postIds.length
-      ? router.push({ pathname: '/posts', params: { user: 'me', start: night.postIds[0] } })
-      : router.push({ pathname: '/venue/[id]', params: { id: night.venueId } });
+  const cover = last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined;
 
   return (
     <View style={styles.screen} collapsable={false}>
-      <ScrollView
+      <Animated.ScrollView
+        ref={ref}
+        refreshControl={refreshControl}
         // iOS güvenli alanı kadar üst boşluk bırakır; kapak bu boşluk kadar yukarı taşınarak en üstten başlar.
         contentInsetAdjustmentBehavior="automatic"
         onScroll={onScroll} scrollEventThrottle={32} contentContainerStyle={styles.scroll}>
         <ProfileCover
-          uri={(last ? photoOf(last) : undefined) ?? me.avatarUri}
+          uri={cover ?? me.avatarUri}
           title={`@${me.username}`}
-          chip={chip}
           statusFade
+          pull={pull}
+          left={<HeaderButton icon="pencil" md="edit" label="Profili düzenle" onImage onPress={editProfile} />}
           right={
             <>
               <HeaderButton
@@ -90,43 +65,28 @@ export default function ProfileScreen() {
         <PageColumn style={styles.content}>
           <ProfileHeader
             user={me}
-            ring={Boolean(current)}
+            ring={Boolean(checkIn)}
             isPrivate={settings.privateAccount}
             followers={followersOf('me').length}
             following={followingOf('me').length}
-            nights={summary.nights}
+            nights={nightsInLast(nights)}
             onFollowers={() => router.push({ pathname: '/follows', params: { user: 'me', tab: 'followers' } })}
             onFollowing={() => router.push({ pathname: '/follows', params: { user: 'me', tab: 'following' } })}
-            actions={<Pill title="Düzenle" icon={{ ios: 'pencil', md: 'edit' }} onPress={editProfile} accessibilityLabel="Profili düzenle" />}
+            onNights={() => router.push({ pathname: '/nights', params: { user: 'me' } })}
           />
 
-          {current ? (
-            <NowCard
-              venue={current}
-              caption={checkIn?.anonAlias ? `Anonim · ${checkIn.anonAlias}` : 'Şu an buradasın'}
-              title={current.name}
-              action={{ title: 'Sohbet', onPress: () => router.push({ pathname: '/chat/[id]', params: { id: `c-${current.id}` } }) }}
-            />
+          {myPosts.length > 0 ? (
+            <View style={styles.grid}>
+              <PostMasonry posts={myPosts} onOpen={(post) => router.push({ pathname: '/posts', params: { user: 'me', start: post.id } })} />
+            </View>
           ) : (
-            <NowCard caption="Bu gece" title="Neredesin?" action={{ title: 'Buradayım', onPress: () => router.navigate('/checkin') }} />
+            <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
+              Henüz paylaşım yok. Bir mekânda yer bildirip ilk fotoğrafını paylaş.
+            </Text>
           )}
-
-          <NightSummaryCard summary={summary} />
-
-          <NightCalendar
-            nights={nights}
-            venueById={venueById}
-            photoOf={photoOf}
-            detailOf={detailOf}
-            onOpenNight={openNight}
-            privacy={{ label: NIGHTS_VISIBILITY[settings.presenceVisibility], onPress: () => router.push('/settings') }}
-          />
-
-          {frequent.length > 0 && <FrequentVenues items={frequent} />}
-
-          <PostMasonry posts={myPosts} onOpen={(post) => router.push({ pathname: '/posts', params: { user: 'me', start: post.id } })} />
         </PageColumn>
-      </ScrollView>
+      </Animated.ScrollView>
+      <HereRefreshIndicator pull={pull} angle={angle} />
       {!overCover && <StatusBarBlur />}
     </View>
   );
@@ -135,5 +95,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { paddingBottom: 48 },
-  content: { paddingHorizontal: Gap.page, gap: 26 },
+  content: { paddingHorizontal: Gap.page, gap: 20 },
+  // Pinterest gibi kenarlara daha yakın.
+  grid: { marginHorizontal: -6 },
 });
