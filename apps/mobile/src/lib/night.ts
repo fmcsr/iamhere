@@ -35,10 +35,6 @@ export function useNight(): { remaining: string; lastHour: boolean } {
   return { remaining: formatRemaining(now), lastHour: minutesLeft(now) < 60 };
 }
 
-export function useNightRemaining(): string {
-  return useNight().remaining;
-}
-
 export function clockTime(date: Date): string {
   return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' });
 }

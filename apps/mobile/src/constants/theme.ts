@@ -22,7 +22,7 @@
 
 import '@/global.css';
 
-import { Platform, type ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 
 export const Brand = {
   winterHaze: '#D9DEE5',
@@ -182,8 +182,6 @@ export const Type = {
 export const Radius = { card: 20, photo: 14, control: 12 } as const;
 export const Gap = { page: 16, section: 32, block: 12, tight: 6 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
-
 /**
  * Yazı tipi her yerde DM Sans (T-16). Adlar expo-font takma adlarıdır; `src/app/_layout.tsx`
  * açılışta yükler. RN metinleri `@/components/text` ile ağırlığa uygun dosyayı kendiliğinden alır.
@@ -194,8 +192,6 @@ export const Fonts = {
   semibold: 'DMSans_600SemiBold',
   bold: 'DMSans_700Bold',
   extrabold: 'DMSans_800ExtraBold',
-  /** Yalnızca şablon bileşenlerindeki kod örnekleri için eş aralıklı sistem yazısı. */
-  mono: Platform.select({ ios: 'ui-monospace', default: 'monospace' }),
 } as const;
 
 /** Başlık çubuğu yazıları: yığınların `screenOptions`'ı için. */
@@ -214,16 +210,3 @@ export const NativeFonts = {
   semibold: 'DMSans-SemiBold',
   bold: 'DMSans-Bold',
 } as const;
-
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-} as const;
-
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;

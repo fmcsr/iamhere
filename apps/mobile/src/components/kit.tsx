@@ -10,7 +10,6 @@ import { Radius, Type } from '@/constants/theme';
 import { CATEGORY_LABEL, type Category, type Message, type Post, type User, type Venue } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
-import { useNight } from '@/lib/night';
 import { joinNames } from '@/lib/tr';
 
 type IconPair = { ios: SFSymbolName; md: Parameters<typeof Icon>[0]['md'] };
@@ -96,22 +95,6 @@ export function AvatarStack({ users, size = 26 }: { users: User[]; size?: number
           <Avatar name={u.displayName} color={u.avatarColor} uri={u.avatarUri} size={size} />
         </View>
       ))}
-    </View>
-  );
-}
-
-/**
- * Kum saati + sohbetin sıfırlanmasına (04:00) kalan süre; sohbet başlığında. Son 60 dakikada ikon fuşyaya döner.
- * Metin her zaman nötr kalır; cam üstünde de okunur (TASARIM.md §2.3).
- */
-export function Countdown({ size = 13, color }: { size?: number; color?: string }) {
-  const theme = useTheme();
-  const { remaining, lastHour } = useNight();
-  const tint = color ?? theme.text;
-  return (
-    <View style={styles.countdown} accessible accessibilityLabel={`Sohbetin sıfırlanmasına ${remaining} kaldı`}>
-      <Icon ios="hourglass" md="hourglass_top" size={size + 1} color={lastHour ? theme.accent : tint} />
-      <Text style={{ color: tint, fontSize: size, fontWeight: '600', fontVariant: ['tabular-nums'] }}>{remaining}</Text>
     </View>
   );
 }
@@ -388,7 +371,6 @@ export function EventRow({ venue, time, title }: { venue: Venue; time: string; t
 
 const styles = StyleSheet.create({
   ring: { padding: 2, borderWidth: 2 },
-  countdown: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   live: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   dot: { width: 7, height: 7, borderRadius: 4 },
   venueIcon: { alignItems: 'center', justifyContent: 'center' },
