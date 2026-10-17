@@ -82,10 +82,10 @@ export default function HomeScreen() {
             <View accessible accessibilityRole="header" accessibilityLabel="HERE">
               <Wordmark height={24} color={theme.text} />
             </View>
-            <Text style={[Type.subheadline, { color: theme.textSecondary }]}>Kadıköy</Text>
           </View>
 
-          <Section title="Takipleştiklerin şu an">
+          {/* Başlıksız: halkalı avatarlar kendini anlatıyor (Instagram'daki hikâye şeridi gibi). */}
+          <Section>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bleed} contentContainerStyle={styles.strip}>
               <Pressable
                 onPress={() => router.navigate('/checkin')}
@@ -170,22 +170,24 @@ export default function HomeScreen() {
   );
 }
 
-/** Bölüm: iri başlık (Type.section) + isteğe bağlı sağda bağlantı. Bölümler arası boşluk her yerde aynı (Gap.section). */
-function Section({ title, action, onAction, children }: { title: string; action?: string; onAction?: () => void; children: ReactNode }) {
+/** Bölüm: isteğe bağlı iri başlık (Type.section) + sağda bağlantı. Bölümler arası boşluk her yerde aynı (Gap.section). */
+function Section({ title, action, onAction, children }: { title?: string; action?: string; onAction?: () => void; children: ReactNode }) {
   const theme = useTheme();
   return (
     <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <Text style={[Type.section, { color: theme.text, flex: 1 }]} accessibilityRole="header">
-          {title}
-        </Text>
-        {action && (
-          <Pressable onPress={onAction} hitSlop={10} accessibilityRole="link" style={styles.sectionAction}>
-            <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{action}</Text>
-            <Icon ios="chevron.right" md="chevron_right" size={12} color={theme.textSecondary} />
-          </Pressable>
-        )}
-      </View>
+      {title && (
+        <View style={styles.sectionHeader}>
+          <Text style={[Type.section, { color: theme.text, flex: 1 }]} accessibilityRole="header">
+            {title}
+          </Text>
+          {action && (
+            <Pressable onPress={onAction} hitSlop={10} accessibilityRole="link" style={styles.sectionAction}>
+              <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{action}</Text>
+              <Icon ios="chevron.right" md="chevron_right" size={12} color={theme.textSecondary} />
+            </Pressable>
+          )}
+        </View>
+      )}
       {children}
     </View>
   );
@@ -195,7 +197,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { paddingBottom: 24 },
   content: { paddingHorizontal: Gap.page, paddingTop: 4, gap: Gap.section },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 2, minHeight: 48, marginBottom: -12 },
+  header: { alignItems: 'center', justifyContent: 'center', minHeight: 48, marginBottom: -12 },
   section: { gap: Gap.block },
   sectionHeader: { flexDirection: 'row', alignItems: 'center' },
   sectionAction: { flexDirection: 'row', alignItems: 'center', gap: 4 },

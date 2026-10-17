@@ -63,9 +63,13 @@ export default function CheckInScreen() {
             venues={nearby}
             radius={CHECK_IN_RADIUS_M}
             showMe
-            interactive={false}
             zoom={0.012}
-            onSelect={(id) => router.push({ pathname: '/compose', params: { venueId: id } })}
+            recenter
+            // Harita gezilebilir; ama yer bildirimi yine yalnızca 300 m içinde (K-17): uzak pin mekân sayfasını açar.
+            onSelect={(id) => {
+              const far = (venueById(id)?.distanceM ?? Infinity) > CHECK_IN_RADIUS_M;
+              router.push(far ? { pathname: '/venue/[id]', params: { id } } : { pathname: '/compose', params: { venueId: id } });
+            }}
           />
         </View>
         <View style={styles.note}>

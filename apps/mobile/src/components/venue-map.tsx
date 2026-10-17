@@ -1,7 +1,10 @@
 import { router } from 'expo-router';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useRef } from 'react';
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 
+import { Glass } from '@/components/glass';
+import { Icon } from '@/components/icon';
 import { Text } from '@/components/text';
 import { ME_LOCATION, type Venue } from '@/data/mock';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -20,19 +23,24 @@ export type VenueMapProps = {
   /** Küçük önizleme haritalarında kaydırma/yakınlaştırma kapalı. */
   interactive?: boolean;
   zoom?: number;
+  /** Haritayı gezdikten sonra konuma dönmek için köşede cam düğme. */
+  recenter?: boolean;
 };
 
 // Prototipte iOS'ta Apple Haritalar kullanılır. Google Places verisi geldiğinde (K-05)
 // Google sağlayıcısına geçilecek.
-export function VenueMap({ venues, selectedId, onSelect, style, radius, showMe, interactive = true, zoom = 0.018 }: VenueMapProps) {
+export function VenueMap({ venues, selectedId, onSelect, style, radius, showMe, interactive = true, zoom = 0.018, recenter }: VenueMapProps) {
   const theme = useTheme();
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const center = showMe ? ME_LOCATION : { latitude: 40.988, longitude: 29.027 };
+  const region = { ...center, latitudeDelta: zoom, longitudeDelta: zoom };
+  const mapRef = useRef<MapView>(null);
 
-  return (
+  const map = (
     <MapView
-      style={style ?? { flex: 1 }}
-      initialRegion={{ ...center, latitudeDelta: zoom, longitudeDelta: zoom }}
+      ref={mapRef}
+      style={recenter ? StyleSheet.absoluteFill : (style ?? { flex: 1 })}
+      initialRegion={region}
       userInterfaceStyle={scheme}
       showsPointsOfInterests={false}
       showsCompass={false}
@@ -72,6 +80,22 @@ export function VenueMap({ venues, selectedId, onSelect, style, radius, showMe, 
       })}
     </MapView>
   );
+  if (!recenter) return map;
+  return (
+    <View style={style ?? { flex: 1 }}>
+      {map}
+      <Pressable
+        onPress={() => mapRef.current?.animateToRegion(region, 350)}
+        accessibilityRole="button"
+        accessibilityLabel="Konumuma dön"
+        hitSlop={6}
+        style={styles.recenter}>
+        <Glass style={styles.recenterGlass} interactive>
+          <Icon ios="location.fill" md="my_location" size={17} color={theme.text} />
+        </Glass>
+      </Pressable>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -86,6 +110,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
+  recenter: { position: 'absolute', right: 10, bottom: 10 },
+  recenterGlass: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   pinActive: { height: 34, borderRadius: 17, paddingHorizontal: 12 },
   pinDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFFFFF' },
   pinText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
