@@ -10,6 +10,7 @@ import type { Venue } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 import { sharedNights, type Night } from '@/lib/nights';
+import { genitive } from '@/lib/tr';
 
 /** Kendi takviminin kimlere açık olduğu, "Şu an burada kimler görsün" ayarına bağlı. */
 const NIGHTS_VISIBILITY = {
@@ -17,15 +18,6 @@ const NIGHTS_VISIBILITY = {
   karsilikli: 'Yalnızca karşılıklı takipleştiklerin görür',
   kimse: 'Yalnızca sen görürsün',
 } as const;
-
-/** "Zeynep'in", "Emre'nin", "Can'ın": özel ada iyelik eki (ünlü uyumu). */
-function genitive(name: string): string {
-  const vowels = 'aıoueiöü';
-  const lower = name.toLocaleLowerCase('tr');
-  const last = [...lower].reverse().find((c) => vowels.includes(c)) ?? 'e';
-  const vowel = 'aı'.includes(last) ? 'ı' : 'ei'.includes(last) ? 'i' : 'ou'.includes(last) ? 'u' : 'ü';
-  return `${name}'${vowels.includes(lower.at(-1) ?? '') ? 'n' : ''}${vowel}n`;
-}
 
 /**
  * Bir kişinin geceleri (TASARIM.md §5.8): profildeki "gece" sayısına dokununca açılan takvim. Dışarıda

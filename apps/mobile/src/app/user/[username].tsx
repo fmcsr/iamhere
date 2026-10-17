@@ -6,10 +6,10 @@ import { Icon } from '@/components/icon';
 import { showSafetyMenu } from '@/components/kit';
 import { PageColumn } from '@/components/page-column';
 import { Pill } from '@/components/pill';
-import { PostMasonry } from '@/components/post-masonry';
 import { ProfileCover, useCoverStatusBar } from '@/components/profile-cover';
 import { ProfileHeader } from '@/components/profile-header';
 import { nightPhoto } from '@/components/profile-sections';
+import { ProfileTabs } from '@/components/profile-tabs';
 import { HeaderButton } from '@/components/screen-header';
 import { StatusBarBlur } from '@/components/status-bar-blur';
 import { Text } from '@/components/text';
@@ -19,8 +19,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { nightsInLast, tonightKey } from '@/lib/nights';
 
 /**
- * Başkasının profili (TASARIM.md §5.8, T-22): kendi profilinle aynı düzen; Mesaj ve Takip et küçük
- * kapsüllerde, etiketlerin hemen altında Pinterest gibi paylaşımlar. "gece" sayısı ve takvim (birlikte
+ * Başkasının profili (TASARIM.md §5.8, T-22, T-25): kendi profilinle aynı düzen; Mesaj ve Takip et küçük
+ * kapsüllerde, etiketlerin altında üç sekme (Paylaşımlar, Etiketlenenler, To-HERE). "gece" sayısı ve takvim (birlikte
  * olduğunuz gecelerle) yalnızca karşılıklı takipleşenlere açık. Bildir / Engelle / Sessize al kapaktaki •••'de.
  */
 export default function UserProfileScreen() {
@@ -131,15 +131,8 @@ export default function UserProfileScreen() {
                 Paylaşımlarını ve gecelerini görmek için takip isteği gönder.
               </Text>
             </GlassCard>
-          ) : theirPosts.length > 0 ? (
-            <View style={styles.grid}>
-              <PostMasonry
-                posts={theirPosts}
-                onOpen={(post) => router.push({ pathname: '/posts', params: { user: user.id, start: post.id } })}
-              />
-            </View>
           ) : (
-            <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>Henüz paylaşım yok.</Text>
+            <ProfileTabs userId={user.id} posts={theirPosts} />
           )}
         </PageColumn>
       </ScrollView>
@@ -152,7 +145,5 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { paddingBottom: 48 },
   content: { paddingHorizontal: Gap.page, gap: 20 },
-  // Pinterest gibi kenarlara daha yakın.
-  grid: { marginHorizontal: -6 },
   lockedBox: { alignItems: 'center', gap: 8, padding: 24, borderRadius: 22 },
 });

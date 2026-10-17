@@ -44,6 +44,8 @@ export type Post = {
   createdAt: number;
   likes: number;
   audience: Audience;
+  /** Paylaşımda etiketlenen kişiler (profilde "Etiketlenenler"). */
+  tagged?: string[];
 };
 
 /** Sohbette paylaşılan plan kartı ("Ben de varım"). Saati en geç 04:00 olabilir. */
@@ -236,6 +238,23 @@ export const VENUES: Venue[] = [
     id: 'v8', name: 'Sahne Kadıköy', category: 'konser', area: 'Bahariye', distanceM: 380, here: 133, event: 'Akustik gece · 23:00',
     latitude: 40.9918, longitude: 29.027, coverUri: IMG.sahneSolist, nightPhotos: [IMG.sahneMikrofon, IMG.sahneGrup, IMG.sahneBar],
   },
+  // Biraz uzaktakiler: yer bildirilemez (K-17) ama "To-HERE" listesine kaydedilir.
+  {
+    id: 'v9', name: 'Plak Odası', category: 'bar', area: 'Moda', distanceM: 650, here: 23, event: 'Plak gecesi · 22:30',
+    latitude: 40.9846, longitude: 29.0305, coverUri: IMG.barDj, nightPhotos: [IMG.sahneBar, IMG.barKokteyl],
+  },
+  {
+    id: 'v10', name: 'Haydarpaşa Sahnesi', category: 'konser', area: 'Haydarpaşa', distanceM: 1800, here: 210, event: 'Elektronik gece · 23:00',
+    latitude: 40.9968, longitude: 29.0188, coverUri: IMG.konserRenk, nightPhotos: [IMG.konserEller, IMG.konserKalabalik],
+  },
+  {
+    id: 'v11', name: 'Fener Balıkçısı', category: 'yemek', area: 'Fenerbahçe', distanceM: 2400, here: 34,
+    latitude: 40.9712, longitude: 29.0371, coverUri: IMG.meyhaneSalata, nightPhotos: [IMG.meyhaneTabak, IMG.meyhaneRaki],
+  },
+  {
+    id: 'v12', name: 'İskele Kahvesi', category: 'kafe', area: 'Kuzguncuk', distanceM: 6200, here: 9,
+    latitude: 41.0362, longitude: 29.0297, coverUri: IMG.kafeMasa, nightPhotos: [IMG.kafeVitrin, IMG.kafeFincan],
+  },
 ];
 
 export const POSTS: Post[] = [
@@ -253,16 +272,37 @@ export const POSTS: Post[] = [
   { id: 'p11', userId: 'u6', venueId: 'v4', text: 'Dün akşamki karışık ızgara hâlâ aklımda. Kuzu şiş yumuşacıktı, lavaş da sıcak geldi.', imageUri: IMG.ocakKarisik, createdAt: min(26 * 60), likes: 132, audience: 'herkes' },
   { id: 'p12', userId: 'u2', venueId: 'v5', text: 'Kule Teras’ın yeni kokteyl menüsü: fesleğenli gin çok iyi, fiyatlar biraz yüksek.', imageUri: IMG.barKokteyl, createdAt: min(30 * 60), likes: 44, audience: 'herkes' },
   // Elif'in (ben) geçmiş gecelerden paylaşımları: profilde Pinterest tipi ızgara.
-  { id: 'pm1', userId: 'me', venueId: 'v6', text: 'Fasıl ekibi bu gece çok iyiydi; son şarkıda bütün meyhane eşlik etti.', imageUri: IMG.meyhaneMasa, createdAt: night(1, 95), likes: 34, audience: 'herkes' },
+  { id: 'pm1', userId: 'me', venueId: 'v6', text: 'Fasıl ekibi bu gece çok iyiydi; son şarkıda bütün meyhane eşlik etti.', imageUri: IMG.meyhaneMasa, createdAt: night(1, 95), likes: 34, audience: 'herkes', tagged: ['u6'] },
   { id: 'pm2', userId: 'me', venueId: 'v5', text: 'Gün batımında terasa çıktık; DJ gelmeden önceki en güzel saat.', imageUri: IMG.barGunbatimi, createdAt: night(2, -150), likes: 51, audience: 'herkes' },
   { id: 'pm3', userId: 'me', venueId: 'v7', text: 'Konser öncesi hızlı bir burger. Turşular ev yapımı, patates çıtır.', imageUri: IMG.burgerKlasik, createdAt: night(3, -60), likes: 22, audience: 'herkes' },
   { id: 'pm4', userId: 'me', venueId: 'v2', text: 'Gece kahvesi ve kitap. Arka masada yine kutu oyunu turnuvası var.', imageUri: IMG.kafeFincan, createdAt: night(6, 30), likes: 18, audience: 'herkes' },
   { id: 'pm5', userId: 'me', venueId: 'v8', text: 'Akustik gecede ilk kez dinlediğim bir grup; adlarını not ettim.', imageUri: IMG.sahneMikrofon, createdAt: night(9, 70), likes: 40, audience: 'herkes' },
   { id: 'pm6', userId: 'me', venueId: 'v6', text: 'Çınar’da “Ben de varım” dediğim ilk plan: dokuz kişi olduk, masa iki kez uzadı.', createdAt: night(11, 120), likes: 27, audience: 'herkes' },
   { id: 'pm7', userId: 'me', venueId: 'v3', text: 'Koşudan sonra iskelede soluklandık. Karşı kıyının ışıkları bir harika.', imageUri: IMG.sahilKizKulesi, createdAt: night(13, 80), likes: 63, audience: 'herkes' },
-  { id: 'pm8', userId: 'me', venueId: 'v1', text: 'Bis’te konfeti yağdı, sesimiz kısıldı.', imageUri: IMG.konserKonfeti, createdAt: night(14, 40), likes: 88, audience: 'herkes' },
+  { id: 'pm8', userId: 'me', venueId: 'v1', text: 'Bis’te konfeti yağdı, sesimiz kısıldı.', imageUri: IMG.konserKonfeti, createdAt: night(14, 40), likes: 88, audience: 'herkes', tagged: ['u1'] },
   { id: 'pm9', userId: 'me', venueId: 'v5', text: 'Fesleğenli gin’i denedim; Mert haklıymış.', imageUri: IMG.barKadeh, createdAt: night(16, 60), likes: 29, audience: 'takipciler' },
+  // Arkadaşların, Elif'i etiketlediği paylaşımları (birlikte oldukları gecelerden): profilde "Etiketlenenler".
+  { id: 'pt1', userId: 'u1', venueId: 'v5', text: 'Elif’le gün batımı nöbetindeyiz; DJ gelene kadar manzara bizim.', imageUri: IMG.barManzara, createdAt: night(2, -140), likes: 57, audience: 'herkes', tagged: ['me'] },
+  { id: 'pt2', userId: 'u6', venueId: 'v6', text: 'Elif nihayet favaya ikna oldu. Meze masası tam kadro.', imageUri: IMG.meyhaneTabak, createdAt: night(4, 50), likes: 41, audience: 'herkes', tagged: ['me'] },
+  { id: 'pt3', userId: 'u8', venueId: 'v8', text: 'Ön sıra bizimdi; Elif bütün şarkılara eşlik etti.', imageUri: IMG.sahneGrup, createdAt: night(9, 85), likes: 36, audience: 'herkes', tagged: ['me'] },
+  { id: 'pt4', userId: 'u7', venueId: 'v7', text: 'Konser öncesi burger turu: Elif cheddar’sız söyledi, hâlâ anlamadık.', imageUri: IMG.burgerMarul, createdAt: night(3, -50), likes: 19, audience: 'herkes', tagged: ['me'] },
+  { id: 'pt5', userId: 'u3', venueId: 'v3', text: 'Gece koşusu ekibi, iskelede mola. Elif tempoyu yine bozdu.', imageUri: IMG.sahilIsiklar, createdAt: night(13, 95), likes: 24, audience: 'herkes', tagged: ['me'] },
+  { id: 'pt6', userId: 'u1', venueId: 'v1', text: 'Bis’ten önceki an. Konfeti birazdan, Elif hazır.', imageUri: IMG.konserKalabalik, createdAt: night(14, 30), likes: 72, audience: 'herkes', tagged: ['me'] },
 ];
+
+/**
+ * Gitmek istenen mekânlar ("To-HERE" listesi, profilde üçüncü sekme). Benimki uygulamada değişir
+ * (mekân sayfasındaki kaydet düğmesi); diğerleri sabit.
+ */
+export const SAVED_VENUES: Record<string, string[]> = {
+  me: ['v10', 'v9', 'v11', 'v12'],
+  u1: ['v10', 'v9', 'v8'],
+  u2: ['v11', 'v4'],
+  u3: ['v12', 'v3'],
+  u6: ['v11', 'v6', 'v12'],
+  u7: ['v9'],
+  u8: ['v10', 'v8'],
+};
 
 /**
  * Geçmiş geceler (yer bildirimleri; paylaşım olmasa da sayılır): profil takvimi, "son 30 gün" özeti ve

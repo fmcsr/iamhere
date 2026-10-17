@@ -25,12 +25,14 @@ export default function VenueScreen() {
   // Izgara hücreleri ölçülen genişlikten hesaplanır (yüzde genişlik görselleri çizdirmiyordu).
   const [gridWidth, setGridWidth] = useState(0);
   const cell = Math.floor((gridWidth - 8) / 3);
-  const { venueById, posts, messages, checkIn, following, peopleAt } = useApp();
+  const { venueById, posts, messages, checkIn, following, peopleAt, savedOf, toggleSaved } = useApp();
   const venue = venueById(id);
 
   if (!venue) return <Text style={{ color: theme.text, padding: 16 }}>Mekân bulunamadı.</Text>;
 
   const isHere = checkIn?.venueId === venue.id;
+  // To-HERE: gitmek istediğin yerler listesi (profilin üçüncü sekmesi).
+  const isSaved = savedOf('me').includes(venue.id);
   const tooFar = venue.distanceM > CHECK_IN_RADIUS_M;
   const venuePosts = posts.filter(
     (p) => p.venueId === venue.id && (p.audience !== 'takipciler' || p.userId === 'me' || following.has(p.userId)),
@@ -51,6 +53,13 @@ export default function VenueScreen() {
     <View style={{ flex: 1 }}>
       <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: 120 }}>
         <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button
+            icon={isSaved ? 'bookmark.fill' : 'bookmark'}
+            tintColor={isSaved ? theme.accent : undefined}
+            selected={isSaved}
+            accessibilityLabel={isSaved ? 'To-HERE listenden çıkar' : 'To-HERE listene ekle'}
+            onPress={() => toggleSaved(venue.id)}
+          />
           <Stack.Toolbar.Button
             icon="square.and.arrow.up"
             accessibilityLabel="Mekânı paylaş"

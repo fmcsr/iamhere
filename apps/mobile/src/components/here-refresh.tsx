@@ -30,7 +30,7 @@ const MARK_HEIGHT = 34;
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Aşağı çekip yenileme (TASARIM.md T-24): iOS'un dönen çarkı gizli; yerine krom HERE logosu çekilen
+ * Aşağı çekip yenileme (TASARIM.md T-24): iOS'un dönen çarkı gizli; yerine balon HERE logosu çekilen
  * mesafe kadar döner, yenilerken soldan sağa dönmeye devam eder, bitince turunu tamamlayıp öne bakarak
  * durur. Başlıksız ekranlar içindir; kaydırma görünümü `Animated.ScrollView` olmalı (`ref` ve
  * `refreshControl` buradan). Logo ya ekranın kendi HERE yazısıdır (ana sayfa) ya da `HereRefreshIndicator`.

@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { GlassCard } from '@/components/glass';
@@ -12,31 +13,57 @@ import { useTheme } from '@/hooks/use-theme';
 const GAP = 8;
 
 /**
- * Paylaşımlar, Pinterest gibi iki sütunlu ızgarada: yalnızca fotoğraflar, kendi oranlarında; altında yazı
- * yok. Fotoğrafsız paylaşım, yazısının kendisi olan bir alıntı kartıdır. Sütunlar, kartların tahmini
- * yüksekliğine göre dengelenir. Dokununca paylaşımlar ana sayfadaki gibi alt alta açılır (Instagram gibi).
+ * Pinterest gibi iki sütun: öğeler sırayla, o an daha kısa olan sütuna eklenir. `heightOf`, öğenin sütun
+ * genişliği cinsinden tahmini yüksekliği.
  */
-export function PostMasonry({ posts, onOpen }: { posts: Post[]; onOpen: (post: Post) => void }) {
-  const columns: [Post[], Post[]] = [[], []];
+export function Masonry<T>({
+  items,
+  keyOf,
+  heightOf,
+  render,
+  accessibilityLabel,
+}: {
+  items: T[];
+  keyOf: (item: T) => string;
+  heightOf: (item: T) => number;
+  render: (item: T) => ReactNode;
+  accessibilityLabel?: string;
+}) {
+  const columns: [T[], T[]] = [[], []];
   const heights = [0, 0];
-  for (const post of posts) {
-    // Sütun genişliği cinsinden tahmini yükseklik.
-    const height = post.imageUri ? 1 / imageAspect(post.imageUri) : 0.3 + Math.min(post.text?.length ?? 0, 160) / 200;
+  for (const item of items) {
     const column = heights[0] <= heights[1] ? 0 : 1;
-    columns[column].push(post);
-    heights[column] += height;
+    columns[column].push(item);
+    heights[column] += heightOf(item);
   }
 
   return (
-    <View style={styles.grid} accessibilityLabel={`${posts.length} paylaşım`}>
+    <View style={styles.grid} accessibilityLabel={accessibilityLabel}>
       {columns.map((column, i) => (
         <View key={i} style={styles.column}>
-          {column.map((post) => (
-            <Tile key={post.id} post={post} onPress={() => onOpen(post)} />
+          {column.map((item) => (
+            <View key={keyOf(item)}>{render(item)}</View>
           ))}
         </View>
       ))}
     </View>
+  );
+}
+
+/**
+ * Paylaşımlar, Pinterest gibi: yalnızca fotoğraflar, kendi oranlarında; altında yazı yok. Fotoğrafsız
+ * paylaşım, yazısının kendisi olan bir alıntı kartıdır. Dokununca paylaşımlar ana sayfadaki gibi alt alta
+ * açılır (Instagram gibi).
+ */
+export function PostMasonry({ posts, onOpen }: { posts: Post[]; onOpen: (post: Post) => void }) {
+  return (
+    <Masonry
+      items={posts}
+      keyOf={(post) => post.id}
+      heightOf={(post) => (post.imageUri ? 1 / imageAspect(post.imageUri) : 0.3 + Math.min(post.text?.length ?? 0, 160) / 200)}
+      render={(post) => <Tile post={post} onPress={() => onOpen(post)} />}
+      accessibilityLabel={`${posts.length} paylaşım`}
+    />
   );
 }
 

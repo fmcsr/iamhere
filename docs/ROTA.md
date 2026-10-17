@@ -153,6 +153,8 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 | Arkadaş / takip | Açık | → K-03 |
 | Rozetler, seri (streak), istatistik | Belki | Denendi, profilden kaldırıldı ("çok karışık"). Kalan: profilde "gece · 30 gün" sayısı ve ondan açılan gece takvimi, yalnızca karşılıklı takipleşenlere (T-22). "Şimdi ve burada" ilkesiyle gerilim: takvim geçmişi gösterir, akış ve sohbet anlık kalır |
 | Sık gidilen mekânlar | Belki | Profilden kaldırıldı; kurucu: "oraya daha sonra geliriz" |
+| "To-HERE": gitmek istenen mekânlar listesi | Güçlü aday | Prototipte (T-25): mekân sayfasında kaydet, profilde üçüncü sekme; arkadaşların da kaydettiği yerler görünür (birlikte plan için) |
+| Paylaşımda kişi etiketleme | Güçlü aday | Prototipte yalnızca veride (T-25): profilde "Etiketlenenler", kartta "kiminle" satırı. Paylaşırken etiketleme ekranı yok |
 | Birlikte olunan geceler | Belki | Prototipte (T-22): karşılıklı takipleştiğin birinin takvim sayfasında; aynı gece aynı mekânda olunan geceler ve ortak mekânlar |
 
 ### 5.7 Güvenlik
@@ -329,7 +331,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **Karar:** ✅ (16.10.2026)
   - **Mağaza adı:** **I am Here** (App Store Connect / Google Play'deki uygulama adı)
   - **Etiket / kampanya:** **#iamhere**
-  - **Simge ve uygulama içi:** **HERE**. Ana ekranda simgenin altında "HERE" yazar (`app.json` → `name`); simgede (iki satır "HE / RE") ve ana sayfada corner'ın simgesindeki gibi krom balon HERE logosu var (T-23, `scripts/generate-brand.py`).
+  - **Simge ve uygulama içi:** **HERE**. Ana ekranda simgenin altında "HERE" yazar (`app.json` → `name`); simgede ve ana sayfada tek satır, fuşya renkli balon harfli HERE logosu var (T-23, `scripts/generate-brand.py`).
   - **Renkler:** Winter Haze #D9DEE5 + Wild Fuchsia #E11D49 (açık mod); siyah + fuşya (koyu mod). Kurallar ve ayrıntılar [TASARIM.md](TASARIM.md)'de.
 - ⚠️ **Marka ve mağaza riski (yayından önce kontrol edilmeli):**
   - "HERE", konum ve harita alanında çok bilinen bir marka: HERE Technologies (HERE WeGo uygulaması). Bizim ürün de konum bazlı olduğu için aynı sınıflarda (yazılım, konum hizmetleri) marka çakışması riski var. TÜRKPATENT ve EUIPO'da marka araştırması yapılmalı, gerekirse bir marka avukatına danışılmalı.
@@ -509,6 +511,7 @@ Faz 6  Lansman
 | 17.10.2026 | **Profil = "gece pasaportu"** (T-22): son gecenin fotoğrafından kapak, son 30 gün (gece · mekân · semt, haftalık seri), gece takvimi, sık gidilen mekânlar, başlıksız Pinterest ızgarası (dokununca dikey akış), takipçi/takip listeleri; başkasının profilinde birlikte olunan geceler. Takvim ve istatistik yalnızca karşılıklı takipleşenlere açık. "Profili düzenle" küçük kapsül + Ayarlar › Hesap satırı | Kurucu: "sıradan olmasın ama kullanışlı olsun"; Mobbin öneri panosu üzerine kurucunun düzeltmeleriyle |
 | 17.10.2026 | **Profil sadeleşti** (T-22): Bu gece kartı, Son gece etiketi, Son 30 gün ve Sık gittiklerin kalktı; Düzenle kapaktaki cam kaleme taşındı; gece takvimi "gece" sayısına dokununca açılan ayrı sayfada; paylaşım ızgarasında fotoğrafların altında yazı yok | Kurucu: "profil sayfası çok karışık olmuş"; sık gidilenlere sonra dönülecek |
 | 17.10.2026 | **T-23: Logo ve simge krom balon harfler** (corner'ın simgesindeki gibi); simgede iki satır "HE / RE", zemin fuşya kaldı. **T-24:** aşağı çekip yenilerken yükleniyor çarkı yerine krom HERE 360° soldan sağa döner | Kurucu isteği; K-13'teki ad ve renkler değişmedi |
+| 18.10.2026 | **T-23 güncellendi:** logo metalik değil, fuşya renkli parlak balon; simgede de tek satır HERE, zemin fuşya. **T-25:** profilde üç sekme: Paylaşımlar, Etiketlenenler, To-HERE (gitmek istenen mekânlar; mekân sayfasında kaydedilir) | Kurucu isteği |
 
 ---
 
@@ -519,7 +522,7 @@ Faz 6  Lansman
 **Sıradaki adımlar:**
 1. ~~[TASARIM.md §6](TASARIM.md#6-raporlar-arasındaki-çelişkiler-ve-karar-önerileri)'daki tasarım kararlarını (T-1…T-10) birlikte ver.~~ ✅ Hepsi kabul edildi (17.10.2026).
 2. 🟡 **Büyük ölçüde tamam (17.10.2026):** Mevcut ekranlar Liquid Glass ile yeniden tasarlandı ve iOS 27 simülatörlerinde test edildi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, profil düzenleme ekranı, boş durumların tamamı, erişilebilirlik testleri.
-3. Faz 2: şemayı yeni ürün modeline göre güncelle (mekânlar, yer bildirimi, paylaşımlar, planlar, takip, kullanıcı adı, mesaj istekleri; `anlik_*` adları `here_*` olacak). **K-16 gereği** paylaşımlar ve yer bildirimleri kalıcı tablolara taşınır; 04:00 silme motoru yalnızca sohbetleri (mesajlar, üyelik, istekler, planlar) kapsar.
+3. Faz 2: şemayı yeni ürün modeline göre güncelle (mekânlar, yer bildirimi, paylaşımlar, paylaşım etiketleri, kaydedilen mekânlar (To-HERE), planlar, takip, kullanıcı adı, mesaj istekleri; `anlik_*` adları `here_*` olacak). **K-16 gereği** paylaşımlar ve yer bildirimleri kalıcı tablolara taşınır; 04:00 silme motoru yalnızca sohbetleri (mesajlar, üyelik, istekler, planlar) kapsar.
 4. 🟡 **Karar bekliyor:** T-18 (zemin A/B/C) ve T-19 (görünüm alanı 1/2/3). Ayarlar › Tasarım denemesi'nde denenip seçilecek; seçilmeyenler ve deneme bölümü kaldırılacak.
 
 **Açık kararlar:** K-04 (anonimlik kapsamı), K-06 ("burada" süresi), K-07 (büyük mekânlarda sohbet ölçeği), K-10 (gece sınırı ve saat dilimi), K-11'in beta ve lansman kısmı, K-12 (gelir modeli).

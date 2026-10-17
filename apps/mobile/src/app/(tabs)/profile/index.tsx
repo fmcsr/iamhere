@@ -4,26 +4,23 @@ import Animated from 'react-native-reanimated';
 
 import { HereRefreshIndicator, useHereRefresh } from '@/components/here-refresh';
 import { PageColumn } from '@/components/page-column';
-import { PostMasonry } from '@/components/post-masonry';
 import { ProfileCover, useCoverStatusBar } from '@/components/profile-cover';
 import { ProfileHeader } from '@/components/profile-header';
 import { nightPhoto } from '@/components/profile-sections';
+import { ProfileTabs } from '@/components/profile-tabs';
 import { HeaderButton } from '@/components/screen-header';
 import { StatusBarBlur } from '@/components/status-bar-blur';
-import { Text } from '@/components/text';
-import { Gap, Type } from '@/constants/theme';
+import { Gap } from '@/constants/theme';
 import { useApp } from '@/data/store';
-import { useTheme } from '@/hooks/use-theme';
 import { nightsInLast } from '@/lib/nights';
 import { editProfile } from '@/lib/profile';
 
 /**
- * Kendi profilin (TASARIM.md §5.8, T-22): son gecenin fotoğrafından bulanık kapak, kimlik, sayılar ve
- * etiketler; hemen altında Pinterest gibi paylaşımlar. "gece" sayısına dokununca gece takvimi açılır.
+ * Kendi profilin (TASARIM.md §5.8, T-22, T-25): son gecenin fotoğrafından bulanık kapak, kimlik, sayılar ve
+ * etiketler; altında üç sekme: Paylaşımlar, Etiketlenenler, To-HERE. "gece" sayısına dokununca gece takvimi açılır.
  * Düzenle, paylaş ve ayarlar kapaktaki cam düğmelerde. Başlık çubuğu yok: kapak ekranın en üstünden başlar.
  */
 export default function ProfileScreen() {
-  const theme = useTheme();
   const { me, posts, settings, checkIn, venueById, followersOf, followingOf, nightsOf } = useApp();
   // Sekme içinde iOS durum çubuğu rengini değiştirmiyor; kapak üstünde ince geçiş kullanılıyor.
   const { onScroll, overCover } = useCoverStatusBar({ setStyle: false });
@@ -75,15 +72,7 @@ export default function ProfileScreen() {
             onNights={() => router.push({ pathname: '/nights', params: { user: 'me' } })}
           />
 
-          {myPosts.length > 0 ? (
-            <View style={styles.grid}>
-              <PostMasonry posts={myPosts} onOpen={(post) => router.push({ pathname: '/posts', params: { user: 'me', start: post.id } })} />
-            </View>
-          ) : (
-            <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-              Henüz paylaşım yok. Bir mekânda yer bildirip ilk fotoğrafını paylaş.
-            </Text>
-          )}
+          <ProfileTabs userId="me" posts={myPosts} />
         </PageColumn>
       </Animated.ScrollView>
       <HereRefreshIndicator pull={pull} angle={angle} />
@@ -96,6 +85,4 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { paddingBottom: 48 },
   content: { paddingHorizontal: Gap.page, gap: 20 },
-  // Pinterest gibi kenarlara daha yakın.
-  grid: { marginHorizontal: -6 },
 });

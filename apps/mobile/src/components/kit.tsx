@@ -11,6 +11,7 @@ import { CATEGORY_LABEL, type Category, type Message, type Post, type User, type
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 import { useNight } from '@/lib/night';
+import { joinNames } from '@/lib/tr';
 
 type IconPair = { ios: SFSymbolName; md: Parameters<typeof Icon>[0]['md'] };
 
@@ -38,7 +39,8 @@ export function messagePreview(message: Message): string {
 }
 
 export function formatDistance(meters: number): string {
-  return meters < 1000 ? `${meters} m` : `${(meters / 1000).toFixed(1)} km`;
+  // Türkçe ondalık virgül: "1,8 km".
+  return meters < 1000 ? `${meters} m` : `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
 }
 
 export function Avatar({
@@ -204,6 +206,14 @@ export function PostCard({ post }: { post: Post }) {
   const anonymous = Boolean(post.anonAlias);
   const name = anonymous ? post.anonAlias! : user.displayName;
   const iAmHere = checkIn?.venueId === post.venueId;
+  const others = (post.tagged ?? []).filter((id) => id !== 'me').map((id) => userById(id).displayName.split(' ')[0]);
+  const withLine = post.tagged?.length
+    ? post.tagged.includes('me')
+      ? others.length
+        ? `Seninle ve ${joinNames(others)} ile`
+        : 'Seninle'
+      : `${joinNames(others)} ile`
+    : undefined;
 
   const openVenue = () => venue && router.push({ pathname: '/venue/[id]', params: { id: venue.id } });
   const onPhotoPress = () => {
@@ -232,6 +242,14 @@ export function PostCard({ post }: { post: Post }) {
                 <Text style={{ color: theme.text, fontWeight: '600' }}>{venue.name}</Text> · {venue.area}
               </Text>
             </Pressable>
+          )}
+          {withLine && (
+            <View style={styles.withRow} accessible accessibilityLabel={withLine}>
+              <Icon ios="person.2.fill" md="group" size={12} color={theme.textSecondary} />
+              <Text numberOfLines={1} style={[Type.footnote, { color: theme.textSecondary }]}>
+                {withLine}
+              </Text>
+            </View>
           )}
         </View>
         <Pressable
@@ -377,6 +395,7 @@ const styles = StyleSheet.create({
   venueRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
   card: { borderRadius: Radius.card, padding: 14, gap: 12 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  withRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
   cardImage: { width: '100%', aspectRatio: 4 / 5, borderRadius: Radius.photo },
   cardActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },

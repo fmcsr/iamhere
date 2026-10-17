@@ -7,7 +7,7 @@ import { HERE_SPRITE } from '@/components/here-mark-sprite';
 const SHEET = require('@/assets/images/here-spin.webp');
 
 /**
- * HERE logosu: corner'ın simgesindeki gibi şişirilmiş krom harfler (TASARIM.md T-23). Üç boyutlu logo
+ * HERE logosu: fuşya, parlak, şişirilmiş balon harfler (TASARIM.md T-23). Üç boyutlu logo
  * 60 açıdan önceden çizildi (scripts/generate-brand.py); `angle` (derece) verilirse o açının karesi
  * gösterilir. Aşağı çekip yenilerken soldan sağa döner. `height`, karenin yüksekliği (harfler biraz kısa).
  */

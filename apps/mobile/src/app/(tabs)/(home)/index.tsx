@@ -37,7 +37,7 @@ function parseEvent(event?: string) {
 /**
  * Ana sayfa (TASARIM.md §5.2, T-20): "Bu gece nereye gitsem, kim nerede?" sorusunu cevaplar.
  * Sırayla: takipleştiklerin nerede → şu an canlı mekânlar → bu geceki etkinlikler → paylaşımlar.
- * Başlık çubuğu yok: krom HERE logosu akışla birlikte kayar; Dynamic Island çevresinde yalnızca bulanıklık.
+ * Başlık çubuğu yok: balon HERE logosu akışla birlikte kayar; Dynamic Island çevresinde yalnızca bulanıklık.
  * Aşağı çekip yenileyince yükleniyor çarkı yerine bu logo soldan sağa döner (T-24).
  * Paylaşımlar kalıcı; 04:00'te yalnızca sohbetler sıfırlanır, bu yüzden burada sayaç yok (K-16).
  * Akış ScrollView ilk çocuk: yerel sekme çubuğu yalnızca böyle kaydırınca küçülür.

@@ -14,6 +14,7 @@ import {
   MORE_USERS,
   NIGHT_HISTORY,
   POSTS,
+  SAVED_VENUES,
   USERS,
   VENUES,
   type Audience,
@@ -75,6 +76,8 @@ function useAppState() {
   const [joinedPlans, setJoinedPlans] = useState<Set<string>>(() => new Set());
   const [readConversations, setReadConversations] = useState<Set<string>>(() => new Set());
   const [followRequests, setFollowRequests] = useState<Set<string>>(() => new Set());
+  // To-HERE listem: gitmek istediğim mekânlar, en son kaydedilen önde.
+  const [saved, setSaved] = useState<string[]>(() => SAVED_VENUES.me ?? []);
   const [settings, setSettings] = useState<Settings>({
     privateAccount: false,
     presenceVisibility: 'karsilikli',
@@ -135,6 +138,19 @@ function useAppState() {
       posts: visiblePosts ?? posts.filter((p) => p.userId === userId && !p.anonAlias),
       tonightVenueId: userId === 'me' && !onlyPosts ? checkIn?.venueId : undefined,
     });
+
+  /** Paylaşımı görebilir miyim: takipçilere özel olanları yalnızca takip edenler görür. */
+  const canSee = (post: Post) => post.audience !== 'takipciler' || post.userId === 'me' || following.has(post.userId);
+
+  /** Kişinin etiketlendiği (görebildiğim) paylaşımlar; yeniden eskiye. */
+  const taggedPostsOf = (userId: string) =>
+    posts.filter((p) => p.tagged?.includes(userId) && !p.anonAlias && canSee(p)).sort((a, b) => b.createdAt - a.createdAt);
+
+  /** Kişinin To-HERE listesi (gitmek istediği mekânlar). */
+  const savedOf = (userId: string) => (userId === 'me' ? saved : (SAVED_VENUES[userId] ?? []));
+
+  const toggleSaved = (venueId: string) =>
+    setSaved((prev) => (prev.includes(venueId) ? prev.filter((id) => id !== venueId) : [venueId, ...prev]));
 
   /** Son mesaj karşı taraftansa ve sohbet açılmadıysa okunmamış sayılır. */
   const isUnread = (conversationId: string) => {
@@ -274,6 +290,10 @@ function useAppState() {
     followersOf,
     followingOf,
     nightsOf,
+    canSee,
+    taggedPostsOf,
+    savedOf,
+    toggleSaved,
     isMutual,
     isUnread,
     markRead,

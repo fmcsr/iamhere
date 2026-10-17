@@ -7,8 +7,8 @@
       "layers": [
         {
           "glass": false,
-          "image-name": "here-chrome.png",
-          "name": "here-chrome",
+          "image-name": "here-balloon.png",
+          "name": "here-balloon",
           "position": {
             "scale": 1,
             "translation-in-points": [
@@ -20,7 +20,7 @@
       ],
       "shadow": {
         "kind": "neutral",
-        "opacity": 0.5
+        "opacity": 0
       }
     }
   ],
