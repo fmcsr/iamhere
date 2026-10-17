@@ -34,7 +34,15 @@
           "imageWidth": 190
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Yer bildirirken o an çektiğin fotoğrafı eklemek için kamerana erişilir.",
+          "photosPermission": "Paylaşıma fotoğraf eklemek için fotoğraflarına erişilir.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

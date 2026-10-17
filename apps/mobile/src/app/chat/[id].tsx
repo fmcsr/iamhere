@@ -175,7 +175,8 @@ export default function ChatScreen() {
             variant="glassProminent"
             fullWidth
             disabled={!nearby}
-            onPress={() => router.push({ pathname: '/compose', params: { venueId: venue.id } })}
+            // Alttan yer bildirme sayfası (T-26); iğne saplanınca bu sohbete geri dönülür.
+            onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id, from: 'chat' } })}
           />
           </View>
         </SafeAreaView>
