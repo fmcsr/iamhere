@@ -119,7 +119,7 @@ export default function UserProfileScreen() {
           </GlassCard>
         ) : (
           <View style={{ gap: 12 }}>
-            <Text style={[Type.title3, { color: theme.text }]}>Bu gece</Text>
+            <Text style={[Type.section, { color: theme.text }]}>Paylaşımlar</Text>
             {theirPosts.length === 0 && <Text style={[Type.subheadline, { color: theme.textSecondary }]}>Bu gece paylaşım yok.</Text>}
             {theirPosts.map((p) => (
               <PostCard key={p.id} post={p} />

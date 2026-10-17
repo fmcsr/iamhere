@@ -216,7 +216,12 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 
 ### 5.2 Ana sayfa (akış)
 
-**Yukarıdan aşağıya:** üst bar → 2 sekme → sekmeye göre şerit → mekân başlıklı kartlar → akış sonu.
+**Yukarıdan aşağıya (T-20, 17.10.2026):** üst bar → **Takipleştiklerin şu an** → **Şu an canlı** (büyük fotoğraflı mekân kartları, "Haritada ›") → **Bu gece** (saatli etkinlik listesi) → **Paylaşımlar** (Sana özel / Çevrende) → akış sonu. Ana sayfa "Bu gece nereye gitsem, kim nerede?" sorusunu cevaplar; paylaşımlar destekleyici içerik ([Uber Eats](https://mobbin.com/screens/f491a829-d30e-4561-abd7-0339cc7a44ef) gibi: önce ne var, sonra ayrıntı).
+
+- **Hiyerarşi:** bölüm başlıkları iri ve kalın (`Type.section`, 22 bold), bölümler arası tek boşluk (`Gap.section` 32), köşeler tek set (`Radius`: kart 20, fotoğraf 14, denetim 12). Diğer ekranların bölüm başlıkları da aynı ölçüde.
+- **Mekân kartı:** çerçevesiz; 16:11 fotoğraf, üstünde "● 342 kişi" etiketi, altında kalın ad, tek satır "Kategori · semt · mesafe", varsa "Zeynep orada". Tanıdık olan mekânlar önde.
+- **Fotoğraflar:** prototipte kategoriye uygun Unsplash fotoğrafları (konser, ocakbaşı, meyhane, kahve, sahil, çatı barı, burger); yorumlar mekânla ve yemekle ilgili.
+- Önceki düzen (aşağıdaki maddeler) bu sırayla birleşti: "Çevrende" şeridi yerine her zaman "Şu an canlı".
 
 - **Üst bar:** HERE logosu (metin renginde). Sayaç yok: paylaşımlar kalıcı, 04:00'te yalnızca sohbetler sıfırlanır (K-16). Sabit başlık çubuğu yok: logo ve sekmeler içerikle birlikte yukarı kayıp kaybolur; geriye yalnızca Dynamic Island ve durum çubuğunun altında, aşağı doğru yumuşakça kaybolan bir bulanıklık kalır ([Instagram, Ekim 2026](https://mobbin.com/screens/f5ce72ad-1ae5-47d3-abde-989324593482), T-12). DM ve "+" ikonu yok; ikisinin de kendi sekmesi var.
 - **Sekmeler:** "Sana özel | Çevrende" (T-4, T-9).
@@ -346,6 +351,7 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-17 | **Paylaşım kartlarının geçirgenliği** | (a) buzlu cam + beyaz ton · (b) net cam, tonsuz | **(b)** | Kurucu isteği: "biraz geçirgen olsun". Arkadaki gradyan kartın içinden görünür. |
 | T-18 | **Zemin düzeni** | A üst ışıklar · B üst + sağ alt · C geniş (Revolut gibi) | **Karar bekliyor** | Kurucu: "açık modda renkler az belli; sağ alt ya da Revolut gibi geniş alan olabilir, deneyip karar vereceğiz" (§3.6). |
 | T-19 | **Ayarlar › Görünüm alanı** | 1 önizlemeli kartlar · 2 iOS gibi (Otomatik) · 3 menü satırı | **Karar bekliyor** | Kurucu: "başka bir şekilde yapalım, seçenekler sun" (§3.7). |
+| T-20 | **Ana sayfa kurgusu ve hiyerarşi** | (a) paylaşım akışı · (b) mekân odaklı bölümler | **(b)** | Kurucu: "görüntü profesyonel durmuyor". Uber Eats gibi: iri bölüm başlıkları, büyük fotoğraf, tek satır bilgi; paylaşım kartında katman azaldı (mekân kapsülü ve buton yerine bağlantı satırları). |
 
 ---
 

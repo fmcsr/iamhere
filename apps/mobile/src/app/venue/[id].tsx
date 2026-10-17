@@ -66,7 +66,7 @@ export default function VenueScreen() {
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[Type.title2, { color: theme.text }]}>{venue.name}</Text>
               <Text style={[Type.subheadline, { color: theme.textSecondary }]}>
-                {CATEGORY_LABEL[venue.category]} · {formatDistance(venue.distanceM)}
+                {CATEGORY_LABEL[venue.category]} · {venue.area} · {formatDistance(venue.distanceM)}
               </Text>
             </View>
           </View>
@@ -89,7 +89,7 @@ export default function VenueScreen() {
 
           {photos.length > 0 && (
             <View style={styles.section}>
-              <Text style={[Type.title3, { color: theme.text }]}>Bu gece</Text>
+              <Text style={[Type.section, { color: theme.text }]}>Fotoğraflar</Text>
               <View style={styles.grid} onLayout={(e) => setGridWidth(e.nativeEvent.layout.width)}>
                 {photos.map((uri) => (
                   <Image key={uri} source={{ uri }} style={{ width: cell, height: cell }} contentFit="cover" transition={150} accessibilityLabel="Bu geceden fotoğraf" />
@@ -99,7 +99,7 @@ export default function VenueScreen() {
           )}
 
           <View style={styles.section}>
-            <Text style={[Type.title3, { color: theme.text }]}>Mekân sohbeti</Text>
+            <Text style={[Type.section, { color: theme.text }]}>Mekân sohbeti</Text>
             <GlassCard onPress={primary.onPress} disabled={!isHere} style={styles.chatCard}>
               <View style={styles.chatMeta}>
                 <Icon ios={isHere ? 'bubble.left.and.bubble.right.fill' : 'lock.fill'} md={isHere ? 'forum' : 'lock'} size={16} color={theme.text} />
@@ -126,7 +126,7 @@ export default function VenueScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text style={[Type.title3, { color: theme.text }]}>Paylaşımlar · {venuePosts.length}</Text>
+            <Text style={[Type.section, { color: theme.text }]}>Paylaşımlar · {venuePosts.length}</Text>
             {venuePosts.length === 0 && (
               <Text style={[Type.subheadline, { color: theme.textSecondary }]}>Henüz paylaşım yok. İlk sen paylaş.</Text>
             )}

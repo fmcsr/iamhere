@@ -75,7 +75,7 @@ export default function CheckInScreen() {
           </Text>
         </View>
 
-        <Text style={[Type.title3, { color: theme.text }]}>Yakındaki mekânlar</Text>
+        <Text style={[Type.section, { color: theme.text }]}>Yakındaki mekânlar</Text>
         <GlassCard style={styles.list}>
           {nearby.map((v, i) => {
             const tooFar = v.distanceM > CHECK_IN_RADIUS_M;

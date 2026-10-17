@@ -1,17 +1,17 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { GlassCard } from '@/components/glass';
 import { Icon } from '@/components/icon';
-import { Avatar, LiveCount, PostCard, VenueIcon } from '@/components/kit';
+import { Avatar, EventRow, PostCard, VenueCard } from '@/components/kit';
 import { SegmentedPicker } from '@/components/native-controls';
 import { PageColumn } from '@/components/page-column';
 import { StatusBarBlur } from '@/components/status-bar-blur';
 import { Text } from '@/components/text';
 import { Wordmark } from '@/components/wordmark';
-import { Type } from '@/constants/theme';
-import { type Category, type Post } from '@/data/mock';
+import { Gap, Radius, Type } from '@/constants/theme';
+import { type Category, type Post, type User } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -25,9 +25,17 @@ const INTEREST_CATEGORY: Record<string, Category> = {
   Bar: 'bar',
 };
 
+/** "Gece Treni konseri · 21:00" → saat ve başlık; saati olmayan duyurular (ör. "02:00'ye kadar açık") etkinlik sayılmaz. */
+function parseEvent(event?: string) {
+  const parts = event?.split(' · ') ?? [];
+  const time = parts.at(-1);
+  return time && /^\d{2}:\d{2}$/.test(time) ? { title: parts.slice(0, -1).join(' · '), time } : undefined;
+}
+
 /**
- * Ana sayfa (TASARIM.md §5.2). Başlık çubuğu yok: HERE satırı akışla birlikte yukarı kayıp
- * kaybolur; Dynamic Island çevresinde yalnızca kademeli bulanıklık kalır (Instagram gibi).
+ * Ana sayfa (TASARIM.md §5.2, T-20): "Bu gece nereye gitsem, kim nerede?" sorusunu cevaplar.
+ * Sırayla: takipleştiklerin nerede → şu an canlı mekânlar → bu geceki etkinlikler → paylaşımlar.
+ * Başlık çubuğu yok: HERE satırı akışla birlikte kayar; Dynamic Island çevresinde yalnızca bulanıklık.
  * Paylaşımlar kalıcı; 04:00'te yalnızca sohbetler sıfırlanır, bu yüzden burada sayaç yok (K-16).
  * Akış ScrollView ilk çocuk: yerel sekme çubuğu yalnızca böyle kaydırınca küçülür.
  */
@@ -53,9 +61,17 @@ export default function HomeScreen() {
     .filter((u) => isMutual(u.id))
     .flatMap((u) => {
       const post = posts.find((p) => p.userId === u.id && !p.anonAlias);
-      return post ? [{ user: u, post }] : ([] as { user: typeof u; post: Post }[]);
+      return post ? [{ user: u, post }] : ([] as { user: User; post: Post }[]);
     });
-  const live = [...venues].sort((a, b) => b.here - a.here);
+  const friendsAt = (venueId: string) => nowHere.filter((n) => n.post.venueId === venueId).map((n) => n.user);
+  // Canlı mekânlar: tanıdık olanlar önce, sonra kalabalık.
+  const live = [...venues].sort((a, b) => friendsAt(b.id).length - friendsAt(a.id).length || b.here - a.here);
+  const events = venues
+    .flatMap((v) => {
+      const e = parseEvent(v.event);
+      return e ? [{ venue: v, ...e }] : [];
+    })
+    .sort((a, b) => a.time.localeCompare(b.time));
   const current = checkIn ? venueById(checkIn.venueId) : undefined;
 
   return (
@@ -66,84 +82,86 @@ export default function HomeScreen() {
             <View accessible accessibilityRole="header" accessibilityLabel="HERE">
               <Wordmark height={24} color={theme.text} />
             </View>
+            <Text style={[Type.subheadline, { color: theme.textSecondary }]}>Kadıköy</Text>
           </View>
 
-          <SegmentedPicker<Feed>
-            options={[
-              { value: 'ozel', label: 'Sana özel' },
-              { value: 'cevrende', label: 'Çevrende' },
-            ]}
-            value={feed}
-            onChange={setFeed}
-            accessibilityLabel="Akış"
-          />
-
-          {feed === 'ozel' ? (
-            <View style={styles.section}>
-              <Text style={[Type.headline, { color: theme.text }]}>Takipleştiklerin şu an</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
+          <Section title="Takipleştiklerin şu an">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bleed} contentContainerStyle={styles.strip}>
+              <Pressable
+                onPress={() => router.navigate('/checkin')}
+                accessibilityRole="button"
+                accessibilityLabel={current ? `Sen, ${current.name}` : 'Yer bildir'}
+                style={styles.person}>
+                {/* Kendi fotoğrafın: yer bildirdiysen fuşya halka, bildirmediysen "+" rozeti (Instagram'daki "Hikâyen" gibi). */}
+                <View style={styles.me}>
+                  <Avatar name={me.displayName} color={me.avatarColor} uri={me.avatarUri} size={60} ring={Boolean(current)} />
+                  {!current && (
+                    <View style={[styles.addBadge, { backgroundColor: theme.accent, borderColor: theme.background }]}>
+                      <Icon ios="plus" md="add" size={13} color={theme.onAccent} />
+                    </View>
+                  )}
+                </View>
+                <Text style={[Type.caption, { color: theme.text, fontWeight: '600' }]}>{current ? 'Sen' : 'Yer bildir'}</Text>
+                <Text style={[Type.caption, { color: theme.textSecondary }]} numberOfLines={1}>
+                  {current ? current.name : 'Buradayım'}
+                </Text>
+              </Pressable>
+              {nowHere.map(({ user, post }) => (
                 <Pressable
-                  onPress={() => router.navigate('/checkin')}
+                  key={user.id}
+                  onPress={() => router.push({ pathname: '/venue/[id]', params: { id: post.venueId } })}
                   accessibilityRole="button"
-                  accessibilityLabel={current ? `Sen, ${current.name}` : 'Yer bildir'}
+                  accessibilityLabel={`${user.displayName}, şu an ${venueById(post.venueId)?.name}`}
                   style={styles.person}>
-                  {/* Kendi fotoğrafın: yer bildirdiysen fuşya halka, bildirmediysen "+" rozeti (Instagram'daki "Hikâyen" gibi). */}
-                  <View style={styles.me}>
-                    <Avatar name={me.displayName} color={me.avatarColor} uri={me.avatarUri} size={60} ring={Boolean(current)} />
-                    {!current && (
-                      <View style={[styles.addBadge, { backgroundColor: theme.accent, borderColor: theme.background }]}>
-                        <Icon ios="plus" md="add" size={13} color={theme.onAccent} />
-                      </View>
-                    )}
-                  </View>
-                  <Text style={[Type.caption, { color: theme.text, fontWeight: '600' }]}>{current ? 'Sen' : 'Yer bildir'}</Text>
+                  <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} size={60} ring />
+                  <Text style={[Type.caption, { color: theme.text, fontWeight: '600' }]} numberOfLines={1}>
+                    {user.displayName.split(' ')[0]}
+                  </Text>
                   <Text style={[Type.caption, { color: theme.textSecondary }]} numberOfLines={1}>
-                    {current ? current.name : 'Buradayım'}
+                    {venueById(post.venueId)?.name}
                   </Text>
                 </Pressable>
-                {nowHere.map(({ user, post }) => (
-                  <Pressable
-                    key={user.id}
-                    onPress={() => router.push({ pathname: '/venue/[id]', params: { id: post.venueId } })}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${user.displayName}, şu an ${venueById(post.venueId)?.name}`}
-                    style={styles.person}>
-                    <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} size={60} ring />
-                    <Text style={[Type.caption, { color: theme.text, fontWeight: '600' }]} numberOfLines={1}>
-                      {user.displayName.split(' ')[0]}
-                    </Text>
-                    <Text style={[Type.caption, { color: theme.textSecondary }]} numberOfLines={1}>
-                      {venueById(post.venueId)?.name}
-                    </Text>
-                  </Pressable>
+              ))}
+            </ScrollView>
+          </Section>
+
+          <Section title="Şu an canlı" action="Haritada" onAction={() => router.navigate('/explore')}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bleed} contentContainerStyle={styles.cards}>
+              {live.map((v) => (
+                <VenueCard key={v.id} venue={v} friends={friendsAt(v.id)} />
+              ))}
+            </ScrollView>
+          </Section>
+
+          {events.length > 0 && (
+            <Section title="Bu gece">
+              <GlassCard style={styles.list}>
+                {events.map((e, i) => (
+                  <View key={e.venue.id}>
+                    {i > 0 && <View style={[styles.separator, { backgroundColor: theme.separator }]} />}
+                    <EventRow venue={e.venue} time={e.time} title={e.title} />
+                  </View>
                 ))}
-              </ScrollView>
-            </View>
-          ) : (
-            <View style={styles.section}>
-              <Text style={[Type.headline, { color: theme.text }]}>Şu an canlı</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
-                {live.map((v) => (
-                  <Pressable
-                    key={v.id}
-                    onPress={() => router.push({ pathname: '/venue/[id]', params: { id: v.id } })}
-                    style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
-                    <GlassCard style={styles.liveCard}>
-                      <VenueIcon category={v.category} size={36} />
-                      <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]} numberOfLines={1}>
-                        {v.name}
-                      </Text>
-                      <LiveCount count={v.here} suffix="burada" />
-                    </GlassCard>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
+              </GlassCard>
+            </Section>
           )}
 
-          {data.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
+          <Section title="Paylaşımlar">
+            <SegmentedPicker<Feed>
+              options={[
+                { value: 'ozel', label: 'Sana özel' },
+                { value: 'cevrende', label: 'Çevrende' },
+              ]}
+              value={feed}
+              onChange={setFeed}
+              accessibilityLabel="Paylaşımlar"
+            />
+            <View style={styles.posts}>
+              {data.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </View>
+          </Section>
           <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>Şimdilik bu kadar.</Text>
         </PageColumn>
       </ScrollView>
@@ -152,13 +170,39 @@ export default function HomeScreen() {
   );
 }
 
+/** Bölüm: iri başlık (Type.section) + isteğe bağlı sağda bağlantı. Bölümler arası boşluk her yerde aynı (Gap.section). */
+function Section({ title, action, onAction, children }: { title: string; action?: string; onAction?: () => void; children: ReactNode }) {
+  const theme = useTheme();
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <Text style={[Type.section, { color: theme.text, flex: 1 }]} accessibilityRole="header">
+          {title}
+        </Text>
+        {action && (
+          <Pressable onPress={onAction} hitSlop={10} accessibilityRole="link" style={styles.sectionAction}>
+            <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{action}</Text>
+            <Icon ios="chevron.right" md="chevron_right" size={12} color={theme.textSecondary} />
+          </Pressable>
+        )}
+      </View>
+      {children}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { paddingBottom: 24 },
-  content: { paddingHorizontal: 16, paddingTop: 4, gap: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 2, minHeight: 48 },
-  section: { gap: 10 },
-  strip: { gap: 14, paddingRight: 8 },
+  content: { paddingHorizontal: Gap.page, paddingTop: 4, gap: Gap.section },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 2, minHeight: 48, marginBottom: -12 },
+  section: { gap: Gap.block },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center' },
+  sectionAction: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  // Yatay şeritler ekran kenarına kadar uzanır (Uber Eats gibi); içerik yine sayfa boşluğundan başlar.
+  bleed: { marginHorizontal: -Gap.page },
+  strip: { gap: 14, paddingHorizontal: Gap.page },
+  cards: { gap: 14, paddingHorizontal: Gap.page },
   person: { width: 72, alignItems: 'center', gap: 4 },
   me: { width: 68, height: 68, alignItems: 'center', justifyContent: 'center' },
   addBadge: {
@@ -172,6 +216,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  liveCard: { width: 156, borderRadius: 20, padding: 12, gap: 8 },
+  list: { borderRadius: Radius.card, paddingHorizontal: 14 },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: 66 },
+  posts: { gap: 16, marginTop: 4 },
   footer: { textAlign: 'center', paddingVertical: 8 },
 });

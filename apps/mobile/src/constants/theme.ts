@@ -167,6 +167,8 @@ export const Backdrop = Backdrops.ust;
 /** iOS Dynamic Type ölçeği (TASARIM.md §4). Metinler kullanıcının yazı boyutu ayarıyla büyür. */
 export const Type = {
   largeTitle: { fontSize: 34, fontWeight: '700', letterSpacing: 0.4 },
+  /** Bölüm başlığı ("Şu an canlı", "Bu gece"): ekranın asıl hiyerarşisi bunlarla kurulur (T-20). */
+  section: { fontSize: 22, fontWeight: '700', letterSpacing: -0.4 },
   title2: { fontSize: 22, fontWeight: '700', letterSpacing: -0.3 },
   title3: { fontSize: 20, fontWeight: '600', letterSpacing: -0.2 },
   headline: { fontSize: 17, fontWeight: '600' },
@@ -175,6 +177,10 @@ export const Type = {
   footnote: { fontSize: 13, lineHeight: 18 },
   caption: { fontSize: 12 },
 } as const;
+
+/** Tek ölçü seti (T-20): köşe yarıçapları ve boşluklar her ekranda aynı. */
+export const Radius = { card: 20, photo: 14, control: 12 } as const;
+export const Gap = { page: 16, section: 32, block: 12, tight: 6 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 

@@ -5,9 +5,8 @@ import { ActionSheetIOS, Alert, Platform, Pressable, Share, StyleSheet, View } f
 
 import { GlassCard } from '@/components/glass';
 import { Icon, type SFSymbolName } from '@/components/icon';
-import { ActionButton } from '@/components/native-controls';
 import { Text } from '@/components/text';
-import { Type } from '@/constants/theme';
+import { Radius, Type } from '@/constants/theme';
 import { CATEGORY_LABEL, type Category, type Message, type Post, type User, type Venue } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
@@ -27,7 +26,10 @@ export function minutesAgo(ts: number): string {
   const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
   if (m < 1) return 'şimdi';
   if (m < 60) return `${m} dk`;
-  return `${Math.floor(m / 60)} sa`;
+  if (m < 24 * 60) return `${Math.floor(m / 60)} sa`;
+  // Paylaşımlar kalıcı (K-16): eski olanlar gün olarak.
+  const days = Math.floor(m / (24 * 60));
+  return days === 1 ? 'dün' : `${days} g`;
 }
 
 /** Sohbet listesi ve önizlemeler için tek satırlık mesaj metni (plan kartları dahil). */
@@ -191,8 +193,8 @@ export function showSafetyMenu(title: string) {
 }
 
 /**
- * Akış kartı (TASARIM.md §5.2): kişi → dokunulabilir mekân satırı → 4:5 fotoğraf (çift dokunuşla
- * beğeni) → metin → eylemler. Kart geçirgen Liquid Glass (T-13, T-17): arkadaki gradyan görünür.
+ * Akış kartı (TASARIM.md §5.2, T-20): kişi ve mekân tek blokta → fotoğraf → yorum → eylemler.
+ * Katman az: mekân bir satır bağlantı, eylem düz metin. Kart geçirgen cam (T-13, T-17).
  */
 export function PostCard({ post }: { post: Post }) {
   const theme = useTheme();
@@ -218,18 +220,22 @@ export function PostCard({ post }: { post: Post }) {
         <Pressable
           disabled={anonymous || post.userId === 'me'}
           onPress={() => router.push({ pathname: '/user/[username]', params: { username: user.username } })}
-          style={styles.author}>
-          <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} anonymous={anonymous} size={36} />
-          <View style={{ flex: 1 }}>
-            <Text numberOfLines={1} style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>
-              {name}
-              <Text style={{ color: theme.textSecondary, fontWeight: '400' }}> · {minutesAgo(post.createdAt)}</Text>
-            </Text>
-            <Text numberOfLines={1} style={[Type.footnote, { color: theme.textSecondary }]}>
-              {anonymous ? 'Anonim paylaşım' : `@${user.username}`}
-            </Text>
-          </View>
+          accessibilityLabel={name}>
+          <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} anonymous={anonymous} size={38} />
         </Pressable>
+        <View style={{ flex: 1, gap: 1 }}>
+          <Text numberOfLines={1} style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>
+            {name}
+            <Text style={{ color: theme.textSecondary, fontWeight: '400' }}> · {minutesAgo(post.createdAt)}</Text>
+          </Text>
+          {venue && (
+            <Pressable onPress={openVenue} hitSlop={6} accessibilityRole="link" accessibilityLabel={`${venue.name}, ${venue.area}`}>
+              <Text numberOfLines={1} style={[Type.footnote, { color: theme.textSecondary }]}>
+                <Text style={{ color: theme.text, fontWeight: '600' }}>{venue.name}</Text> · {venue.area}
+              </Text>
+            </Pressable>
+          )}
+        </View>
         <Pressable
           onPress={() => showSafetyMenu(name)}
           hitSlop={12}
@@ -239,21 +245,6 @@ export function PostCard({ post }: { post: Post }) {
           <Icon ios="ellipsis" md="more_horiz" size={18} color={theme.textSecondary} />
         </Pressable>
       </View>
-
-      {venue && (
-        <Pressable
-          onPress={openVenue}
-          accessibilityRole="link"
-          accessibilityLabel={`${venue.name}, ${venue.here} kişi burada`}
-          style={({ pressed }) => [styles.venueLine, { backgroundColor: theme.fill, opacity: pressed ? 0.7 : 1 }]}>
-          <Icon ios="mappin.and.ellipse" md="location_on" size={15} color={theme.accentInk} />
-          <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600', flex: 1 }]} numberOfLines={1}>
-            {venue.name}
-          </Text>
-          <LiveCount count={venue.here} suffix="burada" />
-          <Icon ios="chevron.right" md="chevron_right" size={12} color={theme.textSecondary} />
-        </Pressable>
-      )}
 
       {post.imageUri && (
         <Pressable onPress={onPhotoPress} accessibilityHint="Beğenmek için iki kez dokun">
@@ -282,24 +273,89 @@ export function PostCard({ post }: { post: Post }) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Paylaş"
-          onPress={() => Share.share({ message: `${venue?.name ?? ''} · HERE'de bu gece #iamhere` })}
+          onPress={() => Share.share({ message: `${venue?.name ?? ''} · HERE #iamhere` })}
           hitSlop={8}
           style={styles.action}>
           <Icon ios="square.and.arrow.up" md="ios_share" size={20} color={theme.text} />
         </Pressable>
         <View style={{ flex: 1 }} />
         {venue && (
-          <ActionButton
-            title={iAmHere ? 'Sohbete katıl' : 'Mekâna git'}
-            variant="tonal"
-            size="regular"
-            onPress={() =>
-              iAmHere ? router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } }) : openVenue()
-            }
-          />
+          <Pressable
+            accessibilityRole="link"
+            hitSlop={8}
+            onPress={() => (iAmHere ? router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } }) : openVenue())}
+            style={styles.action}>
+            <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{iAmHere ? 'Sohbete katıl' : 'Mekân'}</Text>
+            <Icon ios="chevron.right" md="chevron_right" size={12} color={theme.textSecondary} />
+          </Pressable>
         )}
       </View>
     </GlassCard>
+  );
+}
+
+/**
+ * Ana sayfadaki mekân kartı (T-20, Uber Eats gibi): büyük fotoğraf, kalın ad, tek satır bilgi.
+ * Çerçevesi yok; rengi fotoğraf taşır. Fotoğrafın üstünde kalabalık, altta orada olan tanıdıklar.
+ */
+export function VenueCard({ venue, friends = [], width = 272 }: { venue: Venue; friends?: User[]; width?: number }) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`${venue.name}, ${CATEGORY_LABEL[venue.category]}, ${formatDistance(venue.distanceM)}, ${venue.here} kişi burada`}
+      style={({ pressed }) => [{ width, gap: 8, opacity: pressed ? 0.8 : 1 }]}>
+      <View>
+        <Image source={{ uri: venue.coverUri }} style={styles.venuePhoto} contentFit="cover" transition={200} />
+        <View style={styles.crowd}>
+          <View style={[styles.dot, { backgroundColor: theme.accent }]} />
+          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>{venue.here} kişi</Text>
+        </View>
+      </View>
+      <View style={{ gap: 2 }}>
+        <Text style={[Type.headline, { color: theme.text }]} numberOfLines={1}>
+          {venue.name}
+        </Text>
+        <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
+          {CATEGORY_LABEL[venue.category]} · {venue.area} · {formatDistance(venue.distanceM)}
+        </Text>
+      </View>
+      {friends.length > 0 && (
+        <View style={styles.friends}>
+          <AvatarStack users={friends.slice(0, 3)} size={20} />
+          <Text style={[Type.footnote, { color: theme.text, flexShrink: 1 }]} numberOfLines={1}>
+            {friends[0].displayName.split(' ')[0]}
+            {friends.length > 1 ? ` ve ${friends.length - 1} kişi daha` : ''} orada
+          </Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+/** "Bu gece" satırı: saat, etkinlik, mekân. */
+export function EventRow({ venue, time, title }: { venue: Venue; time: string; title: string }) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } })}
+      accessibilityRole="button"
+      accessibilityLabel={`${time}, ${title}, ${venue.name}`}
+      style={({ pressed }) => [styles.eventRow, { opacity: pressed ? 0.7 : 1 }]}>
+      <Text style={[Type.headline, styles.eventTime, { color: theme.text }]}>{time}</Text>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={[Type.headline, { color: theme.text }]} numberOfLines={1}>
+          {title}
+        </Text>
+        <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
+          {venue.name} · {formatDistance(venue.distanceM)}
+        </Text>
+      </View>
+      <View style={{ alignSelf: 'center' }}>
+        <Icon ios="chevron.right" md="chevron_right" size={13} color={theme.textSecondary} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -310,12 +366,27 @@ const styles = StyleSheet.create({
   dot: { width: 7, height: 7, borderRadius: 4 },
   venueIcon: { alignItems: 'center', justifyContent: 'center' },
   venueRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  card: { borderRadius: 26, padding: 14, gap: 12 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  author: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  card: { borderRadius: Radius.card, padding: 14, gap: 12 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  venueLine: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, minHeight: 40, borderRadius: 12 },
-  cardImage: { width: '100%', aspectRatio: 4 / 5, borderRadius: 14 },
+  cardImage: { width: '100%', aspectRatio: 4 / 5, borderRadius: Radius.photo },
   cardActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36 },
+  venuePhoto: { width: '100%', aspectRatio: 16 / 11, borderRadius: Radius.photo },
+  crowd: {
+    position: 'absolute',
+    left: 10,
+    top: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 9,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+  },
+  friends: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // Saat, etkinlik başlığıyla aynı satırda başlar.
+  eventRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, paddingVertical: 12 },
+  eventTime: { width: 52, fontVariant: ['tabular-nums'] },
 });

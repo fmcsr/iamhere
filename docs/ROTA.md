@@ -291,6 +291,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **Karar:** ⬜
 
 ### K-14 · Ana sayfa akışı 🟡
+- **Güncelleme (17.10.2026):** Ana sayfa artık mekân odaklı bölümlerle başlıyor; iki sekmeli akış "Paylaşımlar" bölümünün içinde (TASARIM.md T-20).
 - **Karar:** ✅ **İki sekmeli akış** (16.10.2026):
   - **Sana özel:** takip ettiklerinin bu geceki paylaşımları + ilgi alanlarına uyan yakındaki mekânlardan paylaşımlar.
   - **Çevrende** (önceki adı "Rastgele"; T-9 ile değişti, 17.10.2026): yakındaki herkese açık paylaşımlardan karışık bir akış.
@@ -501,6 +502,7 @@ Faz 6  Lansman
 | 17.10.2026 | **K-17: Sohbete yalnızca yer bildirerek, yer bildirimine yalnızca mekânın 300 m yakınında izin var** | Kurucu kararı; evden yer bildirip sohbete katılmak yok |
 | 17.10.2026 | **T-16: Yazı tipi her yerde DM Sans**; **T-17: paylaşım kartları daha geçirgen** (net cam); kişilere sahte profil fotoğrafları | Kurucu isteği |
 | 17.10.2026 | Zemin varyantları (T-18: A üst ışıklar · B üst + sağ alt · C geniş, Revolut gibi) ve ayarlardaki görünüm alanının üç seçeneği (T-19) Ayarlar › Tasarım denemesi'nde denenebilir | **Karar bekliyor** |
+| 17.10.2026 | **K-14 güncellendi: ana sayfa mekân odaklı** (T-20): Takipleştiklerin şu an → Şu an canlı mekânlar → Bu gece etkinlikler → Paylaşımlar (Sana özel / Çevrende). Prototip verisi gerçekçi mekân fotoğrafları ve yorumlarla yenilendi | Kurucuyla tartışma: ürün "bir sosyal medya daha" gibi değil, "bu gece nereye?" sorusunun cevabı gibi görünmeli |
 
 ---
 

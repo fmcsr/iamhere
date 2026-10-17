@@ -44,7 +44,7 @@ export default function ProfileScreen() {
         />
 
         <View style={styles.section}>
-          <Text style={[Type.title3, { color: theme.text }]}>Paylaşımların{myPosts.length ? ` · ${myPosts.length}` : ''}</Text>
+          <Text style={[Type.section, { color: theme.text }]}>Paylaşımların{myPosts.length ? ` · ${myPosts.length}` : ''}</Text>
           {current ? (
             <GlassCard style={styles.nowCard}>
               <VenueIcon category={current.category} size={44} />
