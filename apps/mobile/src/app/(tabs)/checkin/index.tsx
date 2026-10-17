@@ -65,10 +65,11 @@ export default function CheckInScreen() {
               showMe
               zoom={0.012}
               recenter
-              // Harita gezilebilir; ama yer bildirimi yine yalnızca 300 m içinde (K-17): uzak pin mekân sayfasını açar.
+              // Harita gezilebilir; ama yer bildirimi yine yalnızca 300 m içinde (K-17): uzak pin mekân sayfasını açar,
+              // yakındaki pin alttan yer bildirme sayfasını (iğneyi aşağı kaydır, T-26).
               onSelect={(id) => {
                 const far = (venueById(id)?.distanceM ?? Infinity) > CHECK_IN_RADIUS_M;
-                router.push(far ? { pathname: '/venue/[id]', params: { id } } : { pathname: '/compose', params: { venueId: id } });
+                router.push(far ? { pathname: '/venue/[id]', params: { id } } : { pathname: '/check-in/[venueId]', params: { venueId: id } });
               }}
             />
           </View>
@@ -94,7 +95,7 @@ export default function CheckInScreen() {
                     onPress={() =>
                       tooFar
                         ? router.push({ pathname: '/venue/[id]', params: { id: v.id } })
-                        : router.push({ pathname: '/compose', params: { venueId: v.id } })
+                        : router.push({ pathname: '/check-in/[venueId]', params: { venueId: v.id } })
                     }
                   />
                 </View>

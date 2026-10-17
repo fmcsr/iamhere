@@ -512,6 +512,7 @@ Faz 6  Lansman
 | 17.10.2026 | **Profil sadeleşti** (T-22): Bu gece kartı, Son gece etiketi, Son 30 gün ve Sık gittiklerin kalktı; Düzenle kapaktaki cam kaleme taşındı; gece takvimi "gece" sayısına dokununca açılan ayrı sayfada; paylaşım ızgarasında fotoğrafların altında yazı yok | Kurucu: "profil sayfası çok karışık olmuş"; sık gidilenlere sonra dönülecek |
 | 17.10.2026 | **T-23: Logo ve simge krom balon harfler** (corner'ın simgesindeki gibi); simgede iki satır "HE / RE", zemin fuşya kaldı. **T-24:** aşağı çekip yenilerken yükleniyor çarkı yerine krom HERE 360° soldan sağa döner | Kurucu isteği; K-13'teki ad ve renkler değişmedi |
 | 18.10.2026 | **T-23 güncellendi:** logo metalik değil, fuşya renkli parlak balon; simgede de tek satır HERE, zemin fuşya. **T-25:** profilde üç sekme: Paylaşımlar, Etiketlenenler, To-HERE (gitmek istenen mekânlar; mekân sayfasında kaydedilir) | Kurucu isteği |
+| 18.10.2026 | **T-26: Yer bildirme kaydırarak onaylanır.** Mekân sayfasında "Yol tarifi"nin üstünde fuşya "Yer bildir"; alttan açılan sayfada iğne yukarıdan aşağı kaydırılır, zemine saplanır, sohbete katılınır (Luma'nın "Slide to Confirm"ı gibi). 300 m kuralı aynı (K-17): uzaktaysa oluk kilitli | Kurucu isteği; yanlışlıkla yer bildirmeyi önler |
 
 ---
 

@@ -11,13 +11,14 @@ import { ActionButton } from '@/components/native-controls';
 import { PageColumn } from '@/components/page-column';
 import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
-import { CATEGORY_LABEL, CHECK_IN_RADIUS_M } from '@/data/mock';
+import { CATEGORY_LABEL } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 
 /**
  * Mekân sayfası (TASARIM.md §5.4): kapak fotoğrafı cam geri düğmesinin altında, "kimler burada",
- * bu gecenin fotoğrafları, sohbet önizlemesi ve altta duruma göre değişen tek cam düğme.
+ * bu gecenin fotoğrafları, sohbet önizlemesi. Altta fuşya "Yer bildir" (alttan açılan sayfada iğne
+ * aşağı kaydırılır, T-26) ve altında "Yol tarifi"; yer bildirdiysen yalnızca "Sohbete katıl".
  */
 export default function VenueScreen() {
   const theme = useTheme();
@@ -33,7 +34,6 @@ export default function VenueScreen() {
   const isHere = checkIn?.venueId === venue.id;
   // To-HERE: gitmek istediğin yerler listesi (profilin üçüncü sekmesi).
   const isSaved = savedOf('me').includes(venue.id);
-  const tooFar = venue.distanceM > CHECK_IN_RADIUS_M;
   const venuePosts = posts.filter(
     (p) => p.venueId === venue.id && (p.audience !== 'takipciler' || p.userId === 'me' || following.has(p.userId)),
   );
@@ -43,15 +43,12 @@ export default function VenueScreen() {
   const lastChat = chat.at(-1);
   const plans = chat.filter((m) => m.plan).length;
 
-  const primary = isHere
-    ? { title: 'Sohbete katıl', icon: 'bubble.left.and.bubble.right.fill' as const, onPress: () => router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } }) }
-    : tooFar
-      ? { title: `Yol tarifi · ${formatDistance(venue.distanceM)}`, icon: 'arrow.triangle.turn.up.right.diamond.fill' as const, onPress: () => Linking.openURL(`https://maps.apple.com/?daddr=${venue.latitude},${venue.longitude}`) }
-      : { title: 'Buradayım', icon: 'mappin.and.ellipse' as const, onPress: () => router.push({ pathname: '/compose', params: { venueId: venue.id } }) };
+  const joinChat = () => router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } });
+  const directions = () => Linking.openURL(`https://maps.apple.com/?daddr=${venue.latitude},${venue.longitude}`);
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: isHere ? 120 : 180 }}>
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button
             icon={isSaved ? 'bookmark.fill' : 'bookmark'}
@@ -109,7 +106,7 @@ export default function VenueScreen() {
 
           <View style={styles.section}>
             <Text style={[Type.section, { color: theme.text }]}>Mekân sohbeti</Text>
-            <GlassCard onPress={primary.onPress} disabled={!isHere} style={styles.chatCard}>
+            <GlassCard onPress={joinChat} disabled={!isHere} style={styles.chatCard}>
               <View style={styles.chatMeta}>
                 <Icon ios={isHere ? 'bubble.left.and.bubble.right.fill' : 'lock.fill'} md={isHere ? 'forum' : 'lock'} size={16} color={theme.text} />
                 <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600', flex: 1 }]}>
@@ -148,13 +145,26 @@ export default function VenueScreen() {
 
       <SafeAreaView edges={['bottom']} style={styles.bottomBar} pointerEvents="box-none">
         <View style={styles.barInner}>
-        <ActionButton
-          title={primary.title}
-          systemImage={primary.icon}
-          variant={tooFar && !isHere ? 'glass' : 'glassProminent'}
-          fullWidth
-          onPress={primary.onPress}
-        />
+          {isHere ? (
+            <ActionButton title="Sohbete katıl" systemImage="bubble.left.and.bubble.right.fill" variant="glassProminent" fullWidth onPress={joinChat} />
+          ) : (
+            <>
+              <ActionButton
+                title="Yer bildir"
+                systemImage="mappin.and.ellipse"
+                variant="glassProminent"
+                fullWidth
+                onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id } })}
+              />
+              <ActionButton
+                title={`Yol tarifi · ${formatDistance(venue.distanceM)}`}
+                systemImage="arrow.triangle.turn.up.right.diamond.fill"
+                variant="glass"
+                fullWidth
+                onPress={directions}
+              />
+            </>
+          )}
         </View>
       </SafeAreaView>
     </View>
@@ -174,5 +184,5 @@ const styles = StyleSheet.create({
   skeleton: { gap: 8 },
   skeletonLine: { height: 14, borderRadius: 7 },
   bottomBar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 8, alignItems: 'center' },
-  barInner: { width: '100%', maxWidth: 600 },
+  barInner: { width: '100%', maxWidth: 600, gap: 10 },
 });

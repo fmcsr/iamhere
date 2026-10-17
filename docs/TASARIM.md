@@ -236,8 +236,8 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 
 ### 5.3 Yer bildirimi ve paylaşım
 
-- **Buradayım ekranı:** üst %35 harita (300 m dairesi + kullanıcı noktası), altında yükseltilebilir sayfa: "Mekân ara" (Google atfı alanın içinde), satırlar "ikon · ad · 120 m · Bar · ● 23", mesafeye göre sıralı. 300 m dışındakiler gizlenmez, soluk: "Mekânda olmalısın".
-- **Onay sayfası:** büyük mekân adı + "Değiştir" bağlantısı + tam genişlikte cam-fuşya **Buradayım**. Sonra tek öneri: "Grup sohbetine katıl (23)". Fotoğraf isteğe bağlı.
+- **Buradayım ekranı:** üst %35 harita (300 m dairesi + kullanıcı noktası), altında yükseltilebilir sayfa: "Mekân ara" (Google atfı alanın içinde), satırlar "ikon · ad · 120 m · Bar · ● 23", mesafeye göre sıralı. 300 m dışındakiler gizlenmez, soluk: "Mekânda olmalısın". Yakındaki bir mekâna (listede ya da haritada) dokununca yer bildirme sayfası açılır (T-26).
+- **Yer bildirme sayfası (T-26, 18.10.2026):** mekân sayfasındaki fuşya **Yer bildir** ile alttan, kenarlardan içeride yüzen bir sayfa açılır ([Luma · Leave Event](https://mobbin.com/screens/db78c794-320c-4882-b6e4-e07c9492773f) gibi). Solda mekân (küçük fotoğraf, ad, kategori · mesafe), "Burada olduğunu belirtmek üzeresin", "Mekân sohbetine katılmak için iğneyi aşağı kaydır", kaç kişi burada ve kimlerin göreceği. Sağda dikey fuşya oluk: tepede beyaz topuzda iğne, altında aşağıyı gösteren ışıltılı oklar, dipte elips. Luma'da soldan sağa kaydırılır, burada **yukarıdan aşağı**. İğne dibe inince topuz kaybolur, beyaz iğne elipse saplanır, halka yayılır: HERE'nin yer bildirme simgesi (iğne + elips) tamamlanır. Ardından "Buradasın · Mekân sohbetine katıldın" ve iki düğme: **Fotoğraf paylaş** · **Sohbete git**. Arka plana dokununca ya da "Vazgeç"le kapanır. Fotoğraf isteğe bağlı; paylaşım sayfası ayrı.
 - **Paylaşım (tek ekranlık sayfa, sihirbaz değil):** değiştirilemeyen mekân etiketi → 4:5 fotoğraf (önce kamera) → açıklama (280 sayaç) → "Kim görebilir: Herkes ›" satırı (dokununca 3 seçenekli sayfa; her seçeneğin altında sonucu: *Herkes:* yakındakilerin akışında · *Takipçilerim* · *Anonim:* adın gizlenir, mekân görünür) → en fazla 2 açıklamalı anahtar → altta fuşya **Paylaş**.
 - **Başlık yok:** Buradayım sekmesi büyük başlık olmadan doğrudan "Mekân ara" ile başlar (sekme adı zaten Buradayım).
 - **Harita gezilebilir:** Buradayım ve Keşfet haritaları kaydırılıp yakınlaştırılabilir; sağ altta cam "Konumuma dön" düğmesi. Uzaktaki pine dokunmak yer bildirimini değil mekân sayfasını açar.
@@ -251,7 +251,7 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 - **"● 48 kişi şu an burada"** satırı + üst üste avatarlar (takip edilenler önde); dokununca "Burada kimler var" sayfası. Anonimler sayıya dahil, listede yok.
 - "Bu gece" 3 sütunlu fotoğraf ızgarası.
 - Grup sohbeti önizlemesi ("23 kişi · son mesaj 2 dk"); yer bildirmemiş kullanıcıya bulanık iskelet balonlar + kilit.
-- **Altta sabit, duruma göre değişen tek buton:** 300 m içindeyse **Buradayım** · yer bildirdiyse **Sohbete katıl** · uzaktaysa ikincil "Yol tarifi".
+- **Altta sabit düğmeler (T-26):** üstte fuşya **Yer bildir** (alttan açılan yer bildirme sayfası, §5.3), altında cam **Yol tarifi · 450 m**. Yer bildirdiysen yalnızca **Sohbete katıl**. Mekân 300 m'den uzaksa yer bildirme sayfasında oluk kilitli ve gri; nedeni ve "Yol tarifi" yazar (K-17).
 
 **Referanslar:** [corner · Mekân](https://mobbin.com/screens/1af2ee0f-6b30-4bbe-a1c2-f8ea2156d07d) · [Posh · Etkinlik + RSVP](https://mobbin.com/screens/1177d96b-90b8-441b-bfa2-c6717f9f3615) · [Beli · Mekân](https://mobbin.com/screens/a48ac100-625e-45dd-b33e-f4576ade1ca7) · [Places · Bar Part Time](https://mobbin.com/screens/006cff91-e623-4a70-83ea-65d2092f5ff0)
 
@@ -371,6 +371,7 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-23 | **Logo ve simge** | (a) düz geometrik HERE · (b) krom balon harfler (corner'ın simgesi gibi) · (c) fuşya, parlak balon harfler | **(c)** | Kurucu önce "corner'ın simgesindeki yazıyı aynen HERE'ye uygulayalım; zemin rengimiz sabit" dedi (krom, simgede iki satır "HE / RE"), sonra "daha balon gibi; metalik değil, fuşya rengimizde bir balon; simgede de yan yana HERE". Simge zemini fuşya kaldı; harfleri zeminden koyu kırmızı gölge ayırır. Kaynak: `scripts/generate-brand.py` ([corner simgesi](https://apps.apple.com/app/id1668282277)). |
 | T-24 | **Aşağı çekip yenileme** | (a) iOS çarkı · (b) dönen balon HERE | **(b)** | Kurucu isteği: logo 3B olduğu için yükleniyor işareti yerine 360° soldan sağa döner. Çekerken çekilen mesafe kadar, yenilerken sürekli döner, bitince öne bakarak durur. Ana sayfada başlıktaki logo döner; Mesajlar ve Profil'de çekince açılan boşlukta görünür. |
 | T-25 | **Profil sekmeleri** | (a) yalnızca paylaşımlar · (b) üç sekme: Paylaşımlar · Etiketlenenler · To-HERE | **(b)** | Kurucu isteği. To-HERE ("to-do list" gibi) gitmek istediğin mekânların listesi; mekân sayfasındaki yer imiyle eklenir. Kendi listende aynı yeri kaydeden karşılıklı takipleştiklerin, başkasınınkinde "İkiniz de" görünür: birlikte gitme planına zemin (§5.8). |
+| T-26 | **Yer bildirme** | (a) düğmeye dokununca doğrudan · (b) alttan açılan sayfada kaydırarak onay (Luma gibi) | **(b), dikey** | Kurucu isteği: mekân sayfasında "Yol tarifi"nin üstünde fuşya "Yer bildir"; alttan sayfa açılır, sağda fuşya oluk, iğne yukarıdan aşağı kaydırılır ve "burada olduğumuzu iğneler" gibi zemine saplanır. Kaydırma, yanlışlıkla yer bildirmeyi önler; iğne + elips uygulamanın yer bildirme simgesini tamamlar (§5.3). |
 
 ---
 
@@ -396,6 +397,7 @@ Her adım iOS 27 simülatörlerinde (iPhone 18 Pro · iOS 27.0 ve iPhone Duo · 
 | 14 | Profil (T-22): sade düzen, Pinterest ızgarası, dikey paylaşım akışı, takipçi/takip listeleri, "gece" sayısından açılan takvim ve ortak geceler; Ayarlar › Hesap | ✅ Profil düzenleme ekranı yok (yalnızca uyarı) |
 | 15 | Fuşya balon HERE logosu ve tek satır simge (T-23), aşağı çekince dönen logo (T-24) | ✅ Ana sayfa, Mesajlar, Profil |
 | 16 | Profil sekmeleri (T-25): Paylaşımlar, Etiketlenenler, To-HERE; mekân sayfasında kaydet; paylaşım kartında "kiminle" satırı | ✅ Paylaşırken kişi etiketleme yok (yalnızca prototip verisinde) |
+| 17 | Yer bildirme sayfası (T-26): mekân sayfasında fuşya Yer bildir, alttan açılan sayfa, dikey iğneli kaydırıcı ve saplanma animasyonu | ✅ Dokunsal titreşim yok (expo-haptics eklenmedi) |
 
 Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · T-22…T-24 sonrası ana sayfa, profil ve ayarlar: [ekranlar/01-ana-sayfa.jpg](ekranlar/01-ana-sayfa.jpg), [ekranlar/09-profil.jpg](ekranlar/09-profil.jpg), [ekranlar/10-ayarlar.jpg](ekranlar/10-ayarlar.jpg) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
 

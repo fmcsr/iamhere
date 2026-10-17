@@ -73,6 +73,11 @@ function RootStack() {
         {/* Profil kapağı ekranın en üstünden başlar; geri ve ••• düğmeleri kapağın üstünde (kendi profilin gibi). */}
         <Stack.Screen name="user/[username]" options={{ headerShown: false }} />
         <Stack.Screen name="compose" options={{ presentation: 'modal', title: 'Buradayım' }} />
+        {/* Yer bildirme sayfası (T-26): ekranın üstünde saydam katman; sayfa alttan kendi animasyonuyla kayar. */}
+        <Stack.Screen
+          name="check-in/[venueId]"
+          options={{ presentation: 'transparentModal', animation: 'none', headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}
+        />
         {/* Yarım yükseklikte cam sayfa: zemin şeffaf kalır ki iOS 26+ camı görünsün. */}
         <Stack.Screen
           name="people/[venueId]"
