@@ -90,9 +90,7 @@ export function AvatarStack({ users, size = 26 }: { users: User[]; size?: number
   return (
     <View style={{ flexDirection: 'row' }}>
       {users.map((u, i) => (
-        <View
-          key={u.id}
-          style={{ marginLeft: i === 0 ? 0 : -size * 0.32, borderRadius: size, borderWidth: 2, borderColor: theme.surface }}>
+        <View key={u.id} style={{ marginLeft: i === 0 ? 0 : -size * 0.32, borderRadius: size, borderWidth: 2, borderColor: theme.surface }}>
           <Avatar name={u.displayName} color={u.avatarColor} uri={u.avatarUri} size={size} />
         </View>
       ))}
@@ -298,11 +296,22 @@ export function PostCard({ post }: { post: Post }) {
  * Ana sayfadaki mekân kartı (T-20, Uber Eats gibi): büyük fotoğraf, kalın ad, tek satır bilgi.
  * Çerçevesi yok; rengi fotoğraf taşır. Fotoğrafın üstünde kalabalık, altta orada olan tanıdıklar.
  */
-export function VenueCard({ venue, friends = [], width = 272 }: { venue: Venue; friends?: User[]; width?: number }) {
+export function VenueCard({
+  venue,
+  friends = [],
+  width = 272,
+  onPress,
+}: {
+  venue: Venue;
+  friends?: User[];
+  width?: number;
+  /** Verilmezse mekân sayfası açılır (Mesajlar'da grup sohbetini açar). */
+  onPress?: () => void;
+}) {
   const theme = useTheme();
   return (
     <Pressable
-      onPress={() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } })}
+      onPress={onPress ?? (() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } }))}
       accessibilityRole="button"
       accessibilityLabel={`${venue.name}, ${CATEGORY_LABEL[venue.category]}, ${formatDistance(venue.distanceM)}, ${venue.here} kişi burada`}
       style={({ pressed }) => [{ width, gap: 8, opacity: pressed ? 0.8 : 1 }]}>

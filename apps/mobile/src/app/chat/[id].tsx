@@ -45,7 +45,9 @@ export default function ChatScreen() {
     markRead(id);
   }, [id, markRead, messages.length]);
 
-  const conversation = conversations.find((c) => c.id === id);
+  // Her mekânın bir grup sohbeti var (c-<mekân>); listede kaydı olmasa da açılabilir (Mesajlar › Grup sohbetleri).
+  const venueChat = id?.startsWith('c-v') && venueById(id.slice(2)) ? ({ id, kind: 'venue', venueId: id.slice(2) } as const) : undefined;
+  const conversation = conversations.find((c) => c.id === id) ?? venueChat;
   if (!conversation) return <Text style={{ color: theme.text, padding: 16 }}>Sohbet bulunamadı.</Text>;
 
   const thread = messages.filter((m) => m.conversationId === id);

@@ -84,6 +84,7 @@ function RootStack() {
           }}
         />
         <Stack.Screen name="settings" options={{ title: 'Ayarlar' }} />
+        <Stack.Screen name="new-message" options={{ title: 'Yeni mesaj' }} />
       </Stack>
     </ThemeProvider>
   );
