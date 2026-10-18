@@ -20,8 +20,6 @@
  * istisna sistemin çizdiği seçili sekme rengi (T-2).
  */
 
-import '@/global.css';
-
 import type { ViewStyle } from 'react-native';
 
 export const Brand = {
