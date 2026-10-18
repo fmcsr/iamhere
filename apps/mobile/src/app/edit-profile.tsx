@@ -45,7 +45,9 @@ function choose(title: string, choices: Choice[]) {
  * Profili düzenle (TASARIM.md §5.8, T-28): profildeki kalemden ve Ayarlar › Hesap'tan açılır. Üstte profildeki
  * gibi kapak ve üstüne binen profil fotoğrafı; dokununca fotoğraf seçilir. Altında ad, kullanıcı adı,
  * hakkında ve ilgi alanları (en fazla 5). Kapak seçilmezse son gecenin fotoğrafı bulanık kullanılır.
- * Kaydedilmemiş değişiklik varsa sayfa aşağı çekilerek kapanmaz; ✕ önce sorar.
+ * Sayfa tam ekran ve sabit: kaymaz, klavye açılınca da hiçbir şey yerinden oynamaz. Hakkında kutusu en uzun
+ * yazıya (150 karakter) göre baştan büyük; çiplerde hep bir işaret (+ / ✓) olduğu için seçince genişlik değişmez.
+ * Kaydedilmemiş değişiklik varsa ✕ önce sorar.
  */
 export default function EditProfileScreen() {
   const theme = useTheme();
@@ -150,8 +152,6 @@ export default function EditProfileScreen() {
 
   return (
     <>
-      {/* Kaydedilmemiş değişiklik varken sayfa aşağı çekilerek kapanmaz. */}
-      <Stack.Screen options={{ gestureEnabled: !dirty }} />
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button icon="xmark" accessibilityLabel="Vazgeç" onPress={close} />
       </Stack.Toolbar>
@@ -166,10 +166,11 @@ export default function EditProfileScreen() {
         />
       </Stack.Toolbar>
 
+      {/* Sığdığı sürece kaymaz ve esnemez; yalnızca küçük ekranlarda (sığmazsa) kayar. Boşluğa dokununca klavye kapanır. */}
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        automaticallyAdjustKeyboardInsets
-        keyboardDismissMode="interactive"
+        alwaysBounceVertical={false}
+        bounces={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scroll}>
         <PageColumn style={styles.content}>
@@ -201,15 +202,15 @@ export default function EditProfileScreen() {
               accessibilityLabel="Profil fotoğrafını değiştir"
               style={({ pressed }) => [styles.avatarWrap, { opacity: pressed ? 0.85 : 1 }]}>
               <View style={[styles.avatarFrame, { backgroundColor: theme.background }]}>
-                <Avatar name={name.trim() || me.displayName} color={me.avatarColor} uri={avatarUri} size={84} />
+                <Avatar name={name.trim() || me.displayName} color={me.avatarColor} uri={avatarUri} size={AVATAR} />
               </View>
               <View style={[styles.avatarBadge, { backgroundColor: theme.text, borderColor: theme.background }]}>
-                <Icon ios="camera.fill" md="photo_camera" size={13} color={theme.background} />
+                <Icon ios="camera.fill" md="photo_camera" size={12} color={theme.background} />
               </View>
             </Pressable>
           </View>
 
-          <View style={{ gap: 8 }}>
+          <View style={{ gap: 6 }}>
             <GlassCard style={styles.card}>
               <Field label="Ad">
                 <TextInput
@@ -241,31 +242,40 @@ export default function EditProfileScreen() {
                 </View>
               </Field>
               <View style={[styles.divider, { backgroundColor: theme.separator }]} />
-              <Field label="Hakkında" top>
-                <TextInput
-                  value={bio}
-                  onChangeText={setBio}
-                  maxLength={BIO_MAX}
-                  multiline
-                  placeholder="Kendinden kısaca bahset"
-                  placeholderTextColor={theme.textSecondary}
-                  accessibilityLabel="Hakkında"
-                  style={[Type.body, styles.input, styles.bio, { color: theme.text }]}
-                />
-                <Text style={[Type.caption, styles.counter, { color: theme.textSecondary }]}>
+              {/* Tam genişlik ve en uzun yazıya göre sabit yükseklik: yazdıkça büyümez. Satır atlanmaz (Bitti klavyeyi kapatır). */}
+              <View style={styles.bioHead}>
+                <Text style={[Type.subheadline, { color: theme.textSecondary, flex: 1 }]}>Hakkında</Text>
+                <Text style={[Type.caption, { color: theme.textSecondary, fontVariant: ['tabular-nums'] }]}>
                   {bio.length}/{BIO_MAX}
                 </Text>
-              </Field>
-            </GlassCard>
-            {(nameError || usernameError) && (
-              <View style={styles.errorRow} accessibilityLiveRegion="polite">
-                <Icon ios="exclamationmark.circle.fill" md="error" size={14} color={theme.accentInk} />
-                <Text style={[Type.footnote, { color: theme.accentInk, flex: 1 }]}>{nameError ?? usernameError}</Text>
               </View>
-            )}
+              <TextInput
+                value={bio}
+                onChangeText={(text) => setBio(text.replace(/\n/g, ' '))}
+                maxLength={BIO_MAX}
+                multiline
+                submitBehavior="blurAndSubmit"
+                returnKeyType="done"
+                placeholder="Kendinden kısaca bahset"
+                placeholderTextColor={theme.textSecondary}
+                accessibilityLabel="Hakkında"
+                style={[Type.body, styles.bio, { color: theme.text }]}
+              />
+            </GlassCard>
+            {/* Uyarı satırının yeri hep ayrılı: uyarı çıkınca altındakiler kaymaz. */}
+            <View style={styles.errorRow} accessibilityLiveRegion="polite">
+              {(nameError || usernameError) && (
+                <>
+                  <Icon ios="exclamationmark.circle.fill" md="error" size={14} color={theme.accentInk} />
+                  <Text style={[Type.footnote, { color: theme.accentInk, flex: 1 }]} numberOfLines={1}>
+                    {nameError ?? usernameError}
+                  </Text>
+                </>
+              )}
+            </View>
           </View>
 
-          <View style={{ gap: 12 }}>
+          <View style={{ gap: 10 }}>
             <View style={styles.sectionHead}>
               <Text style={[Type.headline, { color: theme.text, flex: 1 }]} accessibilityRole="header">
                 İlgi alanları
@@ -290,7 +300,13 @@ export default function EditProfileScreen() {
                       styles.chip,
                       { backgroundColor: selected ? theme.text : theme.fill, opacity: disabled ? 0.4 : pressed ? 0.7 : 1 },
                     ]}>
-                    {selected && <Icon ios="checkmark" md="check" size={12} color={theme.inverseText} />}
+                    {/* Seçili olmayanda da işaret var: seçince çipin genişliği, dolayısıyla dizilişi değişmez. */}
+                    <Icon
+                      ios={selected ? 'checkmark' : 'plus'}
+                      md={selected ? 'check' : 'add'}
+                      size={12}
+                      color={selected ? theme.inverseText : theme.textSecondary}
+                    />
                     <Text style={[Type.footnote, { color: selected ? theme.inverseText : theme.text, fontWeight: '600' }]}>
                       {interest}
                     </Text>
@@ -306,22 +322,24 @@ export default function EditProfileScreen() {
 }
 
 /** Kartta bir satır: solda etiket, sağda alan (X'teki gibi). */
-function Field({ label, top, children }: { label: string; top?: boolean; children: ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   const theme = useTheme();
   return (
-    <View style={[styles.field, top && { alignItems: 'flex-start' }]}>
-      <Text style={[Type.subheadline, styles.label, top && styles.labelTop, { color: theme.textSecondary }]}>{label}</Text>
+    <View style={styles.field}>
+      <Text style={[Type.subheadline, styles.label, { color: theme.textSecondary }]}>{label}</Text>
       <View style={{ flex: 1 }}>{children}</View>
     </View>
   );
 }
 
-const COVER_H = 132;
-const AVATAR = 84;
+const COVER_H = 104;
+const AVATAR = 76;
+/** Hakkında kutusu: 150 karakter tam genişlikte 4 satıra sığıyor (DM Sans 17); bir satır pay. */
+const BIO_LINES = 5;
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: 48 },
-  content: { paddingHorizontal: Gap.page, paddingTop: 8, gap: 24 },
+  scroll: { paddingBottom: 8 },
+  content: { paddingHorizontal: Gap.page, paddingTop: 4, gap: 14 },
   photos: { paddingBottom: AVATAR / 2 - 4 },
   cover: { height: COVER_H, borderRadius: 24, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   blurred: { position: 'absolute', top: -30, left: -30, right: -30, bottom: -30 },
@@ -333,24 +351,24 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     bottom: 2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   card: { borderRadius: 24, paddingHorizontal: 16 },
-  field: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 52 },
+  field: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 50 },
   label: { width: 104 },
-  labelTop: { paddingTop: 14 },
-  input: { paddingVertical: 14, flex: 1 },
+  input: { paddingVertical: 13, flex: 1 },
   usernameRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  bio: { minHeight: 92, textAlignVertical: 'top' },
-  counter: { alignSelf: 'flex-end', marginTop: -6, marginBottom: 10, fontVariant: ['tabular-nums'] },
-  divider: { height: StyleSheet.hairlineWidth, marginLeft: 116 },
-  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 },
+  bioHead: { flexDirection: 'row', alignItems: 'center', paddingTop: 12, paddingBottom: 2 },
+  // Type.body satır yüksekliği 22.
+  bio: { height: BIO_LINES * 22 + 16, paddingTop: 2, paddingBottom: 14, textAlignVertical: 'top' },
+  divider: { height: StyleSheet.hairlineWidth },
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 18, paddingHorizontal: 4 },
   sectionHead: { flexDirection: 'row', alignItems: 'center' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
 });
