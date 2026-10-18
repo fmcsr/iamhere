@@ -45,9 +45,9 @@ function choose(title: string, choices: Choice[]) {
  * Profili düzenle (TASARIM.md §5.8, T-28): profildeki kalemden ve Ayarlar › Hesap'tan açılır. Üstte profildeki
  * gibi kapak ve üstüne binen profil fotoğrafı; dokununca fotoğraf seçilir. Altında ad, kullanıcı adı,
  * hakkında ve ilgi alanları (en fazla 5). Kapak seçilmezse son gecenin fotoğrafı bulanık kullanılır.
- * Sayfa tam ekran ve sabit: kaymaz, klavye açılınca da hiçbir şey yerinden oynamaz. Hakkında kutusu en uzun
- * yazıya (150 karakter) göre baştan büyük; çiplerde hep bir işaret (+ / ✓) olduğu için seçince genişlik değişmez.
- * Kaydedilmemiş değişiklik varsa ✕ önce sorar.
+ * Alttan açılan sayfa; içeriği kendi içinde kaymaz, klavye açılınca da hiçbir şey yerinden oynamaz. Hakkında kutusu
+ * en uzun yazıya (150 karakter) göre baştan büyük; çiplerde hep bir işaret (+ / ✓) olduğu için seçince genişlik değişmez.
+ * Kaydedilmemiş değişiklik varsa sayfa aşağı çekilerek kapanmaz; ✕ önce sorar.
  */
 export default function EditProfileScreen() {
   const theme = useTheme();
@@ -152,6 +152,8 @@ export default function EditProfileScreen() {
 
   return (
     <>
+      {/* Kaydedilmemiş değişiklik varken sayfa aşağı çekilerek kapanmaz. */}
+      <Stack.Screen options={{ gestureEnabled: !dirty }} />
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Button icon="xmark" accessibilityLabel="Vazgeç" onPress={close} />
       </Stack.Toolbar>
@@ -339,7 +341,7 @@ const BIO_LINES = 5;
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 8 },
-  content: { paddingHorizontal: Gap.page, paddingTop: 4, gap: 14 },
+  content: { paddingHorizontal: Gap.page, paddingTop: 4, gap: 12 },
   photos: { paddingBottom: AVATAR / 2 - 4 },
   cover: { height: COVER_H, borderRadius: 24, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   blurred: { position: 'absolute', top: -30, left: -30, right: -30, bottom: -30 },
@@ -363,11 +365,11 @@ const styles = StyleSheet.create({
   label: { width: 104 },
   input: { paddingVertical: 13, flex: 1 },
   usernameRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  bioHead: { flexDirection: 'row', alignItems: 'center', paddingTop: 12, paddingBottom: 2 },
+  bioHead: { flexDirection: 'row', alignItems: 'center', paddingTop: 10, paddingBottom: 2 },
   // Type.body satır yüksekliği 22.
-  bio: { height: BIO_LINES * 22 + 16, paddingTop: 2, paddingBottom: 14, textAlignVertical: 'top' },
+  bio: { height: BIO_LINES * 22 + 14, paddingTop: 2, paddingBottom: 12, textAlignVertical: 'top' },
   divider: { height: StyleSheet.hairlineWidth },
-  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 18, paddingHorizontal: 4 },
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 16, paddingHorizontal: 4 },
   sectionHead: { flexDirection: 'row', alignItems: 'center' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999 },
