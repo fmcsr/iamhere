@@ -5,12 +5,6 @@ import { Fonts } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 
-/** Mesajlar simgesi, sağ alt köşesinde küçücük noktayla (scripts/generate-tab-icons.swift üretir). */
-const MESSAGES_DOT = {
-  default: require('@/assets/images/tabIcons/messages-dot.png'),
-  selected: require('@/assets/images/tabIcons/messages-dot-fill.png'),
-};
-
 /**
  * Yerel sekme çubuğu: iOS 26+ Liquid Glass'ı sistem çizer. Akışta aşağı kaydırınca küçülür.
  * Seçili sekme fuşya (T-2). "Buradayım" yerel bir sekme (T-1); iOS 27'de "öne çıkan sekme"
@@ -21,7 +15,7 @@ const MESSAGES_DOT = {
 export default function TabsLayout() {
   const theme = useTheme();
   const { checkIn, conversations, isUnread } = useApp();
-  // Bekleyen istek ya da okunmamış birebir sohbet varsa Mesajlar'ın altında küçücük nokta (Instagram'daki gibi).
+  // Bekleyen istek ya da okunmamış birebir sohbet varsa Mesajlar'ın sağ altında küçücük kırmızı nokta (Instagram'daki gibi).
   // Mekân sohbetleri sayılmaz: kalabalık bir mekânda nokta hiç sönmezdi.
   const news = conversations.some((c) => c.kind === 'direct' && (c.status === 'request' || isUnread(c.id)));
 
@@ -52,9 +46,10 @@ export default function TabsLayout() {
       <NativeTabs.Trigger name="messages">
         <NativeTabs.Trigger.Label>Mesajlar</NativeTabs.Trigger.Label>
         {/* Sistemin rozeti simgenin sağ üstüne çıkıp seçili Profil sekmesinin camına taşıyordu; nokta simgenin içinde.
-            Şablon olarak boyanır: cam açığa ya da koyuya döndüğünde nokta da simgeyle birlikte döner. */}
+            Asset kataloğundan (scripts/generate-tab-icons.swift, plugins/with-xcassets.js): nokta kırmızı, simge açık
+            modda siyah, koyu modda beyaz. Seçiliyken iOS simgeyi fuşyaya boyar. */}
         {news ? (
-          <NativeTabs.Trigger.Icon src={MESSAGES_DOT} renderingMode="template" md="forum" />
+          <NativeTabs.Trigger.Icon xcasset={{ default: 'tab-messages-dot', selected: 'tab-messages-dot-selected' }} md="forum" />
         ) : (
           <NativeTabs.Trigger.Icon
             sf={{ default: 'bubble.left.and.bubble.right', selected: 'bubble.left.and.bubble.right.fill' }}
