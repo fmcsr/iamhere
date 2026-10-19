@@ -12,6 +12,7 @@ import { Gap, TitleFonts, Type } from '@/constants/theme';
 import type { User } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 type Tab = 'followers' | 'following';
 
@@ -21,6 +22,8 @@ type Tab = 'followers' | 'following';
  */
 export default function FollowsScreen() {
   const theme = useTheme();
+  const t = useT();
+  const { follow, follows } = t.profile;
   const params = useLocalSearchParams<{ user?: string; tab?: Tab }>();
   const userId = params.user ?? 'me';
   const { userById, followersOf, followingOf, following, followsMe, isMutual, toggleFollow, followRequests, toggleFollowRequest } = useApp();
@@ -37,9 +40,9 @@ export default function FollowsScreen() {
 
   const toggle = (u: User) => {
     if (following.has(u.id)) {
-      Alert.alert(`@${u.username} takibi bırakılsın mı?`, undefined, [
-        { text: 'Vazgeç', style: 'cancel' },
-        { text: 'Takibi bırak', style: 'destructive', onPress: () => toggleFollow(u.id) },
+      Alert.alert(follow.unfollowConfirm(u.username), undefined, [
+        { text: t.actions.cancel, style: 'cancel' },
+        { text: follow.unfollow, style: 'destructive', onPress: () => toggleFollow(u.id) },
       ]);
     } else if (u.isPrivate) {
       toggleFollowRequest(u.id);
@@ -54,21 +57,21 @@ export default function FollowsScreen() {
       <PageColumn style={styles.content}>
         <SegmentedPicker<Tab>
           options={[
-            { value: 'followers', label: `${followers.length} takipçi` },
-            { value: 'following', label: `${followingList.length} takip` },
+            { value: 'followers', label: follows.followers(followers.length) },
+            { value: 'following', label: follows.following(followingList.length) },
           ]}
           value={tab}
           onChange={setTab}
-          accessibilityLabel="Liste"
+          accessibilityLabel={follows.a11y}
         />
-        <SearchField value={query} onChangeText={setQuery} placeholder="Ara" />
+        <SearchField value={query} onChangeText={setQuery} placeholder={follows.search} />
 
         <View>
           {people.map((u) => {
             const isMe = u.id === 'me';
             const iFollow = following.has(u.id);
             const requested = followRequests.has(u.id);
-            const hint = isMe ? 'Sen' : isMutual(u.id) ? 'Karşılıklı takipleşiyorsunuz' : followsMe(u.id) ? 'Seni takip ediyor' : `@${u.username}`;
+            const hint = isMe ? follows.you : isMutual(u.id) ? follows.mutual : followsMe(u.id) ? follows.followsYou : `@${u.username}`;
             return (
               <Pressable
                 key={u.id}
@@ -87,7 +90,7 @@ export default function FollowsScreen() {
                 </View>
                 {!isMe && (
                   <Pill
-                    title={iFollow ? 'Takip ediliyor' : requested ? 'İstek gönderildi' : followsMe(u.id) ? 'Geri takip et' : 'Takip et'}
+                    title={iFollow ? follow.following : requested ? follow.requested : followsMe(u.id) ? follow.followBack : follow.follow}
                     tone={iFollow || requested ? 'fill' : 'ink'}
                     onPress={() => toggle(u)}
                   />
@@ -97,7 +100,7 @@ export default function FollowsScreen() {
           })}
           {people.length === 0 && (
             <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center', paddingVertical: 24 }]}>
-              {q ? `“${query}” adında kimse yok.` : tab === 'followers' ? 'Henüz takipçi yok.' : 'Henüz kimseyi takip etmiyor.'}
+              {q ? follows.noMatch(query) : tab === 'followers' ? follows.noFollowers : follows.noFollowing}
             </Text>
           )}
         </View>

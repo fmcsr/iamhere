@@ -8,15 +8,9 @@ import { Text } from '@/components/text';
 import { Gap, TitleFonts, Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 import type { Night } from '@/lib/nights';
 import { genitive } from '@/lib/tr';
-
-/** Kendi takviminin kimlere açık olduğu, "Şu an burada kimler görsün" ayarına bağlı. */
-const VISIBILITY = {
-  herkes: 'Herkes görebilir',
-  karsilikli: 'Yalnızca karşılıklı takipleştiklerin görür',
-  kimse: 'Yalnızca sen görürsün',
-} as const;
 
 /**
  * Anılar (TASARIM.md §5.8): profildeki "anı" sayısına dokununca açılan takvim. Dışarıda olunan
@@ -25,6 +19,7 @@ const VISIBILITY = {
  */
 export default function MemoriesScreen() {
   const theme = useTheme();
+  const t = useT();
   const { user: userId = 'me' } = useLocalSearchParams<{ user?: string }>();
   const { posts, settings, venueById, userById, nightsOf, isMutual } = useApp();
   const mine = userId === 'me';
@@ -41,7 +36,7 @@ export default function MemoriesScreen() {
 
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
-      <Stack.Title {...TitleFonts}>{mine ? 'Anıların' : `${genitive(owner.displayName.split(' ')[0])} anıları`}</Stack.Title>
+      <Stack.Title {...TitleFonts}>{mine ? t.profile.memories.titleMine : t.profile.memories.title(genitive(owner.displayName.split(' ')[0], t))}</Stack.Title>
       <PageColumn style={styles.content}>
         {allowed ? (
           <NightCalendar
@@ -51,14 +46,12 @@ export default function MemoriesScreen() {
             onOpenNight={openNight}
             privacy={
               mine
-                ? { label: VISIBILITY[settings.presenceVisibility], onPress: () => router.push('/settings') }
-                : { label: 'Karşılıklı takipleştiğiniz için görüyorsun' }
+                ? { label: t.profile.memories.visibility[settings.presenceVisibility], onPress: () => router.push('/settings') }
+                : { label: t.profile.memories.mutual }
             }
           />
         ) : (
-          <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-            Anılarını yalnızca karşılıklı takipleştikleri görür.
-          </Text>
+          <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>{t.profile.memories.hidden}</Text>
         )}
       </PageColumn>
     </ScrollView>

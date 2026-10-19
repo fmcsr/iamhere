@@ -19,6 +19,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { Icon } from '@/components/icon';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 const TRACK_W = 76;
 const TRACK_H = 236;
@@ -38,6 +39,7 @@ const DONE_AT = 0.8;
 export function PinSlider({ locked, onPinned }: { locked: boolean; onPinned: () => void }) {
   const enabled = !locked;
   const theme = useTheme();
+  const t = useT();
   const y = useSharedValue(0);
   const pinned = useSharedValue(0);
   const hint = useSharedValue(0);
@@ -94,8 +96,8 @@ export function PinSlider({ locked, onPinned }: { locked: boolean; onPinned: () 
         style={[styles.track, { backgroundColor: enabled ? theme.accent : theme.fill }]}
         accessible
         accessibilityRole="adjustable"
-        accessibilityLabel={enabled ? 'Yer bildir: iğneyi aşağı kaydır' : 'Yer bildirme kapalı: mekân çok uzakta'}
-        accessibilityActions={enabled ? [{ name: 'activate', label: 'Yer bildir' }] : []}
+        accessibilityLabel={enabled ? t.home.sheet.slide : t.home.sheet.locked}
+        accessibilityActions={enabled ? [{ name: 'activate', label: t.home.checkIn }] : []}
         onAccessibilityAction={() => {
           pin();
           onPinned();

@@ -23,8 +23,11 @@ import {
   type Plan,
   type Post,
   type User,
+  type Venue,
   followsBetween,
 } from './mock';
+import { EN } from './mock.en';
+import { resolveLang, setLang, type Lang, type LanguageSetting } from '@/i18n';
 import { collectNights, nightKeyOf, tonightKey } from '@/lib/nights';
 import { loadedPhoto, storedPhoto } from '@/lib/profile';
 
@@ -42,6 +45,9 @@ export type AppearanceUI = 'onizleme' | 'ios' | 'menu';
 export type Trial = { backdrop: BackdropVariant; appearanceUI: AppearanceUI };
 
 const TRIAL_KEY = 'here.trial';
+/** Uygulamanın dili (T-29); cihazda saklanır. */
+const LANGUAGE_KEY = 'here.language';
+const LANGUAGES: LanguageSetting[] = ['system', 'tr', 'en'];
 /** Profilde düzenlenen alanlar (Profili düzenle); cihazda saklanır. */
 const PROFILE_KEY = 'here.profile';
 type ProfileEdit = Pick<User, 'displayName' | 'username' | 'bio' | 'interests' | 'avatarUri' | 'coverUri'>;
@@ -54,6 +60,8 @@ type Settings = {
   /** Yer bildirirken paylaşımın kitlesi; yer bildirme sayfasında seçim yok, hep "herkes" (ROTA.md §14, S2). */
   lastAudience: Audience;
   appearance: AppearanceMode;
+  /** Ayarlar › Dil: Sistem / Türkçe / English (T-29). */
+  language: LanguageSetting;
 };
 
 /** Seçimi tüm yerel arayüze uygular (sekme çubuğu, cam, haritalar, SwiftUI dahil). */
@@ -71,12 +79,12 @@ type CheckInInput = { venueId: string; text: string; imageUri?: string; audience
 const ANON_ALIAS = 'Gezgin Martı 17';
 
 function useAppState() {
-  const [me, setMe] = useState<User>(ME);
-  const [posts, setPosts] = useState<Post[]>(POSTS);
+  const [rawMe, setMe] = useState<User>(ME);
+  const [rawPosts, setPosts] = useState<Post[]>(POSTS);
   const [liked, setLiked] = useState<Set<string>>(() => new Set(['p2']));
   const [following, setFollowing] = useState<Set<string>>(() => new Set(I_FOLLOW));
   const [conversations, setConversations] = useState<Conversation[]>(CONVERSATIONS);
-  const [messages, setMessages] = useState<Message[]>(MESSAGES);
+  const [rawMessages, setMessages] = useState<Message[]>(MESSAGES);
   const [checkIn, setCheckIn] = useState<CheckIn | null>(null);
   const [joinedPlans, setJoinedPlans] = useState<Set<string>>(() => new Set());
   const [readConversations, setReadConversations] = useState<Set<string>>(() => new Set());
@@ -88,14 +96,50 @@ function useAppState() {
     presenceVisibility: 'karsilikli',
     lastAudience: 'herkes',
     appearance: 'system',
+    language: 'system',
   });
   const [appearanceLoaded, setAppearanceLoaded] = useState(false);
   const [trial, setTrialState] = useState<Trial>({ backdrop: 'ust', appearanceUI: 'onizleme' });
 
+  // İngilizcede prototip verisinin İngilizcesi gösterilir (mock.en.ts); kullanıcının kendi yazdıkları olduğu gibi kalır.
+  // Durum (state) hep ham veriyi tutar; okuyan her şey aşağıdaki çevrilmiş hâlleri görür.
+  const lang: Lang = resolveLang(settings.language);
+  const en = lang === 'en';
+  const alias = (name?: string) => (en && name ? (EN.aliases[name] ?? name) : name);
+  const localUser = (u: User): User => (en && EN.bios[u.id] ? { ...u, bio: EN.bios[u.id] } : u);
+  const localPost = (p: Post): Post => (en ? { ...p, text: p.text && (EN.posts[p.id] ?? p.text), anonAlias: alias(p.anonAlias) } : p);
+  const localMessage = (m: Message): Message =>
+    en
+      ? {
+          ...m,
+          text: EN.messages[m.id] ?? m.text,
+          anonAlias: alias(m.anonAlias),
+          plan: m.plan && EN.plans[m.id] ? { ...m.plan, ...EN.plans[m.id] } : m.plan,
+        }
+      : m;
+  const localVenue = (v: Venue): Venue => (en && EN.events[v.id] ? { ...v, event: EN.events[v.id] } : v);
+  // Kendi biyografin yalnızca prototipteki hâliyle duruyorsa çevrilir; yazdığın metin kalır.
+  const me = en && rawMe.bio === ME.bio && EN.bios.me ? { ...rawMe, bio: EN.bios.me } : rawMe;
+  const posts = en ? rawPosts.map(localPost) : rawPosts;
+  const messages = en ? rawMessages.map(localMessage) : rawMessages;
+  const venues = en ? VENUES.map(localVenue) : VENUES;
+  const people = en ? USERS.map(localUser) : USERS;
+  const others = en ? OTHERS.map(localUser) : OTHERS;
+
   // Kayıtlı görünüm tercihini, tasarım denemesini ve düzenlenen profili açılışta uygula.
   useEffect(() => {
-    Promise.all([AsyncStorage.getItem(APPEARANCE_KEY), AsyncStorage.getItem(TRIAL_KEY), AsyncStorage.getItem(PROFILE_KEY)])
-      .then(([value, saved, profile]) => {
+    Promise.all([
+      AsyncStorage.getItem(APPEARANCE_KEY),
+      AsyncStorage.getItem(TRIAL_KEY),
+      AsyncStorage.getItem(PROFILE_KEY),
+      AsyncStorage.getItem(LANGUAGE_KEY),
+    ])
+      .then(([value, saved, profile, language]) => {
+        if (LANGUAGES.includes(language as LanguageSetting)) {
+          const setting = language as LanguageSetting;
+          setLang(resolveLang(setting));
+          setSettings((s) => ({ ...s, language: setting }));
+        }
         if (profile) {
           try {
             const edit = JSON.parse(profile) as Partial<ProfileEdit>;
@@ -124,6 +168,13 @@ function useAppState() {
     AsyncStorage.setItem(TRIAL_KEY, JSON.stringify(next)).catch(() => {});
   };
 
+  /** Ayarlar › Dil (T-29). Yardımcılar (zaman, mesafe, tarih) yeni dili yeniden çizimden önce görsün diye önce o. */
+  const setLanguage = (language: LanguageSetting) => {
+    setLang(resolveLang(language));
+    setSettings((s) => ({ ...s, language }));
+    AsyncStorage.setItem(LANGUAGE_KEY, language).catch(() => {});
+  };
+
   const setAppearance = (mode: AppearanceMode) => {
     applyAppearance(mode);
     setSettings((s) => ({ ...s, appearance: mode }));
@@ -131,7 +182,9 @@ function useAppState() {
   };
 
   /** Profili düzenle › Kaydet. Fotoğraflar önceden belgeler klasörüne kopyalanmış olmalı (keepPhoto). */
-  const updateMe = (edit: ProfileEdit) => {
+  const updateMe = (changes: ProfileEdit) => {
+    // Çevrilmiş varsayılan biyografi değiştirilmeden kaydedilirse ham (Türkçe) hâli korunur.
+    const edit = { ...changes, bio: changes.bio === me.bio && rawMe.bio === ME.bio ? ME.bio : changes.bio };
     setMe((m) => ({ ...m, ...edit }));
     const stored: ProfileEdit = { ...edit, avatarUri: storedPhoto(edit.avatarUri), coverUri: storedPhoto(edit.coverUri) };
     AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(stored)).catch(() => {});
@@ -140,9 +193,9 @@ function useAppState() {
   /** Kullanıcı adı başkasında var mı (büyük/küçük harf fark etmez). */
   const usernameTaken = (username: string) => OTHERS.some((u) => u.username.toLowerCase() === username.toLowerCase());
 
-  const everyone = [me, ...OTHERS];
-  const userById = (id: string): User => (id === 'me' ? me : (OTHERS.find((u) => u.id === id) ?? me));
-  const venueById = (id: string) => VENUES.find((v) => v.id === id);
+  const everyone = [me, ...others];
+  const userById = (id: string): User => (id === 'me' ? me : (others.find((u) => u.id === id) ?? me));
+  const venueById = (id: string) => venues.find((v) => v.id === id);
   const followsMe = (userId: string) => FOLLOWS_ME.has(userId);
   const isMutual = (userId: string) => following.has(userId) && followsMe(userId);
 
@@ -198,7 +251,7 @@ function useAppState() {
 
   /** Bu gece bu mekânda görünen (anonim olmayan) kişiler; takip ettiklerin önde. */
   const peopleAt = (venueId: string): User[] =>
-    USERS.filter((u) => tonightPostOf(u.id)?.venueId === venueId).sort(
+    people.filter((u) => tonightPostOf(u.id)?.venueId === venueId).sort(
       (a, b) => Number(following.has(b.id)) - Number(following.has(a.id)),
     );
 
@@ -307,14 +360,15 @@ function useAppState() {
     me,
     updateMe,
     usernameTaken,
-    users: OTHERS,
-    venues: VENUES,
+    users: others,
+    venues,
     posts,
     liked,
     following,
     conversations,
     messages,
-    checkIn,
+    // Takma ad da seçili dilde ("Gezgin Martı 17" · "Wandering Seagull 17").
+    checkIn: checkIn && en ? { ...checkIn, anonAlias: alias(checkIn.anonAlias) } : checkIn,
     joinedPlans,
     settings,
     appearanceLoaded,
@@ -349,6 +403,8 @@ function useAppState() {
     declineRequest,
     updateSettings: (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })),
     setAppearance,
+    lang,
+    setLanguage,
   };
 }
 

@@ -7,9 +7,11 @@ import { GlassCard } from '@/components/glass';
 import { Icon, type SFSymbolName } from '@/components/icon';
 import { Text } from '@/components/text';
 import { Radius, Type } from '@/constants/theme';
-import { CATEGORY_LABEL, type Category, type Message, type Post, type User, type Venue } from '@/data/mock';
+import type { Category, Message, Post, User, Venue } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { strings, type Strings } from '@/i18n';
+import { useT } from '@/i18n/use-t';
 import { joinNames } from '@/lib/tr';
 
 type IconPair = { ios: SFSymbolName; md: Parameters<typeof Icon>[0]['md'] };
@@ -22,24 +24,29 @@ export const CATEGORY_ICON: Record<Category, IconPair> = {
   acik: { ios: 'tree', md: 'park' },
 };
 
-export function minutesAgo(ts: number): string {
+/**
+ * Dile bağlı yardımcılar sözlüğü (`t`) parametre olarak da alır: bileşenler `useT()` sonucunu verir ki React Compiler
+ * sonucu dil değişince yeniden hesaplasın (yalnızca sayıya bağlı önbellekte eski dil kalıyordu).
+ */
+export function minutesAgo(ts: number, t: Strings = strings()): string {
+  const { time } = t;
   const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
-  if (m < 1) return 'şimdi';
-  if (m < 60) return `${m} dk`;
-  if (m < 24 * 60) return `${Math.floor(m / 60)} sa`;
+  if (m < 1) return time.now;
+  if (m < 60) return time.minutes(m);
+  if (m < 24 * 60) return time.hours(Math.floor(m / 60));
   // Paylaşımlar kalıcı (K-16): eski olanlar gün olarak.
   const days = Math.floor(m / (24 * 60));
-  return days === 1 ? 'dün' : `${days} g`;
+  return days === 1 ? time.yesterday : time.days(days);
 }
 
 /** Sohbet listesi ve önizlemeler için tek satırlık mesaj metni (plan kartları dahil). */
-export function messagePreview(message: Message): string {
-  return message.plan ? `${message.plan.emoji} Plan: ${message.plan.title} · ${message.plan.time}` : message.text;
+export function messagePreview(message: Message, t: Strings = strings()): string {
+  return message.plan ? `${message.plan.emoji} ${t.plan}: ${message.plan.title} · ${message.plan.time}` : message.text;
 }
 
-export function formatDistance(meters: number): string {
-  // Türkçe ondalık virgül: "1,8 km".
-  return meters < 1000 ? `${meters} m` : `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
+export function formatDistance(meters: number, t: Strings = strings()): string {
+  // Türkçede ondalık virgül ("1,8 km"), İngilizcede nokta ("1.8 km").
+  return meters < 1000 ? `${meters} m` : `${(meters / 1000).toFixed(1).replace('.', t.decimal)} km`;
 }
 
 export function Avatar({
@@ -100,18 +107,18 @@ export function AvatarStack({ users, size = 26 }: { users: User[]; size?: number
 }
 
 /**
- * "● 342 burada": nokta fuşya, metin nötr. Sayı hep bir cam kartın ya da cam kontrolün üstünde
+ * "● 342 kişi burada": nokta fuşya, metin nötr. `text` verilmezse yalnızca kişi sayısı ("342 kişi"). Sayı hep bir cam kartın ya da cam kontrolün üstünde
  * durduğu için küçük fuşya metin kullanılmaz (TASARIM.md §2.3 kural 5): koyu modda gri camda
  * kontrast 4.5:1'in altına düşüyor, iOS 27'nin cam renk ayarı da zemini değiştiriyor.
  */
-export function LiveCount({ count, suffix = 'kişi' }: { count: number; suffix?: string }) {
+export function LiveCount({ count, text }: { count: number; text?: string }) {
   const theme = useTheme();
+  const t = useT();
+  const label = text ?? t.people(count);
   return (
-    <View style={styles.live} accessible accessibilityLabel={`${count} ${suffix}`}>
+    <View style={styles.live} accessible accessibilityLabel={label}>
       <View style={[styles.dot, { backgroundColor: theme.accent }]} />
-      <Text style={{ color: theme.text, fontWeight: '600', fontSize: 13 }}>
-        {count} {suffix}
-      </Text>
+      <Text style={{ color: theme.text, fontWeight: '600', fontSize: 13 }}>{label}</Text>
     </View>
   );
 }
@@ -142,6 +149,7 @@ export function VenueRow({
   subtitle?: string;
 }) {
   const theme = useTheme();
+  const t = useT();
   return (
     <Pressable
       accessibilityRole="button"
@@ -153,7 +161,7 @@ export function VenueRow({
           {venue.name}
         </Text>
         <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
-          {subtitle ?? `${CATEGORY_LABEL[venue.category]} · ${formatDistance(venue.distanceM)}`}
+          {subtitle ?? `${t.categories[venue.category]} · ${formatDistance(venue.distanceM, t)}`}
         </Text>
       </View>
       {trailing ?? <LiveCount count={venue.here} />}
@@ -163,15 +171,16 @@ export function VenueRow({
 
 /** Bildir / Engelle / Sessize al: her kişide ve paylaşımda bir dokunuş uzakta (TASARIM.md §1). */
 export function showSafetyMenu(title: string) {
-  const options = ['Bildir', 'Engelle', 'Sessize al'];
-  const note = (index: number) => Alert.alert(options[index], 'Prototipte bu işlem henüz kaydedilmiyor.');
+  const { safety, actions } = strings();
+  const options = [safety.report, safety.block, safety.mute];
+  const note = (index: number) => Alert.alert(options[index], safety.notSaved);
   if (Platform.OS === 'ios') {
     ActionSheetIOS.showActionSheetWithOptions(
-      { title, options: [...options, 'Vazgeç'], cancelButtonIndex: 3, destructiveButtonIndex: [0, 1] },
+      { title, options: [...options, actions.cancel], cancelButtonIndex: 3, destructiveButtonIndex: [0, 1] },
       (index) => index < 3 && note(index),
     );
   } else {
-    Alert.alert(title, undefined, [...options.map((text, i) => ({ text, onPress: () => note(i) })), { text: 'Vazgeç', style: 'cancel' }]);
+    Alert.alert(title, undefined, [...options.map((text, i) => ({ text, onPress: () => note(i) })), { text: actions.cancel, style: 'cancel' }]);
   }
 }
 
@@ -181,6 +190,7 @@ export function showSafetyMenu(title: string) {
  */
 export function PostCard({ post }: { post: Post }) {
   const theme = useTheme();
+  const t = useT();
   const { userById, venueById, liked, toggleLike, checkIn } = useApp();
   const lastTap = useRef(0);
   const user = userById(post.userId);
@@ -193,9 +203,9 @@ export function PostCard({ post }: { post: Post }) {
   const withLine = post.tagged?.length
     ? post.tagged.includes('me')
       ? others.length
-        ? `Seninle ve ${joinNames(others)} ile`
-        : 'Seninle'
-      : `${joinNames(others)} ile`
+        ? t.card.withYouAnd(joinNames(others, t))
+        : t.card.withYou
+      : t.card.withNames(joinNames(others, t))
     : undefined;
 
   const openVenue = () => venue && router.push({ pathname: '/venue/[id]', params: { id: venue.id } });
@@ -217,7 +227,7 @@ export function PostCard({ post }: { post: Post }) {
         <View style={{ flex: 1, gap: 1 }}>
           <Text numberOfLines={1} style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>
             {name}
-            <Text style={{ color: theme.textSecondary, fontWeight: '400' }}> · {minutesAgo(post.createdAt)}</Text>
+            <Text style={{ color: theme.textSecondary, fontWeight: '400' }}> · {minutesAgo(post.createdAt, t)}</Text>
           </Text>
           {venue && (
             <Pressable onPress={openVenue} hitSlop={6} accessibilityRole="link" accessibilityLabel={`${venue.name}, ${venue.area}`}>
@@ -239,20 +249,20 @@ export function PostCard({ post }: { post: Post }) {
           onPress={() => showSafetyMenu(name)}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Diğer seçenekler"
+          accessibilityLabel={t.actions.more}
           style={styles.iconButton}>
           <Icon ios="ellipsis" md="more_horiz" size={18} color={theme.textSecondary} />
         </Pressable>
       </View>
 
       {post.imageUri && (
-        <Pressable onPress={onPhotoPress} accessibilityHint="Beğenmek için iki kez dokun">
+        <Pressable onPress={onPhotoPress} accessibilityHint={t.card.doubleTapToLike}>
           <Image
             source={{ uri: post.imageUri }}
             style={styles.cardImage}
             contentFit="cover"
             transition={200}
-            accessibilityLabel={`${venue?.name ?? ''} fotoğrafı`}
+            accessibilityLabel={t.card.photoAt(venue?.name ?? '')}
           />
         </Pressable>
       )}
@@ -261,7 +271,7 @@ export function PostCard({ post }: { post: Post }) {
       <View style={styles.cardActions}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Beğen, ${post.likes + (isLiked ? 1 : 0)}`}
+          accessibilityLabel={t.card.like(post.likes + (isLiked ? 1 : 0))}
           accessibilityState={{ selected: isLiked }}
           onPress={() => toggleLike(post.id)}
           hitSlop={8}
@@ -271,7 +281,7 @@ export function PostCard({ post }: { post: Post }) {
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Paylaş"
+          accessibilityLabel={t.actions.share}
           onPress={() => Share.share({ message: `${venue?.name ?? ''} · HERE #iamhere` })}
           hitSlop={8}
           style={styles.action}>
@@ -284,7 +294,7 @@ export function PostCard({ post }: { post: Post }) {
             hitSlop={8}
             onPress={() => (iAmHere ? router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } }) : openVenue())}
             style={styles.action}>
-            <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{iAmHere ? 'Sohbete git' : 'Mekân'}</Text>
+            <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{iAmHere ? t.card.goToChat : t.card.venue}</Text>
             <Icon ios="chevron.right" md="chevron_right" size={12} color={theme.textSecondary} />
           </Pressable>
         )}
@@ -310,17 +320,18 @@ export function VenueCard({
   onPress?: () => void;
 }) {
   const theme = useTheme();
+  const t = useT();
   return (
     <Pressable
       onPress={onPress ?? (() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } }))}
       accessibilityRole="button"
-      accessibilityLabel={`${venue.name}, ${CATEGORY_LABEL[venue.category]}, ${formatDistance(venue.distanceM)}, ${venue.here} kişi burada`}
+      accessibilityLabel={t.venueCard.a11y(venue.name, t.categories[venue.category], formatDistance(venue.distanceM, t), venue.here)}
       style={({ pressed }) => [{ width, gap: 8, opacity: pressed ? 0.8 : 1 }]}>
       <View>
         <Image source={{ uri: venue.coverUri }} style={styles.venuePhoto} contentFit="cover" transition={200} />
         <View style={styles.crowd}>
           <View style={[styles.dot, { backgroundColor: theme.accent }]} />
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>{venue.here} kişi</Text>
+          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>{t.people(venue.here)}</Text>
         </View>
       </View>
       <View style={{ gap: 2 }}>
@@ -328,15 +339,14 @@ export function VenueCard({
           {venue.name}
         </Text>
         <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
-          {CATEGORY_LABEL[venue.category]} · {venue.area} · {formatDistance(venue.distanceM)}
+          {t.categories[venue.category]} · {venue.area} · {formatDistance(venue.distanceM, t)}
         </Text>
       </View>
       {friends.length > 0 && (
         <View style={styles.friends}>
           <AvatarStack users={friends.slice(0, 3)} size={20} />
           <Text style={[Type.footnote, { color: theme.text, flexShrink: 1 }]} numberOfLines={1}>
-            {friends[0].displayName.split(' ')[0]}
-            {friends.length > 1 ? ` ve ${friends.length - 1} kişi daha` : ''} orada
+            {t.venueCard.friendsThere(friends[0].displayName.split(' ')[0], friends.length - 1)}
           </Text>
         </View>
       )}
@@ -347,6 +357,7 @@ export function VenueCard({
 /** "Bu gece" satırı: saat, etkinlik, mekân. */
 export function EventRow({ venue, time, title }: { venue: Venue; time: string; title: string }) {
   const theme = useTheme();
+  const t = useT();
   return (
     <Pressable
       onPress={() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } })}
@@ -359,7 +370,7 @@ export function EventRow({ venue, time, title }: { venue: Venue; time: string; t
           {title}
         </Text>
         <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
-          {venue.name} · {formatDistance(venue.distanceM)}
+          {venue.name} · {formatDistance(venue.distanceM, t)}
         </Text>
       </View>
       <View style={{ alignSelf: 'center' }}>

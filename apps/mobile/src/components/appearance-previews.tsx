@@ -6,8 +6,8 @@ import { HereMark } from '@/components/here-mark';
 import { Backdrops, type BackdropVariant } from '@/constants/theme';
 import type { AppearanceMode } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
-const LABEL: Record<AppearanceMode, string> = { system: 'Sistem', light: 'Açık', dark: 'Koyu' };
 const W = 84;
 const H = 148;
 
@@ -27,6 +27,7 @@ export function AppearancePreviews({
   variant: BackdropVariant;
 }) {
   const theme = useTheme();
+  const label = useT().settings.appearance.mode;
   return (
     <View style={[styles.row, modes.length === 2 && styles.rowWide]}>
       {modes.map((mode) => {
@@ -37,7 +38,7 @@ export function AppearancePreviews({
             onPress={() => onSelect(mode)}
             accessibilityRole="radio"
             accessibilityState={{ selected: active }}
-            accessibilityLabel={LABEL[mode]}
+            accessibilityLabel={label[mode]}
             style={styles.item}>
             <View style={[styles.frame, { borderColor: active ? theme.accent : theme.separator }]}>
               {mode === 'system' ? (
@@ -54,7 +55,7 @@ export function AppearancePreviews({
                 <MiniScreen scheme={mode} variant={variant} />
               )}
             </View>
-            <Text style={{ color: theme.text, fontSize: 15, fontWeight: '500' }}>{LABEL[mode]}</Text>
+            <Text style={{ color: theme.text, fontSize: 15, fontWeight: '500' }}>{label[mode]}</Text>
             <Icon
               ios={active ? 'checkmark.circle.fill' : 'circle'}
               md={active ? 'check_circle' : 'radio_button_unchecked'}

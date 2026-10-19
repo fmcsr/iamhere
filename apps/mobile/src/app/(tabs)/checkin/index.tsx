@@ -15,6 +15,7 @@ import { Type } from '@/constants/theme';
 import { CHECK_IN_RADIUS_M } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 /** Listede 1 km içindeki mekânlar (K-02); aranınca hepsi. */
 const LIST_RADIUS_M = 1000;
@@ -26,6 +27,7 @@ const LIST_RADIUS_M = 1000;
  */
 export default function CheckInScreen() {
   const theme = useTheme();
+  const t = useT();
   const { venues, checkIn, venueById } = useApp();
   const [query, setQuery] = useState('');
 
@@ -47,22 +49,22 @@ export default function CheckInScreen() {
       <ScrollView contentInsetAdjustmentBehavior="automatic" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
         <PageColumn style={styles.content}>
           {/* Başlık yok: sekme zaten "Buradayım". Arama alanı içerikle kayar; üstte yalnızca ada bulanıklığı. */}
-          <SearchField value={query} onChangeText={setQuery} placeholder="Mekân ara" />
+          <SearchField value={query} onChangeText={setQuery} placeholder={t.home.checkin.search} />
 
           {current && (
             <GlassCard style={styles.card}>
               <View style={styles.currentRow}>
                 <VenueIcon category={current.category} size={48} />
                 <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={[Type.footnote, { color: theme.textSecondary }]}>Şu an buradasın</Text>
+                  <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.home.checkin.current}</Text>
                   <Text style={[Type.headline, { color: theme.text }]} numberOfLines={1}>
                     {current.name}
                   </Text>
-                  <LiveCount count={current.here} suffix="kişi burada" />
+                  <LiveCount count={current.here} text={t.live.here(current.here)} />
                 </View>
               </View>
               <ActionButton
-                title="Mekân sohbetine git"
+                title={t.home.checkin.goToChat}
                 systemImage="bubble.left.and.bubble.right.fill"
                 fullWidth
                 onPress={() => router.push({ pathname: '/chat/[id]', params: { id: `c-${current.id}` } })}
@@ -84,12 +86,10 @@ export default function CheckInScreen() {
           </View>
           <View style={styles.note}>
             <Icon ios="lock.shield" md="shield" size={16} color={theme.textSecondary} />
-            <Text style={[Type.footnote, { color: theme.textSecondary, flex: 1 }]}>
-              Tam konumun kimseyle paylaşılmaz. Diğerleri yalnızca seçtiğin mekânı görür.
-            </Text>
+            <Text style={[Type.footnote, { color: theme.textSecondary, flex: 1 }]}>{t.home.checkin.privacy}</Text>
           </View>
 
-          <Text style={[Type.section, { color: theme.text }]}>Yakındaki mekânlar</Text>
+          <Text style={[Type.section, { color: theme.text }]}>{t.home.checkin.nearby}</Text>
           <GlassCard style={styles.list}>
             {nearby.map((v, i) => {
               const tooFar = v.distanceM > CHECK_IN_RADIUS_M;
@@ -99,7 +99,7 @@ export default function CheckInScreen() {
                   <VenueRow
                     venue={v}
                     dimmed={tooFar}
-                    subtitle={tooFar ? `${formatDistance(v.distanceM)} · Mekânda olmalısın` : undefined}
+                    subtitle={tooFar ? `${formatDistance(v.distanceM, t)} · ${t.home.checkin.mustBeThere}` : undefined}
                     trailing={tooFar ? <Icon ios="lock.fill" md="lock" size={15} color={theme.textSecondary} /> : undefined}
                     onPress={() => openVenue(v.id)}
                   />
@@ -107,13 +107,10 @@ export default function CheckInScreen() {
               );
             })}
             {nearby.length === 0 && (
-              <Text style={[Type.subheadline, { color: theme.textSecondary, paddingVertical: 16 }]}>“{query}” için yakında mekân yok.</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary, paddingVertical: 16 }]}>{t.home.checkin.empty(query)}</Text>
             )}
           </GlassCard>
-          <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-            Yer bildirmek için mekâna {CHECK_IN_RADIUS_M} m’den yakın olmalısın; böylece sohbetlerde gerçekten orada olanlar buluşur.
-            Prototipte konum sahte, mekânlar Kadıköy’de.
-          </Text>
+          <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.home.checkin.note(CHECK_IN_RADIUS_M)}</Text>
         </PageColumn>
       </ScrollView>
       <StatusBarBlur />

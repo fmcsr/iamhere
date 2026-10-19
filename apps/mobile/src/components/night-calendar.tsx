@@ -8,7 +8,8 @@ import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
 import type { Venue } from '@/data/mock';
 import { useTheme } from '@/hooks/use-theme';
-import { MONTHS, WEEKDAYS_SHORT, dayNumber, keyOf, longDate, monthLayout, tonightKey, type Night } from '@/lib/nights';
+import { useT } from '@/i18n/use-t';
+import { dayNumber, keyOf, longDate, monthLayout, tonightKey, type Night } from '@/lib/nights';
 
 const GAP = 6;
 
@@ -32,6 +33,7 @@ export function NightCalendar({
   privacy?: { label: string; onPress?: () => void };
 }) {
   const theme = useTheme();
+  const t = useT();
   const today = tonightKey();
   const [ty, tm] = today.split('-').map(Number);
   const [month, setMonth] = useState({ year: ty, month: tm - 1 });
@@ -51,18 +53,21 @@ export function NightCalendar({
   while (cells.length % 7) cells.push(null);
   const rows = Array.from({ length: cells.length / 7 }, (_, r) => cells.slice(r * 7, r * 7 + 7));
   const monthNights = nights.filter((n) => n.key.startsWith(keyOf(month.year, month.month, 1).slice(0, 7))).length;
+  // Ay ve gün adları doğrudan `t`'den: React Compiler, monthName() gibi dili kendisi okuyan yardımcıların sonucunu
+  // yalnızca argümanları değişince yeniden hesaplıyor (dil değişince eski dil kalırdı).
+  const monthLabel = t.date.months[month.month];
 
   return (
     <View style={styles.wrap}>
       <SectionTitle
-        title={`${MONTHS[month.month]} ${month.year}`}
+        title={`${monthLabel} ${month.year}`}
         right={
           <View style={styles.monthNav}>
             <Pressable
               onPress={() => shift(-1)}
               hitSlop={6}
               accessibilityRole="button"
-              accessibilityLabel="Önceki ay"
+              accessibilityLabel={t.profile.calendar.previous}
               style={[styles.monthButton, { backgroundColor: theme.fill }]}>
               <Icon ios="chevron.left" md="chevron_left" size={14} color={theme.text} />
             </Pressable>
@@ -71,7 +76,7 @@ export function NightCalendar({
               hitSlop={6}
               disabled={isCurrentMonth}
               accessibilityRole="button"
-              accessibilityLabel="Sonraki ay"
+              accessibilityLabel={t.profile.calendar.next}
               style={[styles.monthButton, { backgroundColor: theme.fill }]}>
               <Icon ios="chevron.right" md="chevron_right" size={14} color={isCurrentMonth ? theme.separator : theme.text} />
             </Pressable>
@@ -85,9 +90,9 @@ export function NightCalendar({
         </Pressable>
       )}
 
-      <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ gap: GAP }} accessibilityLabel={`${MONTHS[month.month]}: ${monthNights} gece`}>
+      <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={{ gap: GAP }} accessibilityLabel={t.profile.calendar.a11y(monthLabel, monthNights)}>
         <View style={styles.row}>
-          {WEEKDAYS_SHORT.map((d) => (
+          {t.date.weekdaysShort.map((d) => (
             <Text key={d} style={[Type.caption, styles.weekday, { width: cell, color: theme.textSecondary }]}>
               {d}
             </Text>
@@ -115,7 +120,7 @@ export function NightCalendar({
                     key={i}
                     onPress={() => onOpenNight(night)}
                     accessibilityRole="button"
-                    accessibilityLabel={`${longDate(key)}, ${venueById(night.venueId)?.name ?? ''}`}
+                    accessibilityLabel={t.profile.calendar.night(longDate(key, t), venueById(night.venueId)?.name ?? '')}
                     style={({ pressed }) => [styles.day, { width: cell, height: cell, opacity: pressed ? 0.7 : 1 }, ring && { borderWidth: 2.5, borderColor: ring }]}>
                     {uri ? <Image source={{ uri }} style={[StyleSheet.absoluteFill, styles.photo]} contentFit="cover" /> : null}
                     <Text style={[styles.dayText, styles.dayOnPhoto]}>{day}</Text>

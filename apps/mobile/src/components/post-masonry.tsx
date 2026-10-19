@@ -9,6 +9,7 @@ import { Type } from '@/constants/theme';
 import { imageAspect, type Post } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 const GAP = 8;
 
@@ -56,21 +57,23 @@ export function Masonry<T>({
  * açılır (Instagram gibi).
  */
 export function PostMasonry({ posts, onOpen }: { posts: Post[]; onOpen: (post: Post) => void }) {
+  const t = useT();
   return (
     <Masonry
       items={posts}
       keyOf={(post) => post.id}
       heightOf={(post) => (post.imageUri ? 1 / imageAspect(post.imageUri) : 0.3 + Math.min(post.text?.length ?? 0, 160) / 200)}
       render={(post) => <Tile post={post} onPress={() => onOpen(post)} />}
-      accessibilityLabel={`${posts.length} paylaşım`}
+      accessibilityLabel={t.profile.masonry.posts(posts.length)}
     />
   );
 }
 
 function Tile({ post, onPress }: { post: Post; onPress: () => void }) {
   const theme = useTheme();
+  const t = useT();
   const { venueById } = useApp();
-  const label = `${venueById(post.venueId)?.name ?? ''} paylaşımı. ${post.text ?? ''}`;
+  const label = t.profile.masonry.post(venueById(post.venueId)?.name ?? '', post.text ?? '');
 
   if (!post.imageUri) {
     return (

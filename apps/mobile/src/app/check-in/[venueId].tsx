@@ -15,10 +15,11 @@ import { ActionButton } from '@/components/native-controls';
 import { PinSlider } from '@/components/pin-slider';
 import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
-import { CATEGORY_LABEL, CHECK_IN_RADIUS_M } from '@/data/mock';
+import { CHECK_IN_RADIUS_M } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 /** İğnenin saplanışı görünsün diye sohbete geçmeden önce beklenen süre (ms). */
 const PIN_SETTLE_MS = 700;
@@ -33,6 +34,7 @@ const PHOTO = 112;
  */
 export default function CheckInSheet() {
   const theme = useTheme();
+  const t = useT();
   const dark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
   const { venueId, from } = useLocalSearchParams<{ venueId: string; from?: 'chat' }>();
@@ -72,9 +74,9 @@ export default function CheckInSheet() {
     }
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Kamera izni gerekli', 'Fotoğraf çekmek için Ayarlar › HERE › Kamera iznini aç.', [
-        { text: 'Vazgeç', style: 'cancel' },
-        { text: 'Ayarlar', onPress: () => Linking.openSettings() },
+      Alert.alert(t.home.sheet.cameraTitle, t.home.sheet.cameraMessage, [
+        { text: t.actions.cancel, style: 'cancel' },
+        { text: t.home.sheet.openSettings, onPress: () => Linking.openSettings() },
       ]);
       return;
     }
@@ -94,7 +96,7 @@ export default function CheckInSheet() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, backdrop]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => close()} accessibilityRole="button" accessibilityLabel="Kapat" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => close()} accessibilityRole="button" accessibilityLabel={t.actions.close} />
       </Animated.View>
 
       <Animated.View style={[styles.sheetWrap, { paddingBottom: Math.max(insets.bottom - 18, 10) }, sheet]}>
@@ -110,7 +112,7 @@ export default function CheckInSheet() {
                     {venue.name}
                   </Text>
                   <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
-                    {CATEGORY_LABEL[venue.category]} · {formatDistance(venue.distanceM)}
+                    {t.categories[venue.category]} · {formatDistance(venue.distanceM, t)}
                   </Text>
                 </View>
               </View>
@@ -121,7 +123,7 @@ export default function CheckInSheet() {
                     <Pressable
                       onPress={takePhoto}
                       accessibilityRole="button"
-                      accessibilityLabel={photo ? 'Fotoğrafı yeniden çek' : 'Fotoğraf çek (isteğe bağlı)'}
+                      accessibilityLabel={photo ? t.home.sheet.retakePhoto : t.home.sheet.takePhoto}
                       style={({ pressed }) => [
                         styles.photo,
                         { backgroundColor: theme.fill, borderColor: photo ? theme.accent : theme.separator, opacity: pressed ? 0.75 : 1 },
@@ -140,7 +142,7 @@ export default function CheckInSheet() {
                           onPress={() => setPhoto(undefined)}
                           hitSlop={8}
                           accessibilityRole="button"
-                          accessibilityLabel="Fotoğrafı kaldır"
+                          accessibilityLabel={t.home.sheet.removePhoto}
                           style={[styles.remove, { backgroundColor: theme.text, borderColor: theme.background }]}>
                           <Icon ios="xmark" md="close" size={11} color={theme.background} />
                         </Pressable>
@@ -151,11 +153,11 @@ export default function CheckInSheet() {
               ) : (
                 <View style={styles.farArea}>
                   <Text style={[Type.subheadline, { color: theme.textSecondary }]}>
-                    {CHECK_IN_RADIUS_M} m içinde değilsin · {formatDistance(venue.distanceM)} uzaktasın
+                    {t.home.sheet.tooFar(CHECK_IN_RADIUS_M, formatDistance(venue.distanceM, t))}
                   </Text>
                   {/* Cam sayfanın içinde cam düğme yok (§2.3 kural 1): gri dolgulu düğme. */}
                   <ActionButton
-                    title="Yol tarifi"
+                    title={t.home.directions}
                     systemImage="arrow.triangle.turn.up.right.diamond.fill"
                     variant="tonal"
                     size="regular"

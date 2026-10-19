@@ -4,6 +4,7 @@ import { NowHereAccessory } from '@/components/now-here-accessory';
 import { Fonts } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 /**
  * Yerel sekme çubuğu: iOS 26+ Liquid Glass'ı sistem çizer. Akışta aşağı kaydırınca küçülür.
@@ -14,6 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
  */
 export default function TabsLayout() {
   const theme = useTheme();
+  const t = useT().tabs;
   const { checkIn, conversations, isUnread } = useApp();
   // Bekleyen istek ya da okunmamış birebir sohbet varsa Mesajlar'ın sağ altında küçücük kırmızı nokta (Instagram'daki gibi).
   // Mekân sohbetleri sayılmaz: kalabalık bir mekânda nokta hiç sönmezdi.
@@ -32,19 +34,19 @@ export default function TabsLayout() {
         </NativeTabs.BottomAccessory>
       )}
       <NativeTabs.Trigger name="(home)">
-        <NativeTabs.Trigger.Label>Ana Sayfa</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t.home}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Keşfet</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t.explore}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'map', selected: 'map.fill' }} md="map" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="checkin">
-        <NativeTabs.Trigger.Label>Buradayım</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t.checkin}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'mappin.and.ellipse', selected: 'mappin.and.ellipse' }} md="add_location" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="messages">
-        <NativeTabs.Trigger.Label>Mesajlar</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t.messages}</NativeTabs.Trigger.Label>
         {/* Sistemin rozeti simgenin sağ üstüne çıkıp seçili Profil sekmesinin camına taşıyordu; nokta simgenin içinde.
             Asset kataloğundan (scripts/generate-tab-icons.swift, plugins/with-xcassets.js): nokta kırmızı, simge açık
             modda siyah, koyu modda beyaz. Seçiliyken iOS simgeyi fuşyaya boyar. */}
@@ -58,7 +60,7 @@ export default function TabsLayout() {
         )}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t.profile}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} md="person" />
       </NativeTabs.Trigger>
     </NativeTabs>

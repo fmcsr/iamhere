@@ -9,6 +9,7 @@ import { Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 import { useNight } from '@/lib/night';
+import { useT } from '@/i18n/use-t';
 
 /**
  * Yer bildirmişken sekme çubuğunun üstünde yüzen cam aksesuar (T-1): mekân, kişi sayısı ve
@@ -17,9 +18,10 @@ import { useNight } from '@/lib/night';
  */
 export function NowHereAccessory() {
   const theme = useTheme();
+  const t = useT();
   const placement = NativeTabs.BottomAccessory.usePlacement();
   const { checkIn, venueById } = useApp();
-  const { remaining, lastHour } = useNight();
+  const { remaining, lastHour } = useNight(t);
   const venue = checkIn ? venueById(checkIn.venueId) : undefined;
   if (!venue) return null;
 
@@ -28,7 +30,7 @@ export function NowHereAccessory() {
     <Pressable
       onPress={() => router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } })}
       accessibilityRole="button"
-      accessibilityLabel={`${venue.name} sohbetini aç. ${venue.here} kişi burada, sohbetin sıfırlanmasına ${remaining} kaldı`}
+      accessibilityLabel={t.accessory.a11y(venue.name, venue.here, remaining)}
       style={[styles.row, inline && styles.inlineRow]}>
       {inline ? (
         <View style={[styles.dot, { backgroundColor: theme.accent }]} />
@@ -43,7 +45,7 @@ export function NowHereAccessory() {
           <View style={styles.meta}>
             <View style={[styles.dot, { backgroundColor: theme.accent }]} />
             <Text style={[Type.caption, { color: theme.textSecondary, fontVariant: ['tabular-nums'] }]} numberOfLines={1}>
-              {venue.here} kişi · {remaining}
+              {t.people(venue.here)} · {remaining}
             </Text>
             {lastHour && <Icon ios="hourglass" md="hourglass_top" size={11} color={theme.accent} />}
           </View>

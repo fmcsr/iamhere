@@ -7,6 +7,7 @@ import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
 import type { User } from '@/data/mock';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 /**
  * Profil kimliği (X düzeni, K-15). Avatar kapağın üstüne biner; başkasının profilinde sağında Mesaj ve
@@ -40,6 +41,7 @@ export function ProfileHeader({
   actions?: ReactNode;
 }) {
   const theme = useTheme();
+  const t = useT();
   return (
     <View style={styles.wrap}>
       <View style={styles.topRow}>
@@ -59,16 +61,16 @@ export function ProfileHeader({
       {user.bio ? <Text style={[Type.body, { color: theme.text }]}>{user.bio}</Text> : null}
 
       <View style={styles.counts}>
-        <Count value={followers} label="takipçi" onPress={onFollowers} />
-        <Count value={following} label="takip" onPress={onFollowing} />
-        {memories !== undefined && <Count value={memories} label="anı" onPress={onMemories} />}
+        <Count value={followers} label={t.profile.header.followers(followers)} onPress={onFollowers} />
+        <Count value={following} label={t.profile.header.following} onPress={onFollowing} />
+        {memories !== undefined && <Count value={memories} label={t.profile.header.memories(memories)} onPress={onMemories} />}
       </View>
 
       {user.interests.length > 0 && (
         <View style={styles.chips}>
           {user.interests.map((interest) => (
             <View key={interest} style={[styles.chip, { backgroundColor: theme.fill }]}>
-              <Text style={[Type.footnote, { color: theme.text, fontWeight: '600' }]}>{interest}</Text>
+              <Text style={[Type.footnote, { color: theme.text, fontWeight: '600' }]}>{t.interest(interest)}</Text>
             </View>
           ))}
         </View>

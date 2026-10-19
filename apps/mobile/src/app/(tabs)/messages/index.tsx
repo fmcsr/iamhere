@@ -16,6 +16,7 @@ import { Gap, Radius, Type } from '@/constants/theme';
 import type { Conversation, Message, User } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 import { useNight } from '@/lib/night';
 
 /**
@@ -26,8 +27,9 @@ import { useNight } from '@/lib/night';
  */
 export default function MessagesScreen() {
   const theme = useTheme();
+  const t = useT();
   const { me, users, venues, conversations, messages, venueById, userById, checkIn, isUnread, isMutual, openDirect, tonightPostOf } = useApp();
-  const { remaining } = useNight();
+  const { remaining } = useNight(t);
   const [query, setQuery] = useState('');
 
   const lastMessage = (c: Conversation) => messages.filter((m) => m.conversationId === c.id).at(-1);
@@ -71,15 +73,15 @@ export default function MessagesScreen() {
           <ScreenHeader
             title={me.username}
             right={
-              <HeaderButton icon="square.and.pencil" md="edit_square" label="Yeni mesaj" onPress={() => router.push('/new-message')} />
+              <HeaderButton icon="square.and.pencil" md="edit_square" label={t.titles.newMessage} onPress={() => router.push('/new-message')} />
             }
           />
-          <SearchField value={query} onChangeText={setQuery} placeholder="Ara" />
+          <SearchField value={query} onChangeText={setQuery} placeholder={t.messages.inbox.search} />
 
           {!query && (
             <View style={styles.groups}>
               <Text style={[Type.headline, { color: theme.text }]} accessibilityRole="header">
-                Grup sohbetleri
+                {t.messages.inbox.groupChats}
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bleed} contentContainerStyle={styles.cards}>
                 {groups.map((v) => (
@@ -97,15 +99,15 @@ export default function MessagesScreen() {
 
           <View style={styles.listHeader}>
             <Text style={[Type.headline, { color: theme.text, flex: 1 }]} accessibilityRole="header">
-              Mesajlar
+              {t.tabs.messages}
             </Text>
             <Pressable
               onPress={() => router.push('/messages/requests')}
               hitSlop={10}
               accessibilityRole="link"
-              accessibilityLabel={`İstekler, ${requests.length}`}
+              accessibilityLabel={t.messages.inbox.requestsA11y(requests.length)}
               style={styles.requests}>
-              <Text style={[Type.subheadline, { color: theme.textSecondary, fontWeight: '600' }]}>İstekler</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary, fontWeight: '600' }]}>{t.messages.requests.title}</Text>
               {requests.length > 0 && (
                 <View style={[styles.badge, { backgroundColor: theme.accent }]}>
                   <Text style={{ color: theme.onAccent, fontSize: 12, fontWeight: '700' }}>{requests.length}</Text>
@@ -119,14 +121,14 @@ export default function MessagesScreen() {
               <ChatRow key={c.id} conversation={c} last={lastMessage(c)} unread={isUnread(c.id)} />
             ))}
             {chats.length === 0 && (
-              <Text style={[Type.subheadline, { color: theme.textSecondary, paddingVertical: 12 }]}>“{query}” ile eşleşen sohbet yok.</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary, paddingVertical: 12 }]}>{t.messages.inbox.noMatch(query)}</Text>
             )}
           </View>
 
           {suggestions.length > 0 && (
             <View>
               <Text style={[Type.headline, styles.subHeader, { color: theme.text }]} accessibilityRole="header">
-                Önerilenler
+                {t.messages.inbox.suggested}
               </Text>
               {suggestions.map((u) => (
                 <Pressable key={u.id} onPress={() => openDm(u)} style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}>
@@ -136,7 +138,7 @@ export default function MessagesScreen() {
                       {u.displayName}
                     </Text>
                     <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
-                      Mesaj göndermek için dokun
+                      {t.messages.inbox.tapToMessage}
                     </Text>
                   </View>
                   <Icon ios="bubble.left" md="chat_bubble_outline" size={20} color={theme.textSecondary} />
@@ -147,7 +149,7 @@ export default function MessagesScreen() {
 
           <View style={styles.footer} accessible>
             <Icon ios="hourglass" md="hourglass_top" size={12} color={theme.textSecondary} />
-            <Text style={[Type.footnote, { color: theme.textSecondary }]}>Sohbetler {remaining} sonra sıfırlanır</Text>
+            <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.messages.inbox.resetsIn(remaining)}</Text>
           </View>
         </PageColumn>
       </Animated.ScrollView>
@@ -160,15 +162,17 @@ export default function MessagesScreen() {
 /** Tek sohbet satırı: kartsız, 56 pt avatar (mekân sohbetinde yuvarlatılmış kare fotoğraf), ad ve "son mesaj · zaman". */
 function ChatRow({ conversation: c, last, unread: hasUnread }: { conversation: Conversation; last?: Message; unread: boolean }) {
   const theme = useTheme();
+  const t = useT();
   const { venueById, userById, checkIn } = useApp();
-  const time = last ? ` · ${minutesAgo(last.createdAt)}` : '';
+  const time = last ? ` · ${minutesAgo(last.createdAt, t)}` : '';
 
   if (c.kind === 'venue') {
     const venue = venueById(c.venueId)!;
     const locked = checkIn?.venueId !== c.venueId;
     // Kilitli sohbetin mesajları görünmüyor; okunmamış gibi vurgulanmaz.
     const unread = hasUnread && !locked;
-    const sender = last && last.senderId !== 'me' ? (last.anonAlias ?? userById(last.senderId).displayName.split(' ')[0]) : 'Sen';
+    const sender =
+      last && last.senderId !== 'me' ? (last.anonAlias ?? userById(last.senderId).displayName.split(' ')[0]) : t.messages.inbox.you;
     return (
       <Pressable
         onPress={() =>
@@ -176,7 +180,7 @@ function ChatRow({ conversation: c, last, unread: hasUnread }: { conversation: C
             ? router.push({ pathname: '/venue/[id]', params: { id: venue.id } })
             : router.push({ pathname: '/chat/[id]', params: { id: c.id } })
         }
-        accessibilityLabel={`${venue.name} sohbeti${locked ? ', kilitli' : ''}`}
+        accessibilityLabel={t.messages.inbox.venueChatA11y(venue.name, locked)}
         style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}>
         <Image source={{ uri: venue.coverUri }} style={styles.venuePhoto} contentFit="cover" />
         <View style={{ flex: 1, gap: 2 }}>
@@ -187,10 +191,10 @@ function ChatRow({ conversation: c, last, unread: hasUnread }: { conversation: C
             style={[Type.footnote, { color: unread ? theme.text : theme.textSecondary, fontWeight: unread ? '600' : '400' }]}
             numberOfLines={1}>
             {locked
-              ? 'Katılmak için orada olduğunu bildir'
+              ? t.messages.inbox.lockedPreview
               : last
-                ? `${sender}: ${messagePreview(last)}${time}`
-                : `${venue.here} kişi sohbette`}
+                ? `${sender}: ${messagePreview(last, t)}${time}`
+                : t.live.inChat(venue.here)}
           </Text>
         </View>
         {locked ? <Icon ios="lock.fill" md="lock" size={15} color={theme.textSecondary} /> : <UnreadDot unread={unread} />}
@@ -203,7 +207,7 @@ function ChatRow({ conversation: c, last, unread: hasUnread }: { conversation: C
   return (
     <Pressable
       onPress={() => router.push({ pathname: '/chat/[id]', params: { id: c.id } })}
-      accessibilityLabel={`${user.displayName}${unread ? ', okunmamış' : ''}`}
+      accessibilityLabel={t.messages.inbox.personA11y(user.displayName, unread)}
       style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}>
       <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} size={56} />
       <View style={{ flex: 1, gap: 2 }}>
@@ -214,10 +218,10 @@ function ChatRow({ conversation: c, last, unread: hasUnread }: { conversation: C
           style={[Type.footnote, { color: unread ? theme.text : theme.textSecondary, fontWeight: unread ? '600' : '400' }]}
           numberOfLines={1}>
           {c.status === 'sent'
-            ? 'İstek gönderildi · kabul edilmesini bekliyor'
+            ? t.messages.inbox.requestSent
             : last
-              ? `${last.senderId === 'me' ? 'Sen: ' : ''}${messagePreview(last)}${time}`
-              : 'Henüz mesaj yok'}
+              ? `${last.senderId === 'me' ? `${t.messages.inbox.you}: ` : ''}${messagePreview(last, t)}${time}`
+              : t.messages.inbox.noMessages}
         </Text>
       </View>
       <UnreadDot unread={unread} />
@@ -228,7 +232,8 @@ function ChatRow({ conversation: c, last, unread: hasUnread }: { conversation: C
 /** Okunmamışı fuşya nokta anlatır (§3.4); metin nötr kalır. */
 function UnreadDot({ unread }: { unread: boolean }) {
   const theme = useTheme();
-  return unread ? <View style={[styles.unread, { backgroundColor: theme.accent }]} accessibilityLabel="Okunmamış" /> : null;
+  const t = useT();
+  return unread ? <View style={[styles.unread, { backgroundColor: theme.accent }]} accessibilityLabel={t.messages.inbox.unread} /> : null;
 }
 
 const styles = StyleSheet.create({

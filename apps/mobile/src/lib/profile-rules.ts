@@ -13,12 +13,15 @@ export function cleanUsername(text: string): string {
     .slice(0, USERNAME_MAX);
 }
 
+/** Kullanıcı adındaki sorun; metni sözlükteki `profile.edit.usernameProblem` verir (dosya React Native'siz denenebilsin diye). */
+export type UsernameProblem = 'short' | 'dots' | 'taken';
+
 /** Kullanıcı adı kuralları (Instagram'daki gibi): 3–24 karakter; harf, rakam, nokta, alt çizgi. */
-export function usernameProblem(username: string, taken: boolean): string | undefined {
-  if (username.length < 3) return 'En az 3 karakter olmalı.';
+export function usernameProblem(username: string, taken: boolean): UsernameProblem | undefined {
+  if (username.length < 3) return 'short';
   if (username.startsWith('.') || username.endsWith('.') || username.includes('..')) {
-    return 'Nokta başta, sonda ya da art arda olamaz.';
+    return 'dots';
   }
-  if (taken) return 'Bu kullanıcı adı alınmış.';
+  if (taken) return 'taken';
   return undefined;
 }

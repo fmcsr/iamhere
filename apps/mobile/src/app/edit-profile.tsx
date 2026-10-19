@@ -15,6 +15,8 @@ import { Gap, Type } from '@/constants/theme';
 import { INTERESTS, MAX_INTERESTS } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { strings } from '@/i18n';
+import { useT } from '@/i18n/use-t';
 import { dropPhoto, keepPhoto } from '@/lib/profile';
 import { BIO_MAX, cleanUsername, NAME_MAX, usernameProblem } from '@/lib/profile-rules';
 
@@ -22,12 +24,13 @@ type Choice = { label: string; destructive?: boolean; onPress: () => void };
 
 /** Yerel seçenek listesi (iOS'ta alttan açılan eylem sayfası). */
 function choose(title: string, choices: Choice[]) {
+  const cancel = strings().actions.cancel;
   if (Platform.OS === 'ios') {
     const destructive = choices.findIndex((c) => c.destructive);
     ActionSheetIOS.showActionSheetWithOptions(
       {
         title,
-        options: [...choices.map((c) => c.label), 'Vazgeç'],
+        options: [...choices.map((c) => c.label), cancel],
         cancelButtonIndex: choices.length,
         destructiveButtonIndex: destructive >= 0 ? destructive : undefined,
       },
@@ -36,7 +39,7 @@ function choose(title: string, choices: Choice[]) {
   } else {
     Alert.alert(title, undefined, [
       ...choices.map((c) => ({ text: c.label, style: c.destructive ? ('destructive' as const) : ('default' as const), onPress: c.onPress })),
-      { text: 'Vazgeç', style: 'cancel' as const },
+      { text: cancel, style: 'cancel' as const },
     ]);
   }
 }
@@ -51,6 +54,8 @@ function choose(title: string, choices: Choice[]) {
  */
 export default function EditProfileScreen() {
   const theme = useTheme();
+  const t = useT();
+  const edit = t.profile.edit;
   const { me, updateMe, usernameTaken, posts, venueById, nightsOf } = useApp();
   const [name, setName] = useState(me.displayName);
   const [username, setUsername] = useState(me.username);
@@ -64,8 +69,9 @@ export default function EditProfileScreen() {
   const last = nightsOf('me')[0];
   const autoCover = last ? nightPhoto(last, (id) => posts.find((p) => p.id === id), venueById(last.venueId)) : undefined;
 
-  const usernameError = username === me.username ? undefined : usernameProblem(username, usernameTaken(username));
-  const nameError = name.trim() ? undefined : 'Adın boş olamaz.';
+  const problem = username === me.username ? undefined : usernameProblem(username, usernameTaken(username));
+  const usernameError = problem && edit.usernameProblem[problem];
+  const nameError = name.trim() ? undefined : edit.nameEmpty;
   const dirty =
     name !== me.displayName ||
     username !== me.username ||
@@ -81,9 +87,9 @@ export default function EditProfileScreen() {
     if (source === 'camera') {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Kamera izni gerekli', 'Fotoğraf çekmek için Ayarlar › HERE › Kamera iznini aç.', [
-          { text: 'Vazgeç', style: 'cancel' },
-          { text: 'Ayarlar', onPress: () => Linking.openSettings() },
+        Alert.alert(edit.cameraDenied.title, edit.cameraDenied.message, [
+          { text: t.actions.cancel, style: 'cancel' },
+          { text: edit.cameraDenied.settings, onPress: () => Linking.openSettings() },
         ]);
         return;
       }
@@ -103,20 +109,20 @@ export default function EditProfileScreen() {
 
   // Simülatörde kamera yok; "Fotoğraf çek" yalnızca cihazda.
   const sources = (kind: 'avatar' | 'cover'): Choice[] => [
-    { label: 'Fotoğraflardan seç', onPress: () => pickPhoto(kind, 'library') },
-    ...(Device.isDevice ? [{ label: 'Fotoğraf çek', onPress: () => pickPhoto(kind, 'camera') }] : []),
+    { label: edit.fromLibrary, onPress: () => pickPhoto(kind, 'library') },
+    ...(Device.isDevice ? [{ label: edit.takePhoto, onPress: () => pickPhoto(kind, 'camera') }] : []),
   ];
 
   const editAvatar = () =>
-    choose('Profil fotoğrafı', [
+    choose(edit.avatarTitle, [
       ...sources('avatar'),
-      ...(avatarUri ? [{ label: 'Fotoğrafı kaldır', destructive: true, onPress: () => setAvatarUri(undefined) }] : []),
+      ...(avatarUri ? [{ label: edit.removePhoto, destructive: true, onPress: () => setAvatarUri(undefined) }] : []),
     ]);
 
   const editCover = () =>
-    choose('Kapak fotoğrafı', [
+    choose(edit.coverTitle, [
       ...sources('cover'),
-      ...(coverUri ? [{ label: 'Son gecenin fotoğrafını kullan', onPress: () => setCoverUri(undefined) }] : []),
+      ...(coverUri ? [{ label: edit.useLastNight, onPress: () => setCoverUri(undefined) }] : []),
     ]);
 
   const toggleInterest = (interest: string) =>
@@ -135,15 +141,15 @@ export default function EditProfileScreen() {
       router.back();
     } catch {
       setSaving(false);
-      Alert.alert('Kaydedilemedi', 'Fotoğraf kaydedilirken bir sorun oldu. Yeniden dene.');
+      Alert.alert(edit.saveFailed.title, edit.saveFailed.message);
     }
   };
 
   const close = () => {
     if (!dirty) return router.back();
-    Alert.alert('Değişiklikler kaydedilmesin mi?', undefined, [
-      { text: 'Düzenlemeye devam et', style: 'cancel' },
-      { text: 'Değişiklikleri at', style: 'destructive', onPress: () => router.back() },
+    Alert.alert(edit.discard.title, undefined, [
+      { text: edit.discard.keepEditing, style: 'cancel' },
+      { text: edit.discard.discard, style: 'destructive', onPress: () => router.back() },
     ]);
   };
 
@@ -155,7 +161,7 @@ export default function EditProfileScreen() {
       {/* Kaydedilmemiş değişiklik varken sayfa aşağı çekilerek kapanmaz. */}
       <Stack.Screen options={{ gestureEnabled: !dirty }} />
       <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button icon="xmark" accessibilityLabel="Vazgeç" onPress={close} />
+        <Stack.Toolbar.Button icon="xmark" accessibilityLabel={t.actions.cancel} onPress={close} />
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
@@ -163,7 +169,7 @@ export default function EditProfileScreen() {
           variant="prominent"
           tintColor={theme.accent}
           disabled={!canSave}
-          accessibilityLabel="Kaydet"
+          accessibilityLabel={edit.save}
           onPress={save}
         />
       </Stack.Toolbar>
@@ -181,7 +187,7 @@ export default function EditProfileScreen() {
             <Pressable
               onPress={editCover}
               accessibilityRole="button"
-              accessibilityLabel="Kapak fotoğrafını değiştir"
+              accessibilityLabel={edit.changeCover}
               style={({ pressed }) => [styles.cover, { backgroundColor: theme.accentSoft, opacity: pressed ? 0.85 : 1 }]}>
               {cover && (
                 <Image
@@ -201,7 +207,7 @@ export default function EditProfileScreen() {
             <Pressable
               onPress={editAvatar}
               accessibilityRole="button"
-              accessibilityLabel="Profil fotoğrafını değiştir"
+              accessibilityLabel={edit.changeAvatar}
               style={({ pressed }) => [styles.avatarWrap, { opacity: pressed ? 0.85 : 1 }]}>
               <View style={[styles.avatarFrame, { backgroundColor: theme.background }]}>
                 <Avatar name={name.trim() || me.displayName} color={me.avatarColor} uri={avatarUri} size={AVATAR} />
@@ -214,21 +220,21 @@ export default function EditProfileScreen() {
 
           <View style={{ gap: 6 }}>
             <GlassCard style={styles.card}>
-              <Field label="Ad">
+              <Field label={edit.name}>
                 <TextInput
                   value={name}
                   onChangeText={setName}
                   maxLength={NAME_MAX}
-                  placeholder="Adın"
+                  placeholder={edit.namePlaceholder}
                   placeholderTextColor={theme.textSecondary}
                   autoComplete="name"
                   textContentType="name"
-                  accessibilityLabel="Ad"
+                  accessibilityLabel={edit.name}
                   style={[Type.body, styles.input, { color: theme.text }]}
                 />
               </Field>
               <View style={[styles.divider, { backgroundColor: theme.separator }]} />
-              <Field label="Kullanıcı adı">
+              <Field label={edit.username}>
                 <View style={styles.usernameRow}>
                   <Text style={[Type.body, { color: theme.textSecondary }]}>@</Text>
                   <TextInput
@@ -238,7 +244,7 @@ export default function EditProfileScreen() {
                     autoCorrect={false}
                     spellCheck={false}
                     autoComplete="off"
-                    accessibilityLabel="Kullanıcı adı"
+                    accessibilityLabel={edit.username}
                     style={[Type.body, styles.input, { color: theme.text }]}
                   />
                 </View>
@@ -246,7 +252,7 @@ export default function EditProfileScreen() {
               <View style={[styles.divider, { backgroundColor: theme.separator }]} />
               {/* Tam genişlik ve en uzun yazıya göre sabit yükseklik: yazdıkça büyümez. Satır atlanmaz (Bitti klavyeyi kapatır). */}
               <View style={styles.bioHead}>
-                <Text style={[Type.subheadline, { color: theme.textSecondary, flex: 1 }]}>Hakkında</Text>
+                <Text style={[Type.subheadline, { color: theme.textSecondary, flex: 1 }]}>{edit.bio}</Text>
                 <Text style={[Type.caption, { color: theme.textSecondary, fontVariant: ['tabular-nums'] }]}>
                   {bio.length}/{BIO_MAX}
                 </Text>
@@ -258,9 +264,9 @@ export default function EditProfileScreen() {
                 multiline
                 submitBehavior="blurAndSubmit"
                 returnKeyType="done"
-                placeholder="Kendinden kısaca bahset"
+                placeholder={edit.bioPlaceholder}
                 placeholderTextColor={theme.textSecondary}
-                accessibilityLabel="Hakkında"
+                accessibilityLabel={edit.bio}
                 style={[Type.body, styles.bio, { color: theme.text }]}
               />
             </GlassCard>
@@ -280,7 +286,7 @@ export default function EditProfileScreen() {
           <View style={{ gap: 10 }}>
             <View style={styles.sectionHead}>
               <Text style={[Type.headline, { color: theme.text, flex: 1 }]} accessibilityRole="header">
-                İlgi alanları
+                {edit.interests}
               </Text>
               <Text style={[Type.footnote, { color: theme.textSecondary, fontVariant: ['tabular-nums'] }]}>
                 {interests.length}/{MAX_INTERESTS}
@@ -297,7 +303,7 @@ export default function EditProfileScreen() {
                     disabled={disabled}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: selected, disabled }}
-                    accessibilityLabel={interest}
+                    accessibilityLabel={t.interest(interest)}
                     style={({ pressed }) => [
                       styles.chip,
                       { backgroundColor: selected ? theme.text : theme.fill, opacity: disabled ? 0.4 : pressed ? 0.7 : 1 },
@@ -310,7 +316,7 @@ export default function EditProfileScreen() {
                       color={selected ? theme.inverseText : theme.textSecondary}
                     />
                     <Text style={[Type.footnote, { color: selected ? theme.inverseText : theme.text, fontWeight: '600' }]}>
-                      {interest}
+                      {t.interest(interest)}
                     </Text>
                   </Pressable>
                 );

@@ -9,6 +9,7 @@ import { Text } from '@/components/text';
 import { ME_LOCATION, type Venue } from '@/data/mock';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 export type VenueMapProps = {
   venues: Venue[];
@@ -31,6 +32,7 @@ export type VenueMapProps = {
 // Google sağlayıcısına geçilecek.
 export function VenueMap({ venues, selectedId, onSelect, style, radius, showMe, interactive = true, zoom = 0.018, recenter }: VenueMapProps) {
   const theme = useTheme();
+  const t = useT();
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const center = showMe ? ME_LOCATION : { latitude: 40.988, longitude: 29.027 };
   const region = { ...center, latitudeDelta: zoom, longitudeDelta: zoom };
@@ -52,7 +54,7 @@ export function VenueMap({ venues, selectedId, onSelect, style, radius, showMe, 
         <Circle center={ME_LOCATION} radius={radius} strokeColor={theme.accent} strokeWidth={1.5} fillColor="rgba(225, 29, 73, 0.10)" />
       )}
       {showMe && (
-        <Marker coordinate={ME_LOCATION} anchor={{ x: 0.5, y: 0.5 }} accessibilityLabel="Konumun">
+        <Marker coordinate={ME_LOCATION} anchor={{ x: 0.5, y: 0.5 }} accessibilityLabel={t.map.you}>
           <View style={styles.me} />
         </Marker>
       )}
@@ -63,7 +65,7 @@ export function VenueMap({ venues, selectedId, onSelect, style, radius, showMe, 
             key={v.id}
             coordinate={{ latitude: v.latitude, longitude: v.longitude }}
             anchor={{ x: 0.5, y: 0.5 }}
-            accessibilityLabel={`${v.name}, ${v.here} kişi`}
+            accessibilityLabel={`${v.name}, ${t.people(v.here)}`}
             onPress={() => (onSelect ? onSelect(v.id) : router.push({ pathname: '/venue/[id]', params: { id: v.id } }))}>
             {/* Kalabalık arttıkça pin daha parlak; seçili pin büyür. */}
             <View
@@ -87,7 +89,7 @@ export function VenueMap({ venues, selectedId, onSelect, style, radius, showMe, 
       <Pressable
         onPress={() => mapRef.current?.animateToRegion(region, 350)}
         accessibilityRole="button"
-        accessibilityLabel="Konumuma dön"
+        accessibilityLabel={t.map.recenter}
         hitSlop={6}
         style={styles.recenter}>
         <Glass style={styles.recenterGlass} interactive>

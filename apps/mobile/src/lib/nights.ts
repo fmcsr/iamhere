@@ -1,4 +1,5 @@
 import type { Post } from '@/data/mock';
+import { strings, type Strings } from '@/i18n';
 import { ISTANBUL_OFFSET_MS, RESET_HOUR } from '@/lib/night';
 
 /**
@@ -8,9 +9,6 @@ import { ISTANBUL_OFFSET_MS, RESET_HOUR } from '@/lib/night';
  */
 export type Night = { key: string; venueId: string; postIds: string[] };
 
-export const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-export const WEEKDAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-export const WEEKDAYS_SHORT = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
 const DAY_MS = 86_400_000;
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -35,11 +33,12 @@ export function tonightKey(now = Date.now()): string {
   return nightKeyOf(now);
 }
 
-/** "Cuma, 16 Ekim" */
-export function longDate(key: string): string {
+/** "Cuma, 16 Ekim" · "Friday, October 16" */
+export function longDate(key: string, t: Strings = strings()): string {
   const n = dayNumber(key);
   const d = new Date(n * DAY_MS);
-  return `${WEEKDAYS[(d.getUTCDay() + 6) % 7]}, ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
+  const { date } = t;
+  return date.long(date.weekdays[(d.getUTCDay() + 6) % 7], d.getUTCDate(), date.months[d.getUTCMonth()]);
 }
 
 /** Kişinin geceleri: geçmiş yer bildirimleri, paylaşımlarından çıkan geceler ve bu geceki yer bildirimi. Yeniden eskiye. */

@@ -16,6 +16,7 @@ import { Colors, HeaderFonts } from '@/constants/theme';
 import { AppProvider, useApp } from '@/data/store';
 import { useBackdrop } from '@/hooks/use-backdrop';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { STRINGS } from '@/i18n';
 
 // Yazılar (DM Sans) yüklenene ve kayıtlı görünüm (açık/koyu) ekrana yansıyana kadar açılış ekranı
 // kalır: telefon açık modda olsa da "Koyu" seçen kullanıcı açılışta beyaz flaş görmez.
@@ -48,7 +49,8 @@ export default function RootLayout() {
 function RootStack() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const backdrop = useBackdrop();
-  const { settings, appearanceLoaded } = useApp();
+  const { settings, appearanceLoaded, lang } = useApp();
+  const title = STRINGS[lang].titles;
   const ready = appearanceLoaded && (settings.appearance === 'system' || settings.appearance === scheme);
 
   useEffect(() => {
@@ -69,10 +71,10 @@ function RootStack() {
       <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal', contentStyle: backdrop, ...HeaderFonts }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="venue/[id]" options={{ title: '' }} />
-        <Stack.Screen name="chat/[id]" options={{ title: 'Sohbet' }} />
+        <Stack.Screen name="chat/[id]" options={{ title: title.chat }} />
         {/* Profil kapağı ekranın en üstünden başlar; geri ve ••• düğmeleri kapağın üstünde (kendi profilin gibi). */}
         <Stack.Screen name="user/[username]" options={{ headerShown: false }} />
-        <Stack.Screen name="compose" options={{ presentation: 'modal', title: 'Buradayım' }} />
+        <Stack.Screen name="compose" options={{ presentation: 'modal', title: title.compose }} />
         {/* Yer bildirme sayfası (T-26): ekranın üstünde saydam katman; sayfa alttan kendi animasyonuyla kayar. */}
         <Stack.Screen
           name="check-in/[venueId]"
@@ -89,13 +91,13 @@ function RootStack() {
             contentStyle: { backgroundColor: 'transparent' },
           }}
         />
-        <Stack.Screen name="settings" options={{ title: 'Ayarlar' }} />
+        <Stack.Screen name="settings" options={{ title: title.settings }} />
         {/* Alttan açılan sayfa; üstte arkadaki profil görünür. İçerik kendi içinde kaymaz (edit-profile.tsx). */}
-        <Stack.Screen name="edit-profile" options={{ presentation: 'modal', title: 'Profili düzenle' }} />
-        <Stack.Screen name="new-message" options={{ title: 'Yeni mesaj' }} />
+        <Stack.Screen name="edit-profile" options={{ presentation: 'modal', title: title.editProfile }} />
+        <Stack.Screen name="new-message" options={{ title: title.newMessage }} />
         <Stack.Screen name="follows" options={{ title: '' }} />
-        <Stack.Screen name="posts" options={{ title: 'Paylaşımlar' }} />
-        <Stack.Screen name="nights" options={{ title: 'Anılar' }} />
+        <Stack.Screen name="posts" options={{ title: title.posts }} />
+        <Stack.Screen name="nights" options={{ title: title.memories }} />
       </Stack>
     </ThemeProvider>
   );

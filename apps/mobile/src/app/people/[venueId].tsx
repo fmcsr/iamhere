@@ -7,6 +7,7 @@ import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 /**
  * "Burada kimler var" — yarım yükseklikte açılan sayfa (iOS 26+ cam zemin). Takip ettiklerin önde.
@@ -14,6 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
  */
 export default function PeopleSheet() {
   const theme = useTheme();
+  const t = useT();
   const { venueId } = useLocalSearchParams<{ venueId: string }>();
   const { venueById, peopleAt, following } = useApp();
   const venue = venueById(venueId);
@@ -24,9 +26,9 @@ export default function PeopleSheet() {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={{ gap: 2 }}>
-        <Text style={[Type.title3, { color: theme.text }]}>Burada kimler var</Text>
+        <Text style={[Type.title3, { color: theme.text }]}>{t.home.people.title}</Text>
         <Text style={[Type.subheadline, { color: theme.textSecondary }]}>
-          {venue.name} · {venue.here} kişi
+          {venue.name} · {t.people(venue.here)}
         </Text>
       </View>
       {people.map((u) => (
@@ -42,7 +44,7 @@ export default function PeopleSheet() {
             <Text style={[Type.headline, { color: theme.text }]}>{u.displayName}</Text>
             <Text style={[Type.footnote, { color: theme.textSecondary }]}>
               @{u.username}
-              {following.has(u.id) ? ' · takip ediyorsun' : ''}
+              {following.has(u.id) ? ` · ${t.home.people.following}` : ''}
             </Text>
           </View>
           <Icon ios="chevron.right" md="chevron_right" size={13} color={theme.textSecondary} />
@@ -50,9 +52,7 @@ export default function PeopleSheet() {
       ))}
       <View style={styles.note}>
         <Icon ios="eye.slash" md="visibility_off" size={15} color={theme.textSecondary} />
-        <Text style={[Type.footnote, { color: theme.textSecondary, flex: 1 }]}>
-          ve {others} kişi daha. Anonim olanlar ve görünürlüğünü kapatanlar listelenmez.
-        </Text>
+        <Text style={[Type.footnote, { color: theme.textSecondary, flex: 1 }]}>{t.home.people.others(others)}</Text>
       </View>
     </ScrollView>
   );

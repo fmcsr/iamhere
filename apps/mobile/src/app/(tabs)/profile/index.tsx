@@ -12,6 +12,7 @@ import { HeaderButton } from '@/components/screen-header';
 import { StatusBarBlur } from '@/components/status-bar-blur';
 import { Gap } from '@/constants/theme';
 import { useApp } from '@/data/store';
+import { useT } from '@/i18n/use-t';
 import { editProfile } from '@/lib/profile';
 
 /**
@@ -20,6 +21,7 @@ import { editProfile } from '@/lib/profile';
  * Düzenle, paylaş ve ayarlar kapaktaki cam düğmelerde. Başlık çubuğu yok: kapak ekranın en üstünden başlar.
  */
 export default function ProfileScreen() {
+  const t = useT();
   const { me, posts, settings, checkIn, venueById, followersOf, followingOf, nightsOf } = useApp();
   // Sekme içinde iOS durum çubuğu rengini değiştirmiyor; kapak üstünde ince geçiş kullanılıyor.
   const { onScroll, overCover } = useCoverStatusBar({ setStyle: false });
@@ -46,17 +48,17 @@ export default function ProfileScreen() {
           title={`@${me.username}`}
           statusFade
           pull={pull}
-          left={<HeaderButton icon="pencil" md="edit" label="Profili düzenle" onImage onPress={editProfile} />}
+          left={<HeaderButton icon="pencil" md="edit" label={t.titles.editProfile} onImage onPress={editProfile} />}
           right={
             <>
               <HeaderButton
                 icon="square.and.arrow.up"
                 md="ios_share"
-                label="Profili paylaş"
+                label={t.profile.me.share}
                 onImage
-                onPress={() => Share.share({ message: `HERE'de @${me.username} #iamhere` })}
+                onPress={() => Share.share({ message: t.profile.me.shareMessage(me.username) })}
               />
-              <HeaderButton icon="gearshape" md="settings" label="Ayarlar" onImage onPress={() => router.push('/settings')} />
+              <HeaderButton icon="gearshape" md="settings" label={t.titles.settings} onImage onPress={() => router.push('/settings')} />
             </>
           }
         />

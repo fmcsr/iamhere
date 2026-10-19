@@ -16,6 +16,7 @@ import { Text } from '@/components/text';
 import { Gap, Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 import { tonightKey } from '@/lib/nights';
 
 /**
@@ -25,6 +26,7 @@ import { tonightKey } from '@/lib/nights';
  */
 export default function UserProfileScreen() {
   const theme = useTheme();
+  const t = useT();
   const { username } = useLocalSearchParams<{ username: string }>();
   const {
     users,
@@ -44,7 +46,7 @@ export default function UserProfileScreen() {
   const { onScroll, overCover } = useCoverStatusBar();
   const user = users.find((u) => u.username === username);
 
-  if (!user) return <Text style={{ color: theme.text, padding: 16 }}>Kullanıcı bulunamadı.</Text>;
+  if (!user) return <Text style={{ color: theme.text, padding: 16 }}>{t.profile.user.notFound}</Text>;
 
   const isFollowing = following.has(user.id);
   const requested = followRequests.has(user.id);
@@ -65,9 +67,9 @@ export default function UserProfileScreen() {
 
   const onFollowPress = () => {
     if (isFollowing) {
-      Alert.alert(`@${user.username} takibi bırakılsın mı?`, undefined, [
-        { text: 'Vazgeç', style: 'cancel' },
-        { text: 'Takibi bırak', style: 'destructive', onPress: () => toggleFollow(user.id) },
+      Alert.alert(t.profile.follow.unfollowConfirm(user.username), undefined, [
+        { text: t.actions.cancel, style: 'cancel' },
+        { text: t.profile.follow.unfollow, style: 'destructive', onPress: () => toggleFollow(user.id) },
       ]);
     } else if (user.isPrivate) {
       toggleFollowRequest(user.id);
@@ -75,7 +77,8 @@ export default function UserProfileScreen() {
       toggleFollow(user.id);
     }
   };
-  const followTitle = isFollowing ? 'Takip ediliyor' : requested ? 'İstek gönderildi' : user.isPrivate ? 'İstek gönder' : followsMe(user.id) ? 'Geri takip et' : 'Takip et';
+  const follow = t.profile.follow;
+  const followTitle = isFollowing ? follow.following : requested ? follow.requested : user.isPrivate ? follow.request : followsMe(user.id) ? follow.followBack : follow.follow;
 
   return (
     <View style={styles.screen} collapsable={false}>
@@ -87,8 +90,8 @@ export default function UserProfileScreen() {
           uri={(locked ? undefined : cover) ?? user.avatarUri}
           blur={locked || !user.coverUri}
           title={`@${user.username}`}
-          left={<HeaderButton icon="chevron.left" md="arrow_back" label="Geri" onImage onPress={() => router.back()} />}
-          right={<HeaderButton icon="ellipsis" md="more_horiz" label="Diğer seçenekler" onImage onPress={() => showSafetyMenu(`@${user.username}`)} />}
+          left={<HeaderButton icon="chevron.left" md="arrow_back" label={t.actions.back} onImage onPress={() => router.back()} />}
+          right={<HeaderButton icon="ellipsis" md="more_horiz" label={t.actions.more} onImage onPress={() => showSafetyMenu(`@${user.username}`)} />}
         />
         <PageColumn style={styles.content}>
           <View style={{ gap: 10 }}>
@@ -105,7 +108,7 @@ export default function UserProfileScreen() {
               actions={
                 <>
                   <Pill
-                    title="Mesaj"
+                    title={t.profile.user.message}
                     icon={{ ios: 'bubble.left', md: 'chat_bubble_outline' }}
                     onPress={() => router.push({ pathname: '/chat/[id]', params: { id: openDirect(user.id) } })}
                   />
@@ -119,19 +122,15 @@ export default function UserProfileScreen() {
               }
             />
             {!mutual && (
-              <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-                Karşılıklı takipleşmediğiniz için mesajın onun “İstekler” bölümüne düşer.
-              </Text>
+              <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.profile.user.requestNote}</Text>
             )}
           </View>
 
           {locked ? (
             <GlassCard style={styles.lockedBox}>
               <Icon ios="lock.fill" md="lock" size={26} color={theme.text} />
-              <Text style={[Type.headline, { color: theme.text }]}>Bu hesap gizli</Text>
-              <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-                Paylaşımlarını ve gecelerini görmek için takip isteği gönder.
-              </Text>
+              <Text style={[Type.headline, { color: theme.text }]}>{t.profile.user.privateTitle}</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>{t.profile.user.privateNote}</Text>
             </GlassCard>
           ) : (
             <ProfileTabs userId={user.id} posts={theirPosts} />

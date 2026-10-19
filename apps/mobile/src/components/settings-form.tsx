@@ -4,46 +4,44 @@ import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { AppearancePreviews } from '@/components/appearance-previews';
 import { GlassCard } from '@/components/glass';
 import { SegmentedPicker } from '@/components/native-controls';
-import { APPEARANCE_NOTE, PRESENCE_NOTE } from '@/components/settings-form.shared';
 import { Text } from '@/components/text';
 import { Type, type BackdropVariant } from '@/constants/theme';
 import { type PresenceVisibility, useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import type { LanguageSetting } from '@/i18n';
+import { useT } from '@/i18n/use-t';
 import { editProfile } from '@/lib/profile';
 
 export function SettingsForm() {
   const theme = useTheme();
-  const { settings, updateSettings, setAppearance, trial, setTrial } = useApp();
+  const t = useT().settings;
+  const { settings, updateSettings, setAppearance, setLanguage, trial, setTrial } = useApp();
 
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={styles.content}>
-      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>HESAP</Text>
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>{t.account.toLocaleUpperCase()}</Text>
       <GlassCard style={styles.group}>
         <Pressable onPress={editProfile} accessibilityRole="button" style={styles.row}>
-          <Text style={[Type.body, { color: theme.text, flex: 1 }]}>Profili düzenle</Text>
+          <Text style={[Type.body, { color: theme.text, flex: 1 }]}>{t.editProfile}</Text>
         </Pressable>
       </GlassCard>
 
-      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>TASARIM DENEMESİ · ZEMİN</Text>
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>
+        {`${t.trial.title} · ${t.trial.backdrop}`.toLocaleUpperCase()}
+      </Text>
       <GlassCard style={styles.group}>
         <SegmentedPicker<BackdropVariant>
-          options={[
-            { value: 'ust', label: 'A · Üst' },
-            { value: 'kose', label: 'B · Köşe' },
-            { value: 'genis', label: 'C · Geniş' },
-          ]}
+          options={(['ust', 'kose', 'genis'] as const).map((value) => ({ value, label: t.trial.backdropShort[value] }))}
           value={trial.backdrop}
           onChange={(backdrop) => setTrial({ backdrop })}
-          accessibilityLabel="Zemin denemesi"
+          accessibilityLabel={t.trial.backdrop}
         />
       </GlassCard>
-      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>
-        Geçici: seçenekleri karşılaştırmak için. Karar verilince bu bölüm kalkacak.
-      </Text>
+      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.trial.note}</Text>
 
-      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>GÖRÜNÜM</Text>
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>{t.appearance.title.toLocaleUpperCase()}</Text>
       <GlassCard style={styles.group}>
         <AppearancePreviews
           modes={['system', 'light', 'dark']}
@@ -52,37 +50,42 @@ export function SettingsForm() {
           variant={trial.backdrop}
         />
       </GlassCard>
-      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{APPEARANCE_NOTE[settings.appearance]}</Text>
+      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.appearance.note[settings.appearance]}</Text>
 
-      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>GİZLİLİK</Text>
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>{t.language.title.toLocaleUpperCase()}</Text>
+      <GlassCard style={styles.group}>
+        <SegmentedPicker<LanguageSetting>
+          options={(['system', 'tr', 'en'] as const).map((value) => ({ value, label: t.language.option[value] }))}
+          value={settings.language}
+          onChange={setLanguage}
+          accessibilityLabel={t.language.title}
+        />
+      </GlassCard>
+      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.language.note}</Text>
+
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>{t.privacy.title.toLocaleUpperCase()}</Text>
       <GlassCard style={styles.group}>
         <View style={styles.row}>
-          <Text style={[Type.body, { color: theme.text, flex: 1 }]}>Gizli hesap</Text>
+          <Text style={[Type.body, { color: theme.text, flex: 1 }]}>{t.privacy.privateAccount}</Text>
           <Switch
             value={settings.privateAccount}
             onValueChange={(value) => updateSettings({ privateAccount: value })}
-            accessibilityLabel="Gizli hesap"
+            accessibilityLabel={t.privacy.privateAccount}
           />
         </View>
       </GlassCard>
-      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>
-        Gizli hesapta paylaşımlarını yalnızca onayladığın takipçiler görür.
-      </Text>
+      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.privacy.privateNote}</Text>
 
-      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>ŞU AN BURADA KİMLER GÖRSÜN</Text>
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>{t.presence.title.toLocaleUpperCase()}</Text>
       <GlassCard style={styles.group}>
         <SegmentedPicker<PresenceVisibility>
-          options={[
-            { value: 'herkes', label: 'Herkes' },
-            { value: 'karsilikli', label: 'Karşılıklı' },
-            { value: 'kimse', label: 'Kimse' },
-          ]}
+          options={(['herkes', 'karsilikli', 'kimse'] as const).map((value) => ({ value, label: t.presence.optionShort[value] }))}
           value={settings.presenceVisibility}
           onChange={(value) => updateSettings({ presenceVisibility: value })}
-          accessibilityLabel="Şu an burada kimler görsün"
+          accessibilityLabel={t.presence.title}
         />
       </GlassCard>
-      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{PRESENCE_NOTE[settings.presenceVisibility]}</Text>
+      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.presence.note[settings.presenceVisibility]}</Text>
     </ScrollView>
   );
 }

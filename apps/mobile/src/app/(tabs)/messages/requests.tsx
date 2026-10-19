@@ -10,20 +10,19 @@ import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 /** Mesaj istekleri (K-08): kabul edilene kadar yanıt yazılamaz; silmek sessizdir. */
 export default function RequestsScreen() {
   const theme = useTheme();
+  const t = useT();
   const { conversations, messages, userById, followsMe, acceptRequest, declineRequest } = useApp();
   const requests = conversations.filter((c) => c.kind === 'direct' && c.status === 'request');
 
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
       <PageColumn style={styles.content}>
-        <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-          Karşılıklı takipleşmediğin kişilerin ilk mesajı buraya düşer. Kabul edersen sohbet gelen kutuna taşınır; silersen karşı
-          taraf bunu bilmez. Kabul etmediğin istekler 04:00’te silinir.
-        </Text>
+        <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.messages.requests.intro}</Text>
 
         {requests.map((c) => {
           if (c.kind !== 'direct') return null;
@@ -42,23 +41,23 @@ export default function RequestsScreen() {
                       {user.displayName}
                     </Text>
                     <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
-                      @{user.username} · {followsMe(user.id) ? 'Seni takip ediyor' : 'Takipleşmiyorsunuz'}
+                      @{user.username} · {followsMe(user.id) ? t.messages.requests.followsYou : t.messages.requests.notMutual}
                     </Text>
                   </View>
                 </Pressable>
-                <Pressable onPress={() => showSafetyMenu(user.displayName)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Diğer seçenekler">
+                <Pressable onPress={() => showSafetyMenu(user.displayName)} hitSlop={12} accessibilityRole="button" accessibilityLabel={t.actions.more}>
                   <Icon ios="ellipsis" md="more_horiz" size={18} color={theme.textSecondary} />
                 </Pressable>
               </View>
               {last && (
                 <View style={[styles.bubble, { backgroundColor: theme.fill }]}>
                   <Text style={[Type.body, { color: theme.text }]}>{last.text}</Text>
-                  <Text style={[Type.caption, { color: theme.textSecondary }]}>{minutesAgo(last.createdAt)}</Text>
+                  <Text style={[Type.caption, { color: theme.textSecondary }]}>{minutesAgo(last.createdAt, t)}</Text>
                 </View>
               )}
               <View style={styles.actions}>
-                <ActionButton title="Sil" variant="tonal" size="regular" fullWidth style={{ flex: 1 }} onPress={() => declineRequest(c.id)} />
-                <ActionButton title="Kabul et" variant="filled" size="regular" fullWidth style={{ flex: 1 }} onPress={() => acceptRequest(c.id)} />
+                <ActionButton title={t.messages.requests.delete} variant="tonal" size="regular" fullWidth style={{ flex: 1 }} onPress={() => declineRequest(c.id)} />
+                <ActionButton title={t.messages.requests.accept} variant="filled" size="regular" fullWidth style={{ flex: 1 }} onPress={() => acceptRequest(c.id)} />
               </View>
             </GlassCard>
           );
@@ -67,10 +66,8 @@ export default function RequestsScreen() {
         {requests.length === 0 && (
           <View style={styles.empty}>
             <Icon ios="tray" md="inbox" size={34} color={theme.textSecondary} />
-            <Text style={[Type.headline, { color: theme.text }]}>Bekleyen istek yok</Text>
-            <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-              Yeni bir istek geldiğinde Mesajlar simgesinin köşesinde küçük bir nokta görürsün.
-            </Text>
+            <Text style={[Type.headline, { color: theme.text }]}>{t.messages.requests.emptyTitle}</Text>
+            <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>{t.messages.requests.emptyNote}</Text>
           </View>
         )}
       </PageColumn>

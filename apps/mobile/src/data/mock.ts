@@ -80,14 +80,6 @@ export type Conversation =
   | { id: string; kind: 'venue'; venueId: string }
   | { id: string; kind: 'direct'; userId: string; status: 'inbox' | 'request' | 'sent' };
 
-export const CATEGORY_LABEL: Record<Category, string> = {
-  konser: 'Konser',
-  bar: 'Bar',
-  yemek: 'Yemek',
-  kafe: 'Kafe',
-  acik: 'Açık hava',
-};
-
 export const CHECK_IN_RADIUS_M = 300;
 
 const min = (m: number) => Date.now() - m * 60_000;

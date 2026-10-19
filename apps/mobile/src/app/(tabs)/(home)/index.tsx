@@ -16,6 +16,7 @@ import { Gap, Radius, Type } from '@/constants/theme';
 import { type Category, type Post, type User } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 type Feed = 'ozel' | 'cevrende';
 
@@ -44,6 +45,7 @@ function parseEvent(event?: string) {
  */
 export default function HomeScreen() {
   const theme = useTheme();
+  const t = useT();
   const { me, posts, users, venues, following, isMutual, venueById, checkIn, tonightPostOf } = useApp();
   const [feed, setFeed] = useState<Feed>('ozel');
   const { ref, refreshControl, angle } = useHereRefresh();
@@ -96,7 +98,7 @@ export default function HomeScreen() {
               <Pressable
                 onPress={() => router.navigate('/checkin')}
                 accessibilityRole="button"
-                accessibilityLabel={current ? `Sen, ${current.name}` : 'Yer bildir'}
+                accessibilityLabel={current ? t.home.feed.meAt(current.name) : t.home.checkIn}
                 style={styles.person}>
                 {/* Kendi fotoğrafın: yer bildirdiysen fuşya halka, bildirmediysen "+" rozeti (Instagram'daki "Hikâyen" gibi). */}
                 <View style={styles.me}>
@@ -107,9 +109,9 @@ export default function HomeScreen() {
                     </View>
                   )}
                 </View>
-                <Text style={[Type.caption, { color: theme.text, fontWeight: '600' }]}>{current ? 'Sen' : 'Yer bildir'}</Text>
+                <Text style={[Type.caption, { color: theme.text, fontWeight: '600' }]}>{current ? t.home.feed.me : t.home.checkIn}</Text>
                 <Text style={[Type.caption, { color: theme.textSecondary }]} numberOfLines={1}>
-                  {current ? current.name : 'Buradayım'}
+                  {current ? current.name : t.tabs.checkin}
                 </Text>
               </Pressable>
               {nowHere.map(({ user, post }) => (
@@ -117,7 +119,7 @@ export default function HomeScreen() {
                   key={user.id}
                   onPress={() => router.push({ pathname: '/venue/[id]', params: { id: post.venueId } })}
                   accessibilityRole="button"
-                  accessibilityLabel={`${user.displayName}, şu an ${venueById(post.venueId)?.name}`}
+                  accessibilityLabel={t.home.feed.friendAt(user.displayName, venueById(post.venueId)?.name ?? '')}
                   style={styles.person}>
                   <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} size={60} ring />
                   <Text style={[Type.caption, { color: theme.text, fontWeight: '600' }]} numberOfLines={1}>
@@ -131,7 +133,7 @@ export default function HomeScreen() {
             </ScrollView>
           </Section>
 
-          <Section title="Şu an canlı" action="Haritada" onAction={() => router.navigate('/explore')}>
+          <Section title={t.home.liveNow} action={t.home.feed.onMap} onAction={() => router.navigate('/explore')}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bleed} contentContainerStyle={styles.cards}>
               {live.map((v) => (
                 <VenueCard key={v.id} venue={v} friends={friendsAt(v.id)} />
@@ -140,7 +142,7 @@ export default function HomeScreen() {
           </Section>
 
           {events.length > 0 && (
-            <Section title="Bu gece">
+            <Section title={t.home.feed.tonight}>
               <GlassCard style={styles.list}>
                 {events.map((e, i) => (
                   <View key={e.venue.id}>
@@ -152,15 +154,15 @@ export default function HomeScreen() {
             </Section>
           )}
 
-          <Section title="Paylaşımlar">
+          <Section title={t.titles.posts}>
             <SegmentedPicker<Feed>
               options={[
-                { value: 'ozel', label: 'Sana özel' },
-                { value: 'cevrende', label: 'Çevrende' },
+                { value: 'ozel', label: t.home.feed.forYou },
+                { value: 'cevrende', label: t.home.feed.nearby },
               ]}
               value={feed}
               onChange={setFeed}
-              accessibilityLabel="Paylaşımlar"
+              accessibilityLabel={t.titles.posts}
             />
             <View style={styles.posts}>
               {data.map((post) => (
@@ -168,7 +170,7 @@ export default function HomeScreen() {
               ))}
             </View>
           </Section>
-          <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>Şimdilik bu kadar.</Text>
+          <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.home.feed.end}</Text>
         </PageColumn>
       </Animated.ScrollView>
       <StatusBarBlur />

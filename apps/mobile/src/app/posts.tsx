@@ -6,6 +6,7 @@ import { PostCard } from '@/components/kit';
 import { PageColumn } from '@/components/page-column';
 import { Gap, TitleFonts } from '@/constants/theme';
 import { useApp } from '@/data/store';
+import { useT } from '@/i18n/use-t';
 
 /**
  * Bir kişinin paylaşımları ya da etiketlendiği paylaşımlar (`kind=tagged`) alt alta (Instagram'da ızgaradan
@@ -13,6 +14,7 @@ import { useApp } from '@/data/store';
  * kaydırınca daha yenileri görünür.
  */
 export default function PostsScreen() {
+  const t = useT();
   const { user: userId = 'me', start, kind } = useLocalSearchParams<{ user?: string; start?: string; kind?: 'tagged' }>();
   const { posts, userById, canSee, taggedPostsOf } = useApp();
   const scroll = useRef<ScrollViewInstance>(null);
@@ -25,7 +27,7 @@ export default function PostsScreen() {
     kind === 'tagged'
       ? taggedPostsOf(userId)
       : posts.filter((p) => p.userId === userId && !p.anonAlias && canSee(p)).sort((a, b) => b.createdAt - a.createdAt);
-  const title = kind === 'tagged' ? (mine ? 'Etiketlendiklerin' : 'Etiketlenenler') : mine ? 'Paylaşımların' : `@${owner.username}`;
+  const title = kind === 'tagged' ? (mine ? t.profile.posts.taggedMine : t.profile.tabs.tagged) : mine ? t.profile.posts.mine : `@${owner.username}`;
 
   return (
     <ScrollView ref={scroll} contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>

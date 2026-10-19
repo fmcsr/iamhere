@@ -12,6 +12,7 @@ import { Type } from '@/constants/theme';
 import { imageAspect, type Post, type User, type Venue } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 import { alsoName, genitive, joinNames } from '@/lib/tr';
 
 type Tab = 'posts' | 'tagged' | 'saved';
@@ -22,6 +23,7 @@ type Tab = 'posts' | 'tagged' | 'saved';
  * `posts`: profilde görünen kendi paylaşımları (gizlilik süzgeci ekrandan gelir).
  */
 export function ProfileTabs({ userId, posts }: { userId: string; posts: Post[] }) {
+  const t = useT();
   const { taggedPostsOf, savedOf, venueById, userById } = useApp();
   const [tab, setTab] = useState<Tab>('posts');
   const mine = userId === 'me';
@@ -38,13 +40,13 @@ export function ProfileTabs({ userId, posts }: { userId: string; posts: Post[] }
     <View style={styles.wrap}>
       <SegmentedPicker<Tab>
         options={[
-          { value: 'posts', label: 'Paylaşımlar' },
-          { value: 'tagged', label: 'Etiketlenenler' },
-          { value: 'saved', label: 'To-HERE' },
+          { value: 'posts', label: t.titles.posts },
+          { value: 'tagged', label: t.profile.tabs.tagged },
+          { value: 'saved', label: t.profile.tabs.saved },
         ]}
         value={tab}
         onChange={setTab}
-        accessibilityLabel="Profil bölümleri"
+        accessibilityLabel={t.profile.tabs.a11y}
       />
 
       {tab === 'posts' &&
@@ -53,7 +55,7 @@ export function ProfileTabs({ userId, posts }: { userId: string; posts: Post[] }
             <PostMasonry posts={posts} onOpen={(post) => open(post)} />
           </View>
         ) : (
-          <Empty text={mine ? 'Henüz paylaşım yok. Bir mekânda yer bildirip ilk fotoğrafını paylaş.' : 'Henüz paylaşım yok.'} />
+          <Empty text={mine ? t.profile.tabs.noPostsMine : t.profile.tabs.noPosts} />
         ))}
 
       {tab === 'tagged' &&
@@ -62,7 +64,7 @@ export function ProfileTabs({ userId, posts }: { userId: string; posts: Post[] }
             <PostMasonry posts={tagged} onOpen={(post) => open(post, 'tagged')} />
           </View>
         ) : (
-          <Empty text={mine ? 'Arkadaşların seni bir paylaşımda etiketleyince burada görünür.' : `${name} henüz bir paylaşımda etiketlenmemiş.`} />
+          <Empty text={mine ? t.profile.tabs.noTaggedMine : t.profile.tabs.noTagged(name)} />
         ))}
 
       {tab === 'saved' && <SavedVenues userId={userId} venues={saved} name={name} />}
@@ -73,27 +75,18 @@ export function ProfileTabs({ userId, posts }: { userId: string; posts: Post[] }
 /** To-HERE: gitmek istenen mekânlar (corner'ın listeleri gibi). Benimkinde aynı yeri kaydeden arkadaşlar, başkasınınkinde "İkiniz de". */
 function SavedVenues({ userId, venues, name }: { userId: string; venues: Venue[]; name: string }) {
   const theme = useTheme();
+  const t = useT();
   const { users, savedOf, isMutual } = useApp();
   const mine = userId === 'me';
   const mySaved = new Set(savedOf('me'));
   const friendsWhoSaved = (venueId: string) => users.filter((u) => u.id !== userId && isMutual(u.id) && savedOf(u.id).includes(venueId));
 
-  if (!venues.length) {
-    return (
-      <Empty
-        text={
-          mine
-            ? 'Gitmek istediğin mekânları, mekân sayfasındaki kaydet düğmesiyle buraya ekle.'
-            : `${name} henüz gitmek istediği bir mekân kaydetmemiş.`
-        }
-      />
-    );
-  }
+  if (!venues.length) return <Empty text={mine ? t.profile.tabs.noSavedMine : t.profile.tabs.noSaved(name)} />;
 
   return (
     <View style={{ gap: 10 }}>
       <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-        {mine ? `Gitmek istediğin ${venues.length} yer` : `${genitive(name)} gitmek istediği ${venues.length} yer`}
+        {mine ? t.profile.tabs.savedCountMine(venues.length) : t.profile.tabs.savedCount(name, genitive(name, t), venues.length)}
       </Text>
       <View style={styles.bleed}>
         <Masonry
@@ -101,7 +94,7 @@ function SavedVenues({ userId, venues, name }: { userId: string; venues: Venue[]
           keyOf={(venue) => venue.id}
           heightOf={(venue) => 1 / tileAspect(venue)}
           render={(venue) => <VenueTile venue={venue} friends={mine ? friendsWhoSaved(venue.id) : []} both={!mine && mySaved.has(venue.id)} />}
-          accessibilityLabel={`${venues.length} mekân`}
+          accessibilityLabel={t.profile.tabs.venues(venues.length)}
         />
       </View>
     </View>
@@ -113,24 +106,26 @@ const tileAspect = (venue: Venue) => Math.min(imageAspect(venue.coverUri), 1.2);
 
 function VenueTile({ venue, friends, both }: { venue: Venue; friends: User[]; both: boolean }) {
   const theme = useTheme();
+  const t = useT();
   const firstNames = friends.map((u) => u.displayName.split(' ')[0]);
+  const names = joinNames(firstNames, t);
   return (
     <Pressable
       onPress={() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } })}
       accessibilityRole="button"
-      accessibilityLabel={`${venue.name}, ${venue.area}${both ? ', ikiniz de gitmek istiyorsunuz' : ''}${friends.length ? `, ${alsoName(joinNames(firstNames))} kaydetti` : ''}`}
+      accessibilityLabel={`${venue.name}, ${venue.area}${both ? `, ${t.profile.tabs.bothA11y}` : ''}${friends.length ? `, ${t.profile.tabs.savedToo(names, alsoName(names, t))}` : ''}`}
       style={({ pressed }) => [styles.tile, { aspectRatio: tileAspect(venue), opacity: pressed ? 0.85 : 1 }]}>
       <Image source={{ uri: venue.coverUri }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
       <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.7)']} locations={[0.35, 1]} style={StyleSheet.absoluteFill} />
       {both ? (
         <View style={[styles.badge, styles.bothBadge, { backgroundColor: theme.accent }]}>
-          <Text style={styles.badgeText}>İkiniz de</Text>
+          <Text style={styles.badgeText}>{t.profile.tabs.both}</Text>
         </View>
       ) : friends.length > 0 ? (
         <View style={[styles.badge, styles.friendsBadge]}>
           <AvatarStack users={friends.slice(0, 2)} size={18} />
           <Text style={styles.badgeText} numberOfLines={1}>
-            {friends.length === 1 ? alsoName(firstNames[0]) : `${firstNames[0]} +${friends.length - 1}`}
+            {friends.length === 1 ? alsoName(firstNames[0], t) : `${firstNames[0]} +${friends.length - 1}`}
           </Text>
         </View>
       ) : null}
@@ -139,7 +134,7 @@ function VenueTile({ venue, friends, both }: { venue: Venue; friends: User[]; bo
           {venue.name}
         </Text>
         <Text style={styles.tileMeta} numberOfLines={1}>
-          {venue.area} · {formatDistance(venue.distanceM)}
+          {venue.area} · {formatDistance(venue.distanceM, t)}
         </Text>
       </View>
     </Pressable>
