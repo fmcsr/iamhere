@@ -29,7 +29,7 @@
 | 2 | **Cam her katmanda, içerik net** | Liquid Glass bol kullanılır: sekme çubuğu, başlıklar, butonlar, sayaç, harita kontrolleri, yazma alanı, sayfalar ve kartlar (paylaşımlar, listeler). Altındaki marka gradyanı camı görünür kılar (§3.6). Fotoğraflar, mesaj balonları ve metin cam değildir; net kalır. Apple camı gezinme katmanına ayırıyor; kartlardaki cam kurucunun isteğiyle verilmiş bilinçli bir sapma (T-13). |
 | 3 | **Fuşya = "şimdi / canlı"** | Fuşya ekran başına tek birincil eylemde (Buradayım, Paylaş, Gönder) ve canlı durumlarda (aktif yer bildirimi, "● 48 burada", okunmamış rozeti) kullanılır. Gerisi nötr kalır; gece fotoğrafları zaten renkli. |
 | 4 | **Mekân öne çıkar** | Her paylaşımda, her kartta dokunulabilir bir mekân satırı var. Kişiler mekânın içinde görünür (K-02). |
-| 5 | **Geçicilik yalnızca sohbette** | 04:00'te yalnızca sohbetler sıfırlanır; paylaşımlar kalır (ROTA K-16). Sayaç ve "her gece 04:00'te sıfırlanır" notu yalnızca sohbetlerde: sohbet başlığında tek satır, ilk girişte tek sistem mesajı, Mesajlar'da tek satır. Paylaşımlarda sayaç ya da "silinir" yazısı yok. |
+| 5 | **Geçicilik yalnızca sohbette** | 04:00'te yalnızca sohbetler sıfırlanır; paylaşımlar kalır (ROTA K-16). Sayaç ve "her gece 04:00'te sıfırlanır" notu yalnızca sohbetlerde: sohbet başlığında tek satır, ilk girişte tek sistem mesajı, Mesajlar'da tek satır. Paylaşımlarda sayaç ya da "silinir" yazısı yok. Yer bildirmişken sekme aksesuarında da kalan süre görünüyor; kalıp kalmayacağı açık (ROTA §14 S7). |
 | 6 | **Gece önce** | Uygulama ağırlıkla gece kullanılacak; koyu mod temel tasarım, açık mod onun eşdeğeri. |
 | 7 | **Güvenlik görünür ama sakin** | Bildir ve Engelle her zaman bir dokunuş uzakta (uzun basma, ••• menüsü), ama ekranı işgal etmiyor. |
 
@@ -42,7 +42,7 @@
 - **Kullanıcı ayarı:** iOS 27'de kullanıcılar Ayarlar'dan camı **daha şeffaf ↔ daha renkli (tinted)** arasında bir kaydırıcıyla ayarlayabiliyor. Tasarımımız iki uçta da okunur olmalı.
 - **Okunabilirlik:** Apple camın arkadaki karmaşık içeriği daha iyi bulanıklaştıracak ve daha fazla derinlik/ayrım sağlayacak şekilde ayarlandığını söylüyor; varsayılan şeffaflık da azaltıldı.
 - **Kaçış yok:** Haberlere göre iOS 26'da yerel bileşenlerin Liquid Glass görünümünü kapatmaya yarayan ayar (`UIDesignRequiresCompatibility`), **Xcode 27 ile derlenen uygulamalarda artık çalışmıyor.** Yani camla uyumlu tasarlamak tercih değil, zorunluluk.
-- **Simgeler:** Uygulama simgeleri daha tanınır olacak şekilde yeniden düzenlendi. HERE simgesi bu yüzden Apple'ın katmanlı simge biçiminde (Icon Composer `.icon`) hazırlandı: fuşya zemin + beyaz HERE logo katmanı. Cam ışığını ve koyu/renkli/şeffaf varyantları sistem üretir.
+- **Simgeler:** Uygulama simgeleri daha tanınır olacak şekilde yeniden düzenlendi. HERE simgesi bu yüzden Apple'ın katmanlı simge biçiminde (Icon Composer `.icon`) hazırlandı: fuşya zemin + tek satır fuşya balon HERE katmanı (T-23). Balonun ışıkları ve harfleri zeminden ayıran koyu kırmızı gölge görüntüde hazır; bu katmanda sistemin cam efekti ve gölgesi kapalı. Koyu/renkli/şeffaf varyantları sistem üretir.
 
 Bu Mac'te **Xcode 27.1** ve **iOS 27.1 simülatörü** kurulu; tüm ekranlar iOS 27 üzerinde test edilecek. iOS 27.1 simülatörü yalnızca katlanabilir **iPhone Duo** cihazını destekliyor; standart iPhone ekranı için iOS 27.0'daki **iPhone 18 Pro** kullanılır.
 
@@ -51,15 +51,15 @@ Bu Mac'te **Xcode 27.1** ve **iOS 27.1 simülatörü** kurulu; tüm ekranlar iOS
 | Katman | Öğe | Nasıl (Expo SDK 58) |
 |---|---|---|
 | Sekme çubuğu | 5 sekme | `NativeTabs` (otomatik cam) + `minimizeBehavior="onScrollDown"`: akışta aşağı kaydırınca küçülür |
-| Sekme üstü aksesuar | **"● Rıhtım Açıkhava · ⏳ 4 sa 12 dk"**: yer bildirmişken sekme çubuğunun üstünde yüzen cam kapsül; dokununca mekân sohbeti açılır | `NativeTabs.BottomAccessory` (Apple Music'teki mini oynatıcının yerleşimi) |
-| Başlık çubukları | Keşfet, Mesajlar, Profil; sohbet ve mekân sayfaları | Yerel `Stack` başlıkları: büyük başlık (Large Title), cam başlık butonları (çark, paylaş, •••) |
-| Ana sayfa üstü | Sabit başlık yok: HERE, sayaç ve segment içerikle birlikte yukarı kayar | Dynamic Island ve durum çubuğunun altında kademeli bulanıklık (`StatusBarBlur`, T-12) |
+| Sekme üstü aksesuar | **"● Rıhtım Açıkhava · ⏳ 4 sa 12 dk"**: yer bildirmişken sekme çubuğunun üstünde yüzen cam kapsül; dokununca mekân sohbeti açılır. Sohbetin sıfırlanmasına kalan süre burada da görünüyor; sayaç yalnızca sohbetlerde olsun kuralı (K-16) karşısında kalıp kalmayacağı açık (ROTA §14 S7) | `NativeTabs.BottomAccessory` (Apple Music'teki mini oynatıcının yerleşimi) |
+| Başlık çubukları | Sohbet, mekân, Ayarlar, Anılar, takip listeleri, Yeni mesaj, Profili düzenle | Yerel `Stack` başlıkları, cam başlık butonları (yer imi, paylaş, bilgi; Profili düzenle'de ✕ ve ✓). Profil kapağındaki kalem, çark ve ••• içerikle kayan cam dairelerdir. Sekmelerde yerel başlık çubuğu yok (T-12, T-21, T-22): Keşfet tam ekran harita, diğerlerinde başlık, arama ve düğmeler içerikle kayar. Büyük başlık (Large Title) kullanılmıyor |
+| Ana sayfa üstü | Sabit başlık yok: ortadaki balon HERE logosu içerikle birlikte yukarı kayar. Sayaç yok (K-16); Sana özel / Çevrende seçicisi aşağıda, Paylaşımlar bölümünde (T-20) | Dynamic Island ve durum çubuğunun altında kademeli bulanıklık (`StatusBarBlur`, T-12) |
 | Yüzen kontroller | Harita arama alanı ve filtre çipleri, konum butonu | **Net (clear)** `GlassView` (T-14) / birbirine yakın olanlar `GlassContainer` içinde (cam damlaları birleşir) |
 | **Kartlar** | Paylaşım kartları · mesaj ve yer bildirimi listeleri, mekân sohbeti önizlemesi, plan kartı | Paylaşımlar: net (`clear`) cam, tonsuz; arkadaki gradyan görünür (`GlassCard translucent`, T-17) · diğer kartlar: `regular` cam + hafif beyaz ton (T-13) |
-| Butonlar | Birincil: Buradayım, Paylaş, Kabul et, Takip et | SwiftUI `Button` + `buttonStyle('glassProminent')` + `tint` (`@expo/ui`) |
-| | İkincil: Mesaj, Değiştir, Sil | `buttonStyle('glass')` |
-| Segment | Sana özel / Rastgele, kitle seçimi | SwiftUI `Picker` + `pickerStyle('segmented')` |
-| Sayfalar | Paylaşım, kitle seçimi, yer bildirimi onayı, "Burada kimler var" | Yerel `formSheet` + yükseklik durakları (detents); iOS 26+ cam zemin |
+| Butonlar | Birincil (fuşya): Yer bildir, Sohbete git, Yer bildir ve katıl, Kabul et | SwiftUI `Button` (`@expo/ui`): yüzen düğmede `buttonStyle('glassProminent')`, içerikte `borderedProminent`; `tint` fuşya |
+| | İkincil: Yol tarifi, Sil, Ben de varım | Yüzen düğmede `buttonStyle('glass')` (mekân sayfasında Yol tarifi); içerikte ve cam sayfada `bordered` (§2.3 kural 1). Takip et ve Mesaj küçük kapsül (`Pill`, T-7) |
+| Segment | Paylaşımlar (Sana özel / Çevrende), profil sekmeleri, takipçi / takip | UISegmentedControl (`@react-native-segmented-control/segmented-control`), iOS 26+ cam; SwiftUI segmentli seçici özel yazı tipi almıyor (§7.2) |
+| Sayfalar | "Burada kimler var" · yer bildirme sayfası (T-26) · Profili düzenle (T-28) | "Burada kimler var": yerel `formSheet` + yükseklik durakları (yarım, tam), iOS 26+ cam zemin · yer bildirme: saydam katmanın üstünde alttan kayan Liquid Glass sayfa (§5.3, §7.1) · Profili düzenle: yerel modal sayfa |
 | Yazma alanı | Sohbet composer'ı | Mesajların üstünde yüzen cam kapsül, "+" ve gönder ayrı cam daireler |
 | **Cam değil** | Fotoğraflar, mesaj balonları, kart içindeki satırlar, ayar satırları | Opak ya da gradyanın rengini alan yarı saydam dolgu (`fill`, bkz. §3) |
 
@@ -176,7 +176,7 @@ Görünüm alanının tasarımı için üç seçenek (**T-19, karar bekliyor**; 
 
 | Stil | Boyut | Kullanım |
 |---|---|---|
-| Large Title | 34 bold | Sekme başlıkları (Keşfet, Mesajlar) |
+| Large Title | 34 bold | Şu an kullanılmıyor: sekmelerde başlık çubuğu yok, içerikle kayan başlık Headline boyutunda (T-21) |
 | Title2 | 22 bold | Profildeki ad, mekân adı |
 | Headline | 17 semibold | Bölüm başlıkları, sohbet başlığı |
 | Body | 17 | Paylaşım metni, mesajlar, biyografi |
@@ -185,7 +185,7 @@ Görünüm alanının tasarımı için üç seçenek (**T-19, karar bekliyor**; 
 | Caption1 | 12 | Çipler, rozetler |
 
 - **Sayaç:** sabit genişlikli rakamlar (`tabular-nums`), dakikada bir güncellenir.
-- **Logo:** vektör HERE (`src/components/wordmark.tsx`); yalnızca ana sayfada, metin renginde (fuşya değil). Diğer sekmelerde iOS büyük başlık.
+- **Logo:** fuşya, parlak, şişirilmiş balon harfler (T-23; biçim corner'ın simgesinden, `src/components/here-mark.tsx`). Üç boyutlu logo `scripts/generate-brand.py` ile 60 açıdan önceden çizilir; aşağı çekip yenilerken soldan sağa döner (T-24). Ana sayfada ortada; diğer sekmelerde yalnızca yenilerken görünür. Düz tek renkli sürüm: `assets/brand/here-wordmark.svg`.
 - **İkonlar:** SF Symbols. Pasifken çizgi, aktifken dolu; renk metin rengi, fuşya yalnızca canlı durumlarda. Geri sayım ikonu `hourglass`.
 - **Köşeler:** butonlar ve çipler kapsül · cam kartlar 22, paylaşım kartı 26 · fotoğraf küçük resimleri 12 · avatarlar daire · ayar listeleri iOS "insetGrouped".
 - **Avatarlar:** akış 36 pt · sohbet 28–32 pt · "şu an" şeridi 64 pt halkalı · profil 80 pt.
@@ -201,7 +201,7 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 
 **Akış (karşılamadan sonra 7 ekran, 5'i zorunlu, hedef ≈ 60 sn):** Telefon → SMS kodu → Doğum tarihi → Ad + @kullanıcı adı → Fotoğraf *(atlanabilir)* → İlgi alanları → Konum izni *(atlanabilir)*.
 
-- **Karşılama:** Açık modda da koyu kalsın: gece fotoğrafı veya döngüsel video, başlık "Şimdi, burada.", alt satır "Mekânda yer bildir, oradakilerle plan kur." ve kum saatli küçük kapsül "Her şey 04:00'te sıfırlanır". Önce fuşya "Telefonla devam et", "veya" ayracı, sonra eşit boyda Apple (resmi stil) ve Google. En altta Koşullar, KVKK ve "HERE 18+ içindir". Ayrı bir "Giriş yap" yok; kayıtlı numara için "Tekrar hoş geldin, Elif". Apple veya Google ile gelenler de telefon doğrulamasından geçer (K-09); ad alanı oradan dolu gelir.
+- **Karşılama:** Açık modda da koyu kalsın: gece fotoğrafı veya döngüsel video, başlık "Şimdi, burada.", alt satır "Mekânda yer bildir, oradakilerle plan kur." ve kum saatli küçük kapsül "Sohbetler her gece 04:00'te sıfırlanır" (K-16). Önce fuşya "Telefonla devam et", "veya" ayracı, sonra eşit boyda Apple (resmi stil) ve Google. En altta Koşullar, KVKK ve "HERE 18+ içindir". Ayrı bir "Giriş yap" yok; kayıtlı numara için "Tekrar hoş geldin, Elif". Apple veya Google ile gelenler de telefon doğrulamasından geçer (K-09); ad alanı oradan dolu gelir.
 - **Telefon:** +90 varsayılan, "5XX XXX XX XX" maskesi, odak açılışta. CTA "Kod gönder" 10 hane olana kadar pasif. "Numaran profilinde görünmez."
 - **SMS kodu:** Tek alan, 6 kutu görünümü; iOS'un otomatik kod doldurması (`oneTimeCode`), 6. hanede kendiliğinden doğrulama. "+90 532 *** ** 17 · Düzenle". 30 sn sonra "Tekrar gönder"; 2 hatadan sonra "WhatsApp ile gönder". Hatada kırmızı kutular + titreşim.
 - **Doğum tarihi:** GG/AA/YYYY sayısal alanlar, altında canlı "24 yaşındasın"; kilitli "Profilinde görünmez". Onay: "Sonradan değiştirilemez." 18 altı: tam ekran ret, numara ve cihaz işaretlenir.
@@ -216,25 +216,30 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 
 ### 5.2 Ana sayfa (akış)
 
-**Yukarıdan aşağıya:** üst bar → 2 sekme → sekmeye göre şerit → mekân başlıklı kartlar → akış sonu.
+**Yukarıdan aşağıya (T-20, 17.10.2026):** üst bar → **Takipleştiklerin şu an** → **Şu an canlı** (büyük fotoğraflı mekân kartları, "Haritada ›") → **Bu gece** (saatli etkinlik listesi) → **Paylaşımlar** (Sana özel / Çevrende) → akış sonu. HERE logosu ortada; tanıdıkların şeridi başlıksız, konum etiketi yok. Ana sayfa "Bu gece nereye gitsem, kim nerede?" sorusunu cevaplar; paylaşımlar destekleyici içerik ([Uber Eats](https://mobbin.com/screens/f491a829-d30e-4561-abd7-0339cc7a44ef) gibi: önce ne var, sonra ayrıntı).
 
-- **Üst bar:** HERE logosu (metin renginde). Sayaç yok: paylaşımlar kalıcı, 04:00'te yalnızca sohbetler sıfırlanır (K-16). Sabit başlık çubuğu yok: logo ve sekmeler içerikle birlikte yukarı kayıp kaybolur; geriye yalnızca Dynamic Island ve durum çubuğunun altında, aşağı doğru yumuşakça kaybolan bir bulanıklık kalır ([Instagram, Ekim 2026](https://mobbin.com/screens/f5ce72ad-1ae5-47d3-abde-989324593482), T-12). DM ve "+" ikonu yok; ikisinin de kendi sekmesi var.
-- **Sekmeler:** "Sana özel | Çevrende" (T-4, T-9).
-- **Şerit:**
-  - *Sana özel:* "Takipleştiklerin şu an": 64 pt halkalı avatar + altında mekân adı; aynı mekândakiler tek baloncukta ("Rıhtım · 3"). İlk öğe senin fotoğrafın: yer bildirmediysen fuşya "+" rozeti ("Yer bildir"), bildirdiysen fuşya halka (Instagram'daki "Hikâyen" gibi).
-  - *Çevrende:* canlı mekân kartları ("● 48").
-- **Kart:** cam kart (Liquid Glass, T-13): (1) 36 pt avatar, ad, "· 12 dk", ••• · (2) dokunulabilir 📍 mekân satırı + "● 48 burada" · (3) 4:5 fotoğraf, çift dokunuşla beğeni · (4) beğen · yorum · gönder; sağda duruma göre "Sohbete katıl" (aynı mekândaysan) veya "Mekâna git". Anonim gönderide nötr siluet, mekân yine görünür.
-- **Paylaştıktan sonra:** akışın üstünde satır içi "Paylaşılıyor…" çubuğu.
+- **Hiyerarşi:** bölüm başlıkları iri ve kalın (`Type.section`, 22 bold), bölümler arası tek boşluk (`Gap.section` 32), köşeler tek set (`Radius`: kart 20, fotoğraf 14, denetim 12). Diğer ekranların bölüm başlıkları da aynı ölçüde.
+- **Mekân kartı:** çerçevesiz; 16:11 fotoğraf, üstünde "● 342 kişi" etiketi, altında kalın ad, tek satır "Kategori · semt · mesafe", varsa "Zeynep orada". Tanıdık olan mekânlar önde.
+- **Fotoğraflar:** prototipte kategoriye uygun Unsplash fotoğrafları (konser, ocakbaşı, meyhane, kahve, sahil, çatı barı, burger); yorumlar mekânla ve yemekle ilgili.
+- Önceki düzen bu sırayla birleşti: "Çevrende" şeridi yerine her zaman "Şu an canlı". Aşağıdaki maddeler bugünkü ayrıntılar.
+
+- **Üst bar:** fuşya balon HERE logosu (T-23); aşağı çekip yenilerken yükleniyor çarkının yerine bu logo döner (T-24). Sayaç yok: paylaşımlar kalıcı, 04:00'te yalnızca sohbetler sıfırlanır (K-16). Sabit başlık çubuğu yok: logo ve sekmeler içerikle birlikte yukarı kayıp kaybolur; geriye yalnızca Dynamic Island ve durum çubuğunun altında, aşağı doğru yumuşakça kaybolan bir bulanıklık kalır ([Instagram, Ekim 2026](https://mobbin.com/screens/f5ce72ad-1ae5-47d3-abde-989324593482), T-12). DM ve "+" ikonu yok; ikisinin de kendi sekmesi var.
+- **Sekmeler:** "Sana özel | Çevrende" (T-4, T-9), Paylaşımlar bölümünün başında; iki akış da yeniden eskiye.
+- **Şerit (başlıksız, sekmeden bağımsız):** ilk öğe senin fotoğrafın: yer bildirmediysen fuşya "+" rozeti ve "Yer bildir" (dokununca Buradayım sekmesi), bildirdiysen fuşya halka, "Sen" ve mekân adı (Instagram'daki "Hikâyen" gibi). Ardından bu gece paylaşım yapmış karşılıklı takipleştiklerin: halkalı avatar, ad, altında mekân adı; dokununca mekân sayfası. Aynı mekândakileri tek baloncukta toplamak ("Rıhtım · 3") henüz yok.
+- **Kart:** cam kart (Liquid Glass, T-13, T-17): (1) avatar, ad, "· 12 dk", ••• (Bildir / Engelle / Sessize al); altında dokunulabilir mekân satırı ("Rıhtım Açıkhava · Kadıköy") ve varsa "kiminle" satırı (T-25) · (2) 4:5 fotoğraf, çift dokunuşla beğeni · (3) varsa yazı · (4) beğen (sayıyla) · paylaş; sağda bağlantı: o mekânda yer bildirdiysen "Sohbete git ›", değilse "Mekân ›". Yorum düğmesi yok (paylaşıma yorum: ROTA §5.2, güçlü aday). Anonim gönderide nötr siluet ve takma ad, mekân yine görünür; bu yalnızca prototip verisinde var, yeni anonim paylaşım yapılamıyor (ROTA §14 S1).
+- **Yer bildirdikten sonra:** ara ekran ya da "Paylaşılıyor…" çubuğu yok; iğne saplanınca doğrudan mekân sohbetine geçilir (T-26). Fotoğraf çektiysen paylaşımın akışın en üstündedir.
 - **Akış sonu:** "Şimdilik bu kadar."
 
 **Referanslar:** [Instagram · Akış başlığı](https://mobbin.com/screens/f95624c3-820d-4009-bb0b-59a53f3ba585) · [Instagram · Kaydırınca başlık kaybolur](https://mobbin.com/screens/f5ce72ad-1ae5-47d3-abde-989324593482) · [X · For you / Following](https://mobbin.com/screens/db2de9cd-1339-4e10-81a2-8bf08f152258) · [AllTrails · Local / Following](https://mobbin.com/screens/025f04a7-5fcc-41e7-8d0e-33213e933880) · [Swarm · Check-in kartı](https://mobbin.com/screens/a7f7b6d6-5730-4393-8a58-52fce646e4fe) · [Lex · "Chat" butonlu kart](https://mobbin.com/screens/b2dba757-668f-4600-8416-b86ce16ff0aa) · [Instagram · Posting… çubuğu](https://mobbin.com/screens/8f666642-7843-4c66-920b-f9660add856d) · [Pangea · Who's Around](https://mobbin.com/screens/f3779e10-154d-41a7-b0cc-ab36fcebaa4e)
 
 ### 5.3 Yer bildirimi ve paylaşım
 
-- **Buradayım ekranı:** üst %35 harita (300 m dairesi + kullanıcı noktası), altında yükseltilebilir sayfa: "Mekân ara" (Google atfı alanın içinde), satırlar "ikon · ad · 120 m · Bar · ● 23", mesafeye göre sıralı. 300 m dışındakiler gizlenmez, soluk: "Mekânda olmalısın".
-- **Onay sayfası:** büyük mekân adı + "Değiştir" bağlantısı + tam genişlikte cam-fuşya **Buradayım**. Sonra tek öneri: "Grup sohbetine katıl (23)". Fotoğraf isteğe bağlı.
-- **Paylaşım (tek ekranlık sayfa, sihirbaz değil):** değiştirilemeyen mekân etiketi → 4:5 fotoğraf (önce kamera) → açıklama (280 sayaç) → "Kim görebilir: Herkes ›" satırı (dokununca 3 seçenekli sayfa; her seçeneğin altında sonucu: *Herkes:* yakındakilerin akışında · *Takipçilerim* · *Anonim:* adın gizlenir, mekân görünür) → en fazla 2 açıklamalı anahtar → altta fuşya **Paylaş**.
-- **Yalnızca yakında (K-17):** mekâna 300 m'den uzaksan sayfa nedenini açıklar ("Bu mekâna 900 m uzaktasın…") ve düğme kapalı kalır ("Mekânda olmalısın"). Evden yer bildirip sohbete katılmak yok.
+- **Buradayım ekranı:** en üstte "Mekân ara" (üründe Google atfı alanın içinde, K-05), yer bildirdiysen "Şu an buradasın" kartı ve "Mekân sohbetine git", sonra harita (300 m dairesi + kullanıcı noktası) ve "Yakındaki mekânlar": satırlar "ikon · ad · Bar · 120 m · ● 23", mesafeye göre sıralı, 1 km içi (aramada hepsi). 300 m dışındakiler gizlenmez: soluk ve kilitli, "Mekânda olmalısın"; dokununca mekân sayfası açılır. Yakındaki bir mekâna (listede ya da haritada) dokununca yer bildirme sayfası açılır (T-26), zaten yer bildirdiğin mekâna dokununca sohbeti.
+- **Yer bildirme sayfası (T-26, 18.10.2026):** mekân sayfasındaki fuşya **Yer bildir** ile alttan, kenarlardan içeride yüzen bir sayfa düz biçimde kayar (yaylanma yok; [Luma · Leave Event](https://mobbin.com/screens/db78c794-320c-4882-b6e4-e07c9492773f) gibi). Sayfa Liquid Glass: ardındaki mekân sayfası bulanık görünür (o sırada mekân sayfasının düğmeleri gizlenir). Yazı az: solda yalnızca mekân (küçük fotoğraf, ad, kategori · mesafe) ve ortada büyük bir **kamera dairesi**. "Vazgeç" yok: üstteki boş alana dokununca kapanır. Kamera dairesi isteğe bağlı fotoğraf içindir ve **yalnızca o an çekilen** fotoğrafı kabul eder (galeri yok: "Şimdi ve burada"). Çekilen fotoğraf kamera simgesinin yerine dairenin içine oturur; dokununca yeniden çekilir, köşedeki × ile kaldırılır. Sağda dikey fuşya oluk: tepede beyaz topuzda iğne, altında aşağıyı gösteren ışıltılı oklar, dipte elips. Luma'da soldan sağa kaydırılır, burada **yukarıdan aşağı**; yarıda bırakılırsa iğne sakin biçimde yerine döner (en fazla çok hafif esner). İğne dibe inince topuz kaybolur, beyaz iğne elipse saplanır, halka yayılır: HERE'nin yer bildirme simgesi (iğne + elips) tamamlanır. Saplanır saplanmaz yer bildirilir (fotoğraf varsa paylaşımıyla birlikte) ve **doğrudan mekân sohbetine** geçilir: ara ekran yok, amaç sohbeti başlatmak. Kilitli bir sohbetteki "Yer bildir ve katıl" da bu sayfayı açar; iğne saplanınca aynı sohbete dönülür. Sayfada açıklama, kitle ("Kim görebilir") ya da anonim seçimi yok: fotoğraf profilinle ve herkese açık paylaşılır. Bunların ne olacağı açık (ROTA §14 S1 anonimlik, S2 kitle, S3 yazı).
+- **Önceki paylaşım sayfası (T-26 ile kalktı):** değiştirilemeyen mekân etiketi → 4:5 fotoğraf (önce kamera) → açıklama (280 sayaç) → "Kim görebilir: Herkes ›" (Herkes / Takipçilerim / Anonim) → altta fuşya **Paylaş**. Artık ayrı paylaşım ekranı yok; fotoğraf yer bildirme sayfasındaki kamera dairesinden gelir ve yer bildirimiyle birlikte paylaşılır.
+- **Başlık yok:** Buradayım sekmesi büyük başlık olmadan doğrudan "Mekân ara" ile başlar (sekme adı zaten Buradayım).
+- **Harita gezilebilir:** Buradayım ve Keşfet haritaları kaydırılıp yakınlaştırılabilir; sağ altta cam "Konumuma dön" düğmesi. Uzaktaki pine dokunmak yer bildirimini değil mekân sayfasını açar.
+- **Yalnızca yakında (K-17):** mekâna 300 m'den uzaksan yer bildirme sayfası kilitli açılır: mesafeyi yazar ("300 m içinde değilsin · 900 m uzaktasın"), kamera dairesinin yerinde "Yol tarifi" durur, iğneli oluk gri ve kıpırdamaz. Kilitli sohbette düğme kapalıdır ("Mekânda olmalısın"); Buradayım'da uzak satır mekân sayfasına gider. Evden yer bildirip sohbete katılmak yok. Bu üç davranışın teke indirilmesi açık (ROTA §14 S5).
 
 **Referanslar:** [Swarm · Logging a check-in](https://mobbin.com/flows/b085bdb2-fca9-47b6-bb94-e32e8a110c48) · [Swarm · Changing a location](https://mobbin.com/flows/25bbbb32-f68b-494b-8e2a-f87bba8bdf25) · [Bump · Yakındaki yer seçici](https://mobbin.com/screens/fa69f7d0-7cdc-4965-933d-0b90d310d993) · [Live Nation · At the Venue?](https://mobbin.com/screens/cc8c52fe-fc15-4802-9539-54a0c562f4be) · [Instagram · New post](https://mobbin.com/screens/6d8a7cd3-a695-4fa4-a59a-a8c0d647cc8a) · [TikTok · Post](https://mobbin.com/screens/7b742cfa-b90e-467d-b73b-8fb9092857ce) · [BeReal · Select your Audience](https://mobbin.com/screens/6603693a-e64f-446b-990f-028e2a0a522b)
 
@@ -244,7 +249,7 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 - **"● 48 kişi şu an burada"** satırı + üst üste avatarlar (takip edilenler önde); dokununca "Burada kimler var" sayfası. Anonimler sayıya dahil, listede yok.
 - "Bu gece" 3 sütunlu fotoğraf ızgarası.
 - Grup sohbeti önizlemesi ("23 kişi · son mesaj 2 dk"); yer bildirmemiş kullanıcıya bulanık iskelet balonlar + kilit.
-- **Altta sabit, duruma göre değişen tek buton:** 300 m içindeyse **Buradayım** · yer bildirdiyse **Sohbete katıl** · uzaktaysa ikincil "Yol tarifi".
+- **Altta sabit düğmeler (T-26):** yan yana, ortalı: solda cam **Yol tarifi**, sağda fuşya **Yer bildir** (alttan açılan yer bildirme sayfası, §5.3). Mesafe başlıkta yazdığı için düğmede yok. Yer bildirdiysen yalnızca **Sohbete git**. Mekân 300 m'den uzaksa da fuşya Yer bildir etkin kalır; yer bildirme sayfasında oluk kilitli ve gri, nedeni ve "Yol tarifi" yazar (K-17; tek davranış seçimi ROTA §14 S5).
 
 **Referanslar:** [corner · Mekân](https://mobbin.com/screens/1af2ee0f-6b30-4bbe-a1c2-f8ea2156d07d) · [Posh · Etkinlik + RSVP](https://mobbin.com/screens/1177d96b-90b8-441b-bfa2-c6717f9f3615) · [Beli · Mekân](https://mobbin.com/screens/a48ac100-625e-45dd-b33e-f4576ade1ca7) · [Places · Bar Part Time](https://mobbin.com/screens/006cff91-e623-4a70-83ea-65d2092f5ff0)
 
@@ -258,6 +263,8 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 **Referanslar:** [Snapchat · Kategoriye göre yer arama](https://mobbin.com/flows/3143f64c-7471-4da3-8439-4165e0d59598) · [Snapchat · Map](https://mobbin.com/flows/0c909e9c-8dad-453a-b88c-a494bc6c34ac) · [Meetup · Harita](https://mobbin.com/screens/488a6aef-3f0b-4474-a065-95eb75f0bffe) · [Swarm · Explore](https://mobbin.com/screens/f4d0f9b9-f7dc-4a20-99e9-1628f86e5044)
 
 ### 5.6 Mesajlar (gelen kutusu ve istekler)
+
+**Yeni düzen (T-21, 17.10.2026), [Instagram mesaj kutusu](https://mobbin.com/screens/fafb59d5-9aa6-4c27-8ead-ddd7098eb85b) gibi:** başlık çubuğu yok (ana sayfa gibi içerikle kayar, üstte yalnızca Dynamic Island bulanıklığı): kullanıcı adı ve sağda cam yeni mesaj düğmesi → arama → **Grup sohbetleri** şeridi (HERE'nin asıl odağı: ana sayfadaki mekân kartları; dokununca mekânın grup sohbeti açılır, yer bildirmediysen kilitli) → "Mesajlar" ve sağda "İstekler" + sayı rozeti (sekme çubuğunda sayı rozeti yok, seçili Profil sekmesinin camıyla çakışıyordu; yerine Instagram'daki gibi Mesajlar simgesinin sağ alt köşesinde küçücük kırmızı nokta: bekleyen istek ya da okunmamış birebir sohbet varken, mekân sohbetleri saymaz, T-27) → kartsız düz liste (mekân sohbetinde yuvarlatılmış kare mekân fotoğrafı; okunmamışta kalın ad ve fuşya nokta; yer bildirdiğin mekân en üstte) → **Önerilenler** (henüz yazışmadığın takipleştiklerin) → en altta tek satır "Sohbetler … sonra sıfırlanır". Tümü / Gruplar / Birebir seçicisi kaldırıldı. **Yeni mesaj** açılır pencere değil, Instagram'daki gibi bir sayfa: "Kime:" alanı, önce takipleştiklerin, sonra diğer kişiler ("Mesajın istek olarak gider"). Profil ve Buradayım da başlık çubuksuz: başlık/arama içerikle kayar. Aşağıdaki maddeler önceki düzeni anlatıyor.
 
 - Büyük başlık "Mesajlar", altında bir kez: "⏳ Tüm sohbetler 4 sa 12 dk sonra silinir". Satır başına sayaç yok.
 - En üstte "Şu an buradasın" kartı: mekân fotoğrafı (yuvarlatılmış kare, kişilerden ayrışsın), "142 kişi", canlı nokta.
@@ -276,25 +283,37 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 - **Plan kartı:** emoji + başlık; "00:30 · 2 no'lu kapı · 45 dk sonra"; avatar yığını + "12 kişi katılıyor"; tek buton **Ben de varım** → fuşya dolu "✓ Varsın" (geri alınabilir). Saati geçen kart soluklaşır. "+" → Plan; saat seçici en geç 04:00.
 - **Sabit plan şeridi** başlığın altında; birden çoksa "3 aktif plan ›".
 - **Kalabalık yönetimi:** "↓ 38 yeni mesaj" kapsülü, "@ 2" bahsetme atlaması, yukarı kaydırınca otomatik kaydırma durur; "Son 10 dk'da 24 kişi katıldı" tek satır; "Birkaç kişi yazıyor…"; okundu bilgisi yok (DM hariç); yoğunlukta yavaş mod.
-- **Kilitli sohbet:** bulanık iskelet balonlar + canlı sinyaller ("142 kişi · son 10 dk'da 86 mesaj · 3 aktif plan"); composer yerine fuşya **Yer bildir ve katıl**; katılırken kimlik seçimi (Profilimle / Takma adla).
-- **Composer:** solda cam "+" (Fotoğraf · Kamera · Plan · Buluşma noktası), kapsül alan, boşken kamera, yazınca fuşya gönder; mekân sohbetinde solda kimlik çipi. Yer tutucu "Mesaj".
+- **Kilitli sohbet:** bulanık iskelet balonlar + canlı sinyaller ("142 kişi · son 10 dk'da 86 mesaj · 3 aktif plan"); composer yerine fuşya **Yer bildir ve katıl**: alttan yer bildirme sayfası açılır, iğne saplanınca bu sohbete dönülür (T-26). Uzaktaysan düğme kapalı: **Mekânda olmalısın** (K-17). Katılırken kimlik seçimi (Profilimle / Takma adla) T-26'dan beri yok (ROTA §14 S1).
+- **Composer:** solda cam "+" (Plan · Fotoğraf · Buluşma noktası), kapsül alan, boşken kamera, yazınca fuşya gönder. Yer tutucu "Mesaj"; mekân sohbetindeki kimlik çipi anonim yer bildirimiyle birlikte kalktı (ROTA §14 S1).
 - **Uzun basma:** 6 emoji + Yanıtla / Kopyala / Bildir / Engelle.
 
 **Referanslar:** [Discord · #general](https://mobbin.com/screens/4238a9c4-5959-4c99-ba68-87a42cd9ede8) · [Ladder · NYC Meetup](https://mobbin.com/screens/67494e56-9d7d-44d8-831e-88aaa8b0bc22) · [Luma · Etkinlik sohbeti](https://mobbin.com/screens/a01372cf-4ca3-43fb-a68a-a737fc11032f) · [GroupMe · "I'm in" kartı](https://mobbin.com/screens/8e2755f5-85a3-49c3-b0d8-a2a71828b671) · [XChat · Başlıkta zamanlayıcı](https://mobbin.com/screens/66f22415-3dc0-44c4-b64c-446cf9ffa778) · [Instagram · Kaybolan mesaj modu](https://mobbin.com/screens/b817c022-0c12-4e39-b978-bb4d6ebb34a5) · [Slack · Join channel](https://mobbin.com/screens/3fbd8a9e-ceb0-454b-9be6-d330f6c04711) · [XChat · Composer](https://mobbin.com/screens/11a1b0f9-0bf4-4fdc-b5ba-30f4a8968b54) · [Telegram · Tepki akışı](https://mobbin.com/flows/65a949d7-6d85-4ba3-93eb-62bfcf0ddc17)
 
 ### 5.8 Profil
 
-- **Kendi profilin:** 80 pt avatar → Title2 ad → @kullanıcı adı (gizli hesapta yanında kilit) → biyografi → satır içi sayılar ("128 takipçi · 87 takip") → nötr ilgi alanı çipleri → gri tonal "Profili düzenle" + "Paylaş". Sağ üstte cam paylaş ve çark.
-- **Sekme yok.** Tek bir **"Paylaşımların"** bölümü: paylaşımlar kalıcı (K-16); yer bildirmişsen en üstte "Şu an buradasın" kartı, hiç paylaşım yoksa boş durum metni ve **Buradayım**.
-- **Başkasının profili:** buton tek yerde durum değiştirir: **Takip et** (metin renginde dolu) → **İstek gönderildi** (gri, saat ikonlu; dokununca "İsteği geri çek") → **Takip ediliyor** (gri; "Takibi bırak" onay ister). **Mesaj** her zaman gri tonal. Sağ üstte •••: Engelle / Bildir / Sessize al.
-- **Gizli hesap:** başlık ve sayılar görünür; içerik yerine kilit + "Bu hesap gizli. Bu geceki yer bildirimlerini görmek için takip et."
+**Sadeleşen düzen (T-22, 17.10.2026):** kimlik, sayılar, etiketler ve hemen altında Pinterest gibi paylaşımlar. Başlık çubuğu yok; her şey içerikle kayar. İlk "gece pasaportu" denemesindeki "Bu gece / Neredesin?" kartı, "Son gece" etiketi, "Son 30 gün" kartı ve "Sık gittiklerin" kurucunun isteğiyle kalktı ("profil sayfası çok karışık olmuş"); sık gidilenlere sonra dönülecek.
 
-**Referanslar:** [X · Profil](https://mobbin.com/screens/04adbd4e-9a4b-4bf4-9027-0ee4b817b4f3) · [BeReal · Profil (koyu)](https://mobbin.com/screens/72d3854d-97be-4541-a917-64a0100ce65d) · [Instagram · Gizli hesap](https://mobbin.com/screens/9c930acd-4fd6-4400-b628-d1b44bbe66a9) · [Garmin · Takip akışı](https://mobbin.com/flows/e6f8a69c-9cc6-4e05-8f6e-ac426806da49) · [BeReal · Arkadaşlık isteği](https://mobbin.com/flows/eec0c11e-0489-4632-9cd0-52641503ca20)
+- **Kapak:** kişinin seçtiği kapak fotoğrafı net; seçmediyse son gecenin fotoğrafı bulanık. Ekranın en üstünden başlar, aşağı doğru zemine karışır (BeReal gibi). Ortada @kullanıcı adı. Sol üstte cam **Düzenle** (kalem), sağ üstte cam paylaş ve çark. Aşağı çekince fotoğraf yukarı doğru uzar, üstünde balon HERE döner (T-24).
+- **Profili düzenle (T-28, 18.10.2026):** kapaktaki kalemden ve Ayarlar › Hesap'tan alttan açılan sayfa (X'teki gibi; üstte arkadaki profil görünür). Üstte profildeki gibi kapak ve üstüne binen profil fotoğrafı, ikisinde de kamera işareti; dokununca "Fotoğraflardan seç" ve (cihazda) "Fotoğraf çek"; profil fotoğrafında "Fotoğrafı kaldır", seçilmiş kapakta "Son gecenin fotoğrafını kullan". Altında cam kartta Ad, Kullanıcı adı (@; küçük harf, rakam, nokta, alt çizgi; ı → i gibi Türkçe harfler sadeleşir; alınmışsa kartın altında uyarı) ve tam genişlikte Hakkında (150 karakter, sayaçlı; kutu en uzun yazıya göre baştan 5 satır, satır atlanmaz); en altta ilgi alanları (20 seçenekten en fazla 5; her çipte + ya da ✓, seçili çip metin renginde dolu). Sol üstte ✕, sağ üstte fuşya ✓ (değişiklik yokken soluk). İçerik kendi içinde kaymaz; klavye açılınca, uyarı çıkınca ya da çip seçilince hiçbir şey yerinden oynamaz (kurucu: "hiçbir şey hareket etmesin"). Yalnızca her şeyin sığmadığı küçük ekranlarda kayar. Kaydedilmemiş değişiklik varken sayfa aşağı çekilerek kapanmaz; ✕ önce "Değişiklikler kaydedilmesin mi?" diye sorar. Değişiklikler cihazda saklanır; seçilen fotoğraflar uygulamanın belgeler klasörüne kopyalanır.
+- **Kimlik:** avatar kapağa biner → Title2 ad (gizli hesapta kilit) → @kullanıcı adı → biyografi → üç sayı: **takipçi** · **takip** (dokununca liste) · **anı** (yer bildirilen tüm geceler; dokununca anı takvimi) → nötr ilgi alanı etiketleri.
+- **Üç sekme (T-25):** etiketlerin altında yerel seçici: **Paylaşımlar** · **Etiketlenenler** (arkadaşların seni etiketlediği paylaşımlar) · **To-HERE** (gitmek istediğin mekânlar). Başkasının profilinde de aynı üç sekme.
+- **Paylaşımlar Pinterest gibi:** seçicinin hemen altında, başlıksız iki sütun; yalnızca fotoğraflar, kendi oranlarında, altlarında yazı yok. Fotoğrafsız paylaşım, yazısının kendisi olan bir alıntı kartı. Dokununca Instagram'daki gibi **dikey akış** açılır (ana sayfadaki kartlarla) ve dokunulan paylaşımdan başlar.
+- **Etiketlenenler:** aynı ızgara; dokununca o paylaşımlar alt alta açılır. Paylaşım kartında başlığın altında "Seninle" / "Deniz ve Can ile" satırı.
+- **To-HERE:** "Gitmek istediğin 4 yer"; fotoğraflı mekân kartları (ad ve semt · uzaklık fotoğrafın üstünde), Pinterest gibi iki sütun. Kendi listende aynı yeri kaydeden karşılıklı takipleştiklerin küçük avatarla ("Zeynep de"), başkasınınkinde senin de kaydettiğin yerlerde fuşya "İkiniz de". Mekân sayfasında sağ üstteki yer imiyle eklenir, çıkarılır.
+- **Anılar (ayrı sayfa, 18.10.2026):** "anı" sayısına dokununca açılır ("Anıların", başkasınınkinde "Zeynep'in anıları"). Yalnızca takvim: başlık ayın adı, yanında oklar; gidilen gecelerde o gecenin fotoğrafı, bugün fuşya halkalı. Bir geceye dokununca o gecenin paylaşımları (yoksa mekân) doğrudan açılır; takvimin altında başka bir şey yok. Üstte kilitli bir satır: kendi takviminde "Şu an burada kimler görsün" ayarının değerini yazar ("Herkes görebilir" / "Yalnızca karşılıklı takipleştiklerin görür" / "Yalnızca sen görürsün") ve Ayarlar'a götürür; başkasının takviminde "Karşılıklı takipleştiğiniz için görüyorsun" yazar. Kimin gerçekten gördüğü aşağıdaki Gizlilik maddesinde.
+- **Takipçi / takip listeleri:** sayıya dokununca açılan sayfa: üstte "19 takipçi | 16 takip" seçici, arama, önce karşılıklı takipleştiklerin. Satırda ipucu ("Karşılıklı takipleşiyorsunuz", "Seni takip ediyor") ve durum kapsülü. Başkalarının listeleri de açılır.
+- **Başkasının profili:** aynı düzen; kapakta solda geri, sağda •••: Bildir / Engelle / Sessize al. Avatarın yanında **Mesaj** ve takip kapsülü: **Takip et** (metin renginde dolu; seni takip ediyorsa **Geri takip et**, gizli hesapta **İstek gönder**) → **İstek gönderildi** (dokununca geri çekilir) → **Takip ediliyor** ("Takibi bırak" onay ister). Karşılıklı takipleşmiyorsanız "mesajın İstekler'e düşer" notu.
+  - **Gizlilik (bugünkü davranış):** başkasının "anı" sayısı, anı takvimi ve "şu an burada" halkası, onun ayarı ne olursa olsun yalnızca **karşılıklı takipleşenlere** açık. Kendi takviminin etiketi ise "Şu an burada kimler görsün" ayarını izler; ayar "Herkes" ya da "Kimse" iken etiket ile gerçek erişim ayrışıyor. Takvim hep karşılıklı mı kalsın, ayara mı bağlansın: açık soru (ROTA §14 S4). ("Birlikte olduğunuz geceler" takvimin altından kalktı.)
+- **Gizli hesap:** başlık ve sayılar görünür; içerik yerine kilit + "Bu hesap gizli".
+
+**Referanslar:** [Pinterest · Pano ızgarası](https://mobbin.com/screens/fe2ff85e-abfa-4575-8493-774306138a2f) · [BeReal · Profil](https://mobbin.com/screens/3fb9df84-791d-41c2-9cac-f085fb4fce11) ve [takvim](https://mobbin.com/screens/f8e4b2ea-2b0e-4837-91db-2d1acad43e06) · [Beli · İkinizin de gitmek istediği](https://mobbin.com/screens/b8fbe405-8cea-493e-8cf5-c039cdedf431) · [Partiful · Ortak etkinlikler](https://mobbin.com/screens/13def998-1383-4c12-a9b8-3fd3d06b87f4) · [corner · Profil](https://mobbin.com/screens/977a211f-072a-41a6-8620-a2c661063008) · [Instagram · Gizli hesap](https://mobbin.com/screens/9c930acd-4fd6-4400-b628-d1b44bbe66a9) · [Garmin · Takip akışı](https://mobbin.com/flows/e6f8a69c-9cc6-4e05-8f6e-ac426806da49) · [BeReal · Arkadaşlık isteği](https://mobbin.com/flows/eec0c11e-0489-4632-9cd0-52641503ca20)
 
 ### 5.9 Ayarlar
 
 - iOS "insetGrouped" liste; zemin marka gradyanı, satırlar onun rengini alan yarı saydam dolgu.
-- **Tasarım denemesi** grubu (geçici, en üstte): "Görünüm alanı" (1 · 2 · 3, T-19) ve "Zemin" (A · B · C, T-18) menüleri. Karar verilince kalkacak.
+- **Hesap** grubu (en üstte): "Profili düzenle" (T-28; profilde de kapağın sol üstündeki cam kalem), aynı düzenleme sayfasını açar.
+- **Dil** grubu (Görünüm'ün altında, T-29): Sistem / Türkçe / English menüsü; dil adları her dilde kendi yazılışıyla.
+- **Tasarım denemesi** grubu (geçici, Hesap'ın altında): "Görünüm alanı" (1 · 2 · 3, T-19) ve "Zemin" (A · B · C, T-18) menüleri. Karar verilince kalkacak.
 - **Görünüm** grubu: seçili tasarıma göre önizlemeli kartlar, iOS gibi Otomatik anahtarı ya da menü satırı (T-15, T-19, §3.7). "Her şey gece 04:00'te silinir" satırı kaldırıldı.
 - Tüm satır, başlık ve dipnotlar DM Sans; satırlar gradyanın rengini alan yarı saydam dolgu.
 - **Gizlilik** grubu:
@@ -312,7 +331,7 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 - *Çevrende* boş: "Etraf sessiz, ilk sen paylaş" + **Buradayım** + 2 km içindeki canlı mekânlar.
 - 04:00'ten sonra sohbetlerde: **"Yeni gece, temiz sohbet."** Paylaşımlar yerinde kalır.
 - Konum izni kapalı: ne işe yaradığını anlatan ekran + "İzni aç".
-- **Sayaç:** tek genel sayaç; son 60 dakikada fuşya. İleride kilit ekranı ve Dynamic Island için Live Activity (BeReal gibi; ayrı yerel uzantı gerekir).
+- **Sayaç:** genel sayaç yok (K-16). 04:00'e kalan süre yalnızca sohbetlerde: sohbet başlığında ve Mesajlar'ın en altında; son 60 dakikada fuşya. Yer bildirmişken sekme aksesuarında da görünüyor; kalıp kalmayacağı açık (ROTA §14 S7). İleride kilit ekranı ve Dynamic Island için Live Activity (BeReal gibi; ayrı yerel uzantı gerekir).
 
 **Referanslar:** [BeReal · "It's really calm in here"](https://mobbin.com/screens/88524e8f-09ea-4490-b2f0-25c257d224d3) · [Posh · Following boş](https://mobbin.com/screens/81084b27-e0df-4532-ab24-282d2a5f4672) · [Saturn · No friends yet](https://mobbin.com/screens/997d4035-aa00-479d-808e-744e43d05466) · [BeReal · Logonun altında sayaç](https://mobbin.com/screens/2c7754b6-f872-45df-bca7-3f70797f9a80) · [BeReal · Live Activity](https://mobbin.com/screens/237d50a1-7845-4be2-a2d2-b4a7cdbe9245)
 
@@ -331,8 +350,8 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-2 | **Seçili sekme rengi** | (a) fuşya · (b) metin rengi, fuşya yalnız rozetlerde | **(a) fuşya** | iOS'ta uygulamalar sekmelerini kendi rengine boyar; Apple Music bile pembe-kırmızı kullanıyor. Marka için güçlü ve yerel bir işaret. |
 | T-3 | **Ayar anahtarı rengi** | (a) fuşya · (b) iOS sistem yeşili | **(b) sistem yeşili** | Fuşya kırmızıya yakın; açık bir anahtar uyarı gibi okunuyor. iOS Ayarlar ile tam uyum. |
 | T-4 | **Akış sekmelerinin stili** | (a) yerel segment (cam) · (b) X tarzı yazı sekmeleri + fuşya alt çizgi | **(a) yerel segment** | iOS 27'de cam segment yerel ve kullanıcıların tanıdığı kalıp; X tarzı sekme özel bileşen gerektirir. |
-| T-5 | **Logo konumu** | (a) solda · (b) ortada, sayaç altında (BeReal) | **(a) solda, sayaç sağda cam kapsülde** | Büyük harfli dört harflik logo solda büyük başlık gibi duruyor ([HYPE](https://mobbin.com/screens/d5f404ad-b66f-47fc-8332-f05ca2638b5c)); sayaç sağda cam öğe olarak yüzüyor. |
-| T-6 | **Logo rengi** | (a) fuşya · (b) metin rengi | **(b) metin rengi** | Fuşyayı birincil eyleme saklamak için. |
+| T-5 | **Logo konumu** | (a) solda · (b) ortada, sayaç altında (BeReal) | ~~(a) solda, sayaç sağda cam kapsülde~~ → **T-20 ve K-16 ile değişti:** logo ortada, sayaç yok | İlk gerekçe: büyük harfli dört harflik logo solda büyük başlık gibi duruyordu ([HYPE](https://mobbin.com/screens/d5f404ad-b66f-47fc-8332-f05ca2638b5c)). Ana sayfa mekân odaklı olunca (T-20) balon HERE logosu (T-23) ortaya geçti; paylaşımlar kalıcı olduğu için (K-16) ana sayfadaki sayaç kalktı, 04:00 sayacı yalnızca sohbetlerde. |
+| T-6 | **Logo rengi** | (a) fuşya · (b) metin rengi | **(b) metin rengi** | Fuşyayı birincil eyleme saklamak için. **T-23 ile değişti:** logo artık fuşya balon. |
 | T-7 | **Takip et butonu** | (a) fuşya · (b) metin renginde dolu (siyah/beyaz) | **(b)** | Fuşya ekran başına tek birincil eylem; profilde o eylem değil. |
 | T-8 | ~~**Açık mod sayfa zemini**~~ | (a) Winter Haze `#D9DEE5` · (b) açık ton `#EEF1F5` | ~~Akışta (b), ayarlar gibi gruplu listelerde (a)~~ → **T-11 ile değişti** | Düz zemin, cam kartlar gelince yerini gradyana bıraktı. |
 | T-9 | **"Rastgele" sekmesinin adı** | "Rastgele" · "Çevrende" | **"Çevrende"** | İçerik rastgele değil, çevrendeki herkese açık paylaşımlar; "Sana özel" ile de eşleşiyor. "Yakında" elendi: Türkçede "yakında geliyor" gibi okunuyor. |
@@ -346,6 +365,16 @@ Araştırmacıların farklı önerdiği ya da mevcut prototiple çelişen noktal
 | T-17 | **Paylaşım kartlarının geçirgenliği** | (a) buzlu cam + beyaz ton · (b) net cam, tonsuz | **(b)** | Kurucu isteği: "biraz geçirgen olsun". Arkadaki gradyan kartın içinden görünür. |
 | T-18 | **Zemin düzeni** | A üst ışıklar · B üst + sağ alt · C geniş (Revolut gibi) | **Karar bekliyor** | Kurucu: "açık modda renkler az belli; sağ alt ya da Revolut gibi geniş alan olabilir, deneyip karar vereceğiz" (§3.6). |
 | T-19 | **Ayarlar › Görünüm alanı** | 1 önizlemeli kartlar · 2 iOS gibi (Otomatik) · 3 menü satırı | **Karar bekliyor** | Kurucu: "başka bir şekilde yapalım, seçenekler sun" (§3.7). |
+| T-20 | **Ana sayfa kurgusu ve hiyerarşi** | (a) paylaşım akışı · (b) mekân odaklı bölümler | **(b)** | Kurucu: "görüntü profesyonel durmuyor". Uber Eats gibi: iri bölüm başlıkları, büyük fotoğraf, tek satır bilgi; paylaşım kartında katman azaldı (mekân kapsülü ve buton yerine bağlantı satırları). |
+| T-21 | **Mesajlar** | (a) cam kartlı liste + seçici · (b) Instagram mesaj kutusu | **(b)** | Kurucu isteği. Tanıdık kalıp. Instagram'ın notlar şeridinin yerinde önce kişilerin şu anki mekânı vardı; şimdi **Grup sohbetleri** şeridi: mekânların grup sohbetleri, HERE'nin asıl odağı (dokununca sohbet, yer bildirmediysen kilitli; §5.6). |
+| T-22 | **Profil** | (a) paylaşım listesi · (b) "gece pasaportu" kartları · (c) sade: kimlik, sayılar, etiketler, Pinterest ızgarası; takvim "anı" sayısının arkasında | **(c)** | Kurucu: "sıradan olmasın ama kullanışlı olsun"; (b) denendi, "çok karışık olmuş". Bu gece kartı, Son gece etiketi, Son 30 gün ve Sık gittiklerin kalktı; Düzenle kapaktaki cam kaleme taşındı; ızgarada fotoğrafların altında yazı yok (§5.8). |
+| T-23 | **Logo ve simge** | (a) düz geometrik HERE · (b) krom balon harfler (corner'ın simgesi gibi) · (c) fuşya, parlak balon harfler | **(c)** | Kurucu önce "corner'ın simgesindeki yazıyı aynen HERE'ye uygulayalım; zemin rengimiz sabit" dedi (krom, simgede iki satır "HE / RE"), sonra "daha balon gibi; metalik değil, fuşya rengimizde bir balon; simgede de yan yana HERE". Simge zemini fuşya kaldı; harfleri zeminden koyu kırmızı gölge ayırır. Kaynak: `scripts/generate-brand.py` ([corner simgesi](https://apps.apple.com/app/id1668282277)). |
+| T-24 | **Aşağı çekip yenileme** | (a) iOS çarkı · (b) dönen balon HERE | **(b)** | Kurucu isteği: logo 3B olduğu için yükleniyor işareti yerine 360° soldan sağa döner. Çekerken çekilen mesafe kadar, yenilerken sürekli döner, bitince öne bakarak durur. Ana sayfada başlıktaki logo döner; Mesajlar ve Profil'de çekince açılan boşlukta görünür. |
+| T-25 | **Profil sekmeleri** | (a) yalnızca paylaşımlar · (b) üç sekme: Paylaşımlar · Etiketlenenler · To-HERE | **(b)** | Kurucu isteği. To-HERE ("to-do list" gibi) gitmek istediğin mekânların listesi; mekân sayfasındaki yer imiyle eklenir. Kendi listende aynı yeri kaydeden karşılıklı takipleştiklerin, başkasınınkinde "İkiniz de" görünür: birlikte gitme planına zemin (§5.8). |
+| T-26 | **Yer bildirme** | (a) düğmeye dokununca doğrudan · (b) alttan açılan sayfada kaydırarak onay (Luma gibi) | **(b), dikey** | Kurucu isteği: mekân sayfasında "Yol tarifi"nin üstünde fuşya "Yer bildir"; alttan sayfa açılır, sağda fuşya oluk, iğne yukarıdan aşağı kaydırılır ve "burada olduğumuzu iğneler" gibi zemine saplanır. Kaydırma, yanlışlıkla yer bildirmeyi önler; iğne + elips uygulamanın yer bildirme simgesini tamamlar. İkinci tur: sayfa yaylanmadan açılır, yazılar azaldı, kamera dairesi (yalnızca anlık çekim) eklendi, iğne saplanınca doğrudan sohbete geçilir. Üçüncü tur: mekân sayfasında Yol tarifi solda, Yer bildir sağda yan yana; sayfa Liquid Glass, "Vazgeç" yok, iğne sakin döner (§5.3–5.4). Eski paylaşım sayfasının yerini aldı; oradaki açıklama, kitle ve anonim seçimi buraya taşınmadı, ne olacakları açık (ROTA §14 S1–S3). |
+| T-27 | **Mesajlar'da "yeni bir şey var" işareti** | (a) sistemin sayı rozeti · (b) işaret yok · (c) simgenin sağ altında küçücük nokta (Instagram gibi) | **(c)** | Kurucu: rozet seçili Profil sekmesinin camıyla çakışıyordu. iOS sekme rozetinin yeri değiştirilemediği için nokta simgenin içine çizildi (`scripts/generate-tab-icons.swift`; simgeyi iOS'un kendisi çizer, öteki simgelerle birebir aynı). İlk turda nokta simgenin renginde (şablon) çizildi; kurucu "kırmızı olsun, diğer türlü az anlaşılıyor" dedi. Şimdi nokta iOS'un sistem kırmızısı; simge asset kataloğunda açık (siyah) ve koyu (beyaz) çeşitleriyle duruyor, iOS hangisini göstereceğini kendisi seçer (`plugins/with-xcassets.js`). Seçiliyken simge yine şablon: iOS onu öteki seçili simgeler gibi fuşyaya boyar, nokta da fuşya olur. Bekleyen istek ya da okunmamış birebir sohbet varken görünür; mekân sohbetleri saymaz (kalabalık mekânda hiç sönmezdi). |
+| T-28 | **Profili düzenle** | (a) her alan için ayrı sayfa (Instagram) · (b) tek sayfa: kapak, fotoğraf ve alanlar (X) | **(b)** | Kurucu isteği ("kapak resmi, isim, resim; klasik şeyler"). Profil X düzeninde olduğu için düzenleme de aynı düzende. Seçilen kapak net görünür; seçilmezse son gecenin fotoğrafı bulanık kalır (§5.8). Profil fotoğrafı ve kapak galeriden seçilebilir; "yalnızca anlık fotoğraf" kuralı yer bildirirken paylaşılan fotoğraflar için. İkinci tur: içerik kendi içinde kaymaz, Hakkında kutusu baştan en büyük boyunda; sayfa yine alttan açılır. |
+| T-29 | **Dil** | (a) yalnızca Türkçe · (b) Türkçe + İngilizce, Ayarlar'da seçilir | **(b)** | Kurucu isteği: GitHub'daki medya kiti İngilizce ekran görüntüleriyle hazırlanacak. Ayarlar › Dil: Sistem (telefon Türkçe ise Türkçe, değilse İngilizce) / Türkçe / English; cihazda saklanır. Metinler `src/i18n/strings/` altında alan alan, iki dil aynı biçimde (TypeScript denetler). Prototip verisinin İngilizcesi `src/data/mock.en.ts`; kullanıcının kendi yazdıkları çevrilmez. Mekân ve semt adları özel ad. Tarih, saat ("4h 12m"), mesafe ("1.8 km") ve sayılar dile göre; İngilizcede çoğul ("1 person / 2 people"). |
 
 ---
 
@@ -356,9 +385,9 @@ Her adım iOS 27 simülatörlerinde (iPhone 18 Pro · iOS 27.0 ve iPhone Duo · 
 | # | Adım | Durum (17.10.2026) |
 |---|---|---|
 | 1 | **Temel:** cam bileşenleri, SwiftUI butonları, yerel segment, belirteçler | ✅ |
-| 2 | **Gezinme iskeleti:** her sekmede yerel başlık, büyük başlık, küçülen sekme çubuğu, cam aksesuar | ✅ |
+| 2 | **Gezinme iskeleti:** her sekmede yerel başlık, büyük başlık, küçülen sekme çubuğu, cam aksesuar | ✅ Sekmelerdeki yerel başlık ve büyük başlık sonra kalktı (T-12, T-21, T-22) |
 | 3 | Ana sayfa (§5.2) | ✅ |
-| 4 | Yer bildirimi + paylaşım sayfası (§5.3) | ✅ |
+| 4 | Yer bildirimi (§5.3): Buradayım listesi ve haritası; ilk sürümdeki paylaşım sayfası T-26 ile yer bildirme sayfasına dönüştü (adım 17) | ✅ |
 | 5 | Mekân sayfası (§5.4) + "Burada kimler var" cam sayfası | ✅ |
 | 6 | Keşfet haritası (§5.5) | ✅ Pin kümelenmesi yok |
 | 7 | Mesajlar + sohbet + plan kartı (§5.6–5.7) | ✅ Kaydırarak sessize alma/silme yok |
@@ -368,8 +397,14 @@ Her adım iOS 27 simülatörlerinde (iPhone 18 Pro · iOS 27.0 ve iPhone Duo · 
 | 11 | Gradyan zemin, kayan üst bar, cam kartlar, net cam, görünüm ayarı (T-11…T-15) | ✅ |
 | 12 | DM Sans (T-16), sahte profil fotoğrafları, geçirgen paylaşım kartları (T-17), 04:00 yazıları (K-16), yakın mekân kuralı (K-17) | ✅ |
 | 13 | Zemin (T-18) ve görünüm alanı (T-19) denemeleri | 🟡 Uygulandı, karar bekliyor |
+| 14 | Profil (T-22): sade düzen, Pinterest ızgarası, dikey paylaşım akışı, takipçi/takip listeleri, "anı" sayısından açılan anı takvimi; Ayarlar › Hesap | ✅ |
+| 15 | Fuşya balon HERE logosu ve tek satır simge (T-23), aşağı çekince dönen logo (T-24) | ✅ Ana sayfa, Mesajlar, Profil |
+| 16 | Profil sekmeleri (T-25): Paylaşımlar, Etiketlenenler, To-HERE; mekân sayfasında kaydet; paylaşım kartında "kiminle" satırı | ✅ Paylaşırken kişi etiketleme yok (yalnızca prototip verisinde) |
+| 17 | Yer bildirme sayfası (T-26): mekân sayfasında fuşya Yer bildir, alttan açılan sayfa, kamera dairesi (yalnızca anlık çekim), dikey iğneli kaydırıcı, saplanınca doğrudan sohbet | ✅ Dokunsal titreşim yok; simülatörde kamera olmadığı için mekânın fotoğrafı "çekilmiş" sayılır |
+| 18 | Mesajlar'da küçücük kırmızı nokta (T-27); Profili düzenle (T-28): kapak, fotoğraf, ad, kullanıcı adı, hakkında, ilgi alanları, cihazda saklanır | ✅ Simülatörde klavyeyle yazma denenemedi; kullanıcı adı kuralları ayrıca sınandı. "Fotoğraf çek" yalnızca cihazda |
+| 19 | Dil seçimi (T-29): Türkçe ve İngilizce; İngilizce ekranlardan medya kiti (`docs/media-kit/`) | ✅ |
 
-Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (T-11…T-15 durumu; T-18 ve T-19 kararından sonra yenilenecek) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
+Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · T-22…T-24 sonrası ana sayfa, profil ve ayarlar: [ekranlar/01-ana-sayfa.jpg](ekranlar/01-ana-sayfa.jpg), [ekranlar/09-profil.jpg](ekranlar/09-profil.jpg), [ekranlar/10-ayarlar.jpg](ekranlar/10-ayarlar.jpg) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
 
 ### 7.1 Kullanılan yerel parçalar
 
@@ -377,19 +412,20 @@ Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (T-11…T-15 durumu
 |---|---|---|
 | Liquid Glass sekme çubuğu, küçülme | Tüm sekmeler | `NativeTabs`, `minimizeBehavior="onScrollDown"` |
 | **Öne çıkan sekme (iOS 27)** | Buradayım | `unstable_nativeProps.ios.prominentScreenKey` → `UITabBarController.prominentTabIdentifier`. Sekme kendi cam dairesinde sağda durur ve çubuk küçülünce de görünür kalır. iOS 26'da ortada normal sekmedir. **T-1 notu:** ortada durmasını istersen tek satırla normal sekmeye dönülür. |
-| Sekme aksesuarı | Yer bildirmişken | `NativeTabs.BottomAccessory`: "♪ mekân · kişi · kalan süre" |
+| Sekme aksesuarı | Yer bildirmişken | `NativeTabs.BottomAccessory`: mekân simgesi · ad · kişi · kalan süre (sayaç açık soru: ROTA §14 S7) |
 | Kenar çubuğu (geniş ekran) | iPhone Duo iç ekranı, iPad | `sidebarAdaptable` + `tabBarSidebarPreferredPlacement: 'sidebar'` |
 | Cam başlık düğmeleri ve menü | Tüm başlıklar | `Stack.Toolbar` (Button, Menu, View); iOS 26+ ortak cam arka plan |
-| Büyük başlık, arama çubuğu | Buradayım, Mesajlar | `Stack.Title large`, `Stack.SearchBar` |
+| İçerikle kayan başlık ve arama | Mesajlar, Buradayım, takip listeleri | Yerel büyük başlık ve `Stack.SearchBar` yok (T-21): Mesajlar'da `ScreenHeader` (ortada başlık, sağda cam daire düğme), aramada `SearchField`; ikisi de içerikle kayar, üstte `StatusBarBlur`. `Stack.Title` yalnızca alt sayfalarda (Anılar, takip listeleri, Paylaşımlar) |
 | Marka gradyanı | Tüm ekranlar | `Backdrop`: RN 0.88 `experimental_backgroundImage` (radyal gradyan), yığınların `contentStyle`'ında |
 | Kademeli durum çubuğu bulanıklığı | Ana sayfa | `StatusBarBlur`: `expo-blur`, `@react-native-masked-view/masked-view` ve `expo-linear-gradient` maskesi; üstte güçlü, aşağı doğru kaybolur |
 | SwiftUI butonları | Eylem düğmeleri | `@expo/ui`: yüzen düğmede `glassProminent`, içerikte `borderedProminent` / `bordered` |
-| Yerel segment denetimi | Akış, mesajlar | `@react-native-segmented-control/segmented-control` (UISegmentedControl, iOS 26+ cam): SwiftUI segmentli seçici özel yazı tipi almadığı için; DM Sans |
-| Yerel menü, form | Paylaşım, ayarlar | SwiftUI `Picker` (menu / inline), `Form`, `Toggle` (sistem yeşili); DM Sans `font({ family })` ile |
+| Yerel segment denetimi | Akış, profil sekmeleri, takipçi / takip | `@react-native-segmented-control/segmented-control` (UISegmentedControl, iOS 26+ cam): SwiftUI segmentli seçici özel yazı tipi almadığı için; DM Sans |
+| Yerel menü, form | Ayarlar | SwiftUI `Picker` (menu / inline), `Form`, `Toggle` (sistem yeşili); DM Sans `font({ family })` ile |
 | SwiftUI içinde RN görünümü | Ayarlar › Görünüm önizlemeleri | `RNHostView` + `Group` (satır zemini) |
-| Cam yüzeyler | Harita kontrolleri, sayaç, sohbet yazma alanı (`clear`) · kartlar (`regular`) | `expo-glass-effect` (`Glass`, `GlassCard`, `GlassGroup`); "Saydamlığı Azalt" açıksa opak |
+| Cam yüzeyler | Harita kontrolleri, sohbet yazma alanı (`clear`) · kartlar, yer bildirme sayfası (`regular`) | `expo-glass-effect` (`Glass`, `GlassCard`, `GlassGroup`); "Saydamlığı Azalt" açıksa opak |
 | Görünüm ayarı | Ayarlar | `Appearance.setColorScheme` + `AsyncStorage`; `expo-splash-screen` seçim uygulanana kadar açık kalır, 250 ms solarak kalkar |
 | Cam sayfa | Burada kimler var | `presentation: 'formSheet'`, yarım ve tam yükseklik |
+| Yer bildirme sayfası (T-26) | Mekân sayfası, Buradayım, kilitli sohbet | `presentation: 'transparentModal'` (geçiş animasyonu yok) + sayfanın kendi yaylanmasız alttan kayışı; sayfa `Glass` (regular), içinde dikey iğneli kaydırıcı `PinSlider` |
 
 ### 7.2 iOS 27 bulguları
 

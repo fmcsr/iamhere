@@ -11,7 +11,10 @@ import {
   I_FOLLOW,
   ME,
   MESSAGES,
+  MORE_USERS,
+  NIGHT_HISTORY,
   POSTS,
+  SAVED_VENUES,
   USERS,
   VENUES,
   type Audience,
@@ -20,7 +23,13 @@ import {
   type Plan,
   type Post,
   type User,
+  type Venue,
+  followsBetween,
 } from './mock';
+import { EN } from './mock.en';
+import { resolveLang, setLang, type Lang, type LanguageSetting } from '@/i18n';
+import { collectNights, nightKeyOf, tonightKey } from '@/lib/nights';
+import { loadedPhoto, storedPhoto } from '@/lib/profile';
 
 export type PresenceVisibility = 'herkes' | 'karsilikli' | 'kimse';
 
@@ -36,21 +45,32 @@ export type AppearanceUI = 'onizleme' | 'ios' | 'menu';
 export type Trial = { backdrop: BackdropVariant; appearanceUI: AppearanceUI };
 
 const TRIAL_KEY = 'here.trial';
+/** Uygulamanın dili (T-29); cihazda saklanır. */
+const LANGUAGE_KEY = 'here.language';
+const LANGUAGES: LanguageSetting[] = ['system', 'tr', 'en'];
+/** Profilde düzenlenen alanlar (Profili düzenle); cihazda saklanır. */
+const PROFILE_KEY = 'here.profile';
+type ProfileEdit = Pick<User, 'displayName' | 'username' | 'bio' | 'interests' | 'avatarUri' | 'coverUri'>;
 const BACKDROPS: BackdropVariant[] = ['ust', 'kose', 'genis'];
 const APPEARANCE_UIS: AppearanceUI[] = ['onizleme', 'ios', 'menu'];
 
 type Settings = {
   privateAccount: boolean;
   presenceVisibility: PresenceVisibility;
-  /** Son seçilen kitle hatırlanır (varsayılan: herkes). */
+  /** Yer bildirirken paylaşımın kitlesi; yer bildirme sayfasında seçim yok, hep "herkes" (ROTA.md §14, S2). */
   lastAudience: Audience;
   appearance: AppearanceMode;
+  /** Ayarlar › Dil: Sistem / Türkçe / English (T-29). */
+  language: LanguageSetting;
 };
 
 /** Seçimi tüm yerel arayüze uygular (sekme çubuğu, cam, haritalar, SwiftUI dahil). */
 function applyAppearance(mode: AppearanceMode) {
   Appearance.setColorScheme(mode === 'system' ? 'unspecified' : mode);
 }
+
+/** Benden başka herkes: paylaşımı olan kişiler ve takip listelerini dolduran diğerleri. */
+const OTHERS: User[] = [...USERS, ...MORE_USERS];
 
 type CheckIn = { venueId: string; anonAlias?: string; at: number };
 
@@ -59,28 +79,75 @@ type CheckInInput = { venueId: string; text: string; imageUri?: string; audience
 const ANON_ALIAS = 'Gezgin Martı 17';
 
 function useAppState() {
-  const [posts, setPosts] = useState<Post[]>(POSTS);
+  const [rawMe, setMe] = useState<User>(ME);
+  const [rawPosts, setPosts] = useState<Post[]>(POSTS);
   const [liked, setLiked] = useState<Set<string>>(() => new Set(['p2']));
   const [following, setFollowing] = useState<Set<string>>(() => new Set(I_FOLLOW));
   const [conversations, setConversations] = useState<Conversation[]>(CONVERSATIONS);
-  const [messages, setMessages] = useState<Message[]>(MESSAGES);
+  const [rawMessages, setMessages] = useState<Message[]>(MESSAGES);
   const [checkIn, setCheckIn] = useState<CheckIn | null>(null);
   const [joinedPlans, setJoinedPlans] = useState<Set<string>>(() => new Set());
   const [readConversations, setReadConversations] = useState<Set<string>>(() => new Set());
   const [followRequests, setFollowRequests] = useState<Set<string>>(() => new Set());
+  // To-HERE listem: gitmek istediğim mekânlar, en son kaydedilen önde.
+  const [saved, setSaved] = useState<string[]>(() => SAVED_VENUES.me ?? []);
   const [settings, setSettings] = useState<Settings>({
     privateAccount: false,
     presenceVisibility: 'karsilikli',
     lastAudience: 'herkes',
     appearance: 'system',
+    language: 'system',
   });
   const [appearanceLoaded, setAppearanceLoaded] = useState(false);
   const [trial, setTrialState] = useState<Trial>({ backdrop: 'ust', appearanceUI: 'onizleme' });
 
-  // Kayıtlı görünüm tercihini ve tasarım denemesini açılışta uygula.
+  // İngilizcede prototip verisinin İngilizcesi gösterilir (mock.en.ts); kullanıcının kendi yazdıkları olduğu gibi kalır.
+  // Durum (state) hep ham veriyi tutar; okuyan her şey aşağıdaki çevrilmiş hâlleri görür.
+  const lang: Lang = resolveLang(settings.language);
+  const en = lang === 'en';
+  const alias = (name?: string) => (en && name ? (EN.aliases[name] ?? name) : name);
+  const localUser = (u: User): User => (en && EN.bios[u.id] ? { ...u, bio: EN.bios[u.id] } : u);
+  const localPost = (p: Post): Post => (en ? { ...p, text: p.text && (EN.posts[p.id] ?? p.text), anonAlias: alias(p.anonAlias) } : p);
+  const localMessage = (m: Message): Message =>
+    en
+      ? {
+          ...m,
+          text: EN.messages[m.id] ?? m.text,
+          anonAlias: alias(m.anonAlias),
+          plan: m.plan && EN.plans[m.id] ? { ...m.plan, ...EN.plans[m.id] } : m.plan,
+        }
+      : m;
+  const localVenue = (v: Venue): Venue => (en && EN.events[v.id] ? { ...v, event: EN.events[v.id] } : v);
+  // Kendi biyografin yalnızca prototipteki hâliyle duruyorsa çevrilir; yazdığın metin kalır.
+  const me = en && rawMe.bio === ME.bio && EN.bios.me ? { ...rawMe, bio: EN.bios.me } : rawMe;
+  const posts = en ? rawPosts.map(localPost) : rawPosts;
+  const messages = en ? rawMessages.map(localMessage) : rawMessages;
+  const venues = en ? VENUES.map(localVenue) : VENUES;
+  const people = en ? USERS.map(localUser) : USERS;
+  const others = en ? OTHERS.map(localUser) : OTHERS;
+
+  // Kayıtlı görünüm tercihini, tasarım denemesini ve düzenlenen profili açılışta uygula.
   useEffect(() => {
-    Promise.all([AsyncStorage.getItem(APPEARANCE_KEY), AsyncStorage.getItem(TRIAL_KEY)])
-      .then(([value, saved]) => {
+    Promise.all([
+      AsyncStorage.getItem(APPEARANCE_KEY),
+      AsyncStorage.getItem(TRIAL_KEY),
+      AsyncStorage.getItem(PROFILE_KEY),
+      AsyncStorage.getItem(LANGUAGE_KEY),
+    ])
+      .then(([value, saved, profile, language]) => {
+        if (LANGUAGES.includes(language as LanguageSetting)) {
+          const setting = language as LanguageSetting;
+          setLang(resolveLang(setting));
+          setSettings((s) => ({ ...s, language: setting }));
+        }
+        if (profile) {
+          try {
+            const edit = JSON.parse(profile) as Partial<ProfileEdit>;
+            setMe((m) => ({ ...m, ...edit, avatarUri: loadedPhoto(edit.avatarUri), coverUri: loadedPhoto(edit.coverUri) }));
+          } catch {
+            // Bozuk kayıt: varsayılan profille devam.
+          }
+        }
         if (value === 'light' || value === 'dark' || value === 'system') {
           applyAppearance(value);
           setSettings((s) => ({ ...s, appearance: value }));
@@ -101,16 +168,66 @@ function useAppState() {
     AsyncStorage.setItem(TRIAL_KEY, JSON.stringify(next)).catch(() => {});
   };
 
+  /** Ayarlar › Dil (T-29). Yardımcılar (zaman, mesafe, tarih) yeni dili yeniden çizimden önce görsün diye önce o. */
+  const setLanguage = (language: LanguageSetting) => {
+    setLang(resolveLang(language));
+    setSettings((s) => ({ ...s, language }));
+    AsyncStorage.setItem(LANGUAGE_KEY, language).catch(() => {});
+  };
+
   const setAppearance = (mode: AppearanceMode) => {
     applyAppearance(mode);
     setSettings((s) => ({ ...s, appearance: mode }));
     AsyncStorage.setItem(APPEARANCE_KEY, mode).catch(() => {});
   };
 
-  const userById = (id: string): User => (id === 'me' ? ME : USERS.find((u) => u.id === id) ?? ME);
-  const venueById = (id: string) => VENUES.find((v) => v.id === id);
+  /** Profili düzenle › Kaydet. Fotoğraflar önceden belgeler klasörüne kopyalanmış olmalı (keepPhoto). */
+  const updateMe = (changes: ProfileEdit) => {
+    // Çevrilmiş varsayılan biyografi değiştirilmeden kaydedilirse ham (Türkçe) hâli korunur.
+    const edit = { ...changes, bio: changes.bio === me.bio && rawMe.bio === ME.bio ? ME.bio : changes.bio };
+    setMe((m) => ({ ...m, ...edit }));
+    const stored: ProfileEdit = { ...edit, avatarUri: storedPhoto(edit.avatarUri), coverUri: storedPhoto(edit.coverUri) };
+    AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(stored)).catch(() => {});
+  };
+
+  /** Kullanıcı adı başkasında var mı (büyük/küçük harf fark etmez). */
+  const usernameTaken = (username: string) => OTHERS.some((u) => u.username.toLowerCase() === username.toLowerCase());
+
+  const everyone = [me, ...others];
+  const userById = (id: string): User => (id === 'me' ? me : (others.find((u) => u.id === id) ?? me));
+  const venueById = (id: string) => venues.find((v) => v.id === id);
   const followsMe = (userId: string) => FOLLOWS_ME.has(userId);
   const isMutual = (userId: string) => following.has(userId) && followsMe(userId);
+
+  /** a, b'yi takip ediyor mu? Benimle ilgili kenarlar canlı durumdan, diğerleri sabit sahte grafikten. */
+  const follows = (a: string, b: string) =>
+    a === 'me' ? following.has(b) : b === 'me' ? followsMe(a) : followsBetween(a, b);
+  const followersOf = (userId: string) => everyone.filter((u) => u.id !== userId && follows(u.id, userId));
+  const followingOf = (userId: string) => everyone.filter((u) => u.id !== userId && follows(userId, u.id));
+
+  /**
+   * Kişinin geceleri (profil takvimi, özet, ortak geceler). `onlyPosts`: yalnızca paylaşım yaptığı geceler;
+   * karşılıklı takipleşmediğin birinin yer bildirimleri görünmez (gizlilik, TASARIM.md §5.8).
+   */
+  const nightsOf = (userId: string, { onlyPosts = false, visiblePosts }: { onlyPosts?: boolean; visiblePosts?: Post[] } = {}) =>
+    collectNights({
+      history: onlyPosts ? [] : (NIGHT_HISTORY[userId] ?? []),
+      posts: visiblePosts ?? posts.filter((p) => p.userId === userId && !p.anonAlias),
+      tonightVenueId: userId === 'me' && !onlyPosts ? checkIn?.venueId : undefined,
+    });
+
+  /** Paylaşımı görebilir miyim: takipçilere özel olanları yalnızca takip edenler görür. */
+  const canSee = (post: Post) => post.audience !== 'takipciler' || post.userId === 'me' || following.has(post.userId);
+
+  /** Kişinin etiketlendiği (görebildiğim) paylaşımlar; yeniden eskiye. */
+  const taggedPostsOf = (userId: string) =>
+    posts.filter((p) => p.tagged?.includes(userId) && !p.anonAlias && canSee(p)).sort((a, b) => b.createdAt - a.createdAt);
+
+  /** Kişinin To-HERE listesi (gitmek istediği mekânlar). */
+  const savedOf = (userId: string) => (userId === 'me' ? saved : (SAVED_VENUES[userId] ?? []));
+
+  const toggleSaved = (venueId: string) =>
+    setSaved((prev) => (prev.includes(venueId) ? prev.filter((id) => id !== venueId) : [venueId, ...prev]));
 
   /** Son mesaj karşı taraftansa ve sohbet açılmadıysa okunmamış sayılır. */
   const isUnread = (conversationId: string) => {
@@ -121,9 +238,20 @@ function useAppState() {
   const markRead = (conversationId: string) =>
     setReadConversations((prev) => (prev.has(conversationId) ? prev : new Set(prev).add(conversationId)));
 
+  /**
+   * Kişinin bu geceki son (anonim olmayan) paylaşımı; "şu an burada" bundan çıkar. Paylaşımlar kalıcı (K-16)
+   * ama önceki gecelerinkiler kimseyi "şu an" bir mekânda göstermez.
+   */
+  const tonightPostOf = (userId: string) => {
+    const tonight = tonightKey();
+    return posts
+      .filter((p) => p.userId === userId && !p.anonAlias && nightKeyOf(p.createdAt) === tonight)
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
+  };
+
   /** Bu gece bu mekânda görünen (anonim olmayan) kişiler; takip ettiklerin önde. */
   const peopleAt = (venueId: string): User[] =>
-    USERS.filter((u) => posts.find((p) => p.userId === u.id && !p.anonAlias)?.venueId === venueId).sort(
+    people.filter((u) => tonightPostOf(u.id)?.venueId === venueId).sort(
       (a, b) => Number(following.has(b.id)) - Number(following.has(a.id)),
     );
 
@@ -229,15 +357,18 @@ function useAppState() {
   };
 
   return {
-    me: ME,
-    users: USERS,
-    venues: VENUES,
+    me,
+    updateMe,
+    usernameTaken,
+    users: others,
+    venues,
     posts,
     liked,
     following,
     conversations,
     messages,
-    checkIn,
+    // Takma ad da seçili dilde ("Gezgin Martı 17" · "Wandering Seagull 17").
+    checkIn: checkIn && en ? { ...checkIn, anonAlias: alias(checkIn.anonAlias) } : checkIn,
     joinedPlans,
     settings,
     appearanceLoaded,
@@ -246,9 +377,18 @@ function useAppState() {
     userById,
     venueById,
     followsMe,
+    follows,
+    followersOf,
+    followingOf,
+    nightsOf,
+    canSee,
+    taggedPostsOf,
+    savedOf,
+    toggleSaved,
     isMutual,
     isUnread,
     markRead,
+    tonightPostOf,
     peopleAt,
     togglePlan,
     toggleLike,
@@ -263,6 +403,8 @@ function useAppState() {
     declineRequest,
     updateSettings: (patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })),
     setAppearance,
+    lang,
+    setLanguage,
   };
 }
 

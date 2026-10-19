@@ -13,6 +13,7 @@ import { Type } from '@/constants/theme';
 import type { Message } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 import { suggestedPlanTime, useNight } from '@/lib/night';
 
 type Row = { message: Message; grouped: boolean };
@@ -25,11 +26,12 @@ const GROUP_WINDOW_MS = 5 * 60_000;
  */
 export default function ChatScreen() {
   const theme = useTheme();
+  const t = useT();
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { conversations, messages, venueById, userById, checkIn, canCheckIn, sendMessage, acceptRequest, declineRequest, markRead } = useApp();
-  const { remaining, lastHour } = useNight();
+  const { remaining, lastHour } = useNight(t);
   const [draft, setDraft] = useState('');
   const [composerHeight, setComposerHeight] = useState(64);
   const [inputHeight, setInputHeight] = useState(44);
@@ -45,14 +47,16 @@ export default function ChatScreen() {
     markRead(id);
   }, [id, markRead, messages.length]);
 
-  const conversation = conversations.find((c) => c.id === id);
-  if (!conversation) return <Text style={{ color: theme.text, padding: 16 }}>Sohbet bulunamadı.</Text>;
+  // Her mekânın bir grup sohbeti var (c-<mekân>); listede kaydı olmasa da açılabilir (Mesajlar › Grup sohbetleri).
+  const venueChat = id?.startsWith('c-v') && venueById(id.slice(2)) ? ({ id, kind: 'venue', venueId: id.slice(2) } as const) : undefined;
+  const conversation = conversations.find((c) => c.id === id) ?? venueChat;
+  if (!conversation) return <Text style={{ color: theme.text, padding: 16 }}>{t.messages.chat.notFound}</Text>;
 
   const thread = messages.filter((m) => m.conversationId === id);
   const isVenue = conversation.kind === 'venue';
   const venue = isVenue ? venueById(conversation.venueId) : undefined;
   const other = !isVenue ? userById(conversation.userId) : undefined;
-  const title = venue?.name ?? other?.displayName ?? 'Sohbet';
+  const title = venue?.name ?? other?.displayName ?? t.titles.chat;
 
   // Kurallar: mekân sohbeti yalnızca orada yer bildirenlere açık; gelen istek kabul edilmeden yanıtlanamaz;
   // gönderilen istekte karşı taraf kabul edene kadar ikinci mesaj yazılamaz (K-08).
@@ -77,28 +81,29 @@ export default function ChatScreen() {
 
   const createPlan = () => {
     if (!venue) {
-      Alert.alert('Plan', 'Planlar mekân sohbetlerinde paylaşılır.');
+      Alert.alert(t.plan, t.messages.plan.venueOnly);
       return;
     }
     const post = (title: string) =>
       sendMessage(conversation.id, '', { emoji: '📍', title, time: suggestedPlanTime(new Date()), place: venue.name, going: 0 });
     if (Platform.OS === 'ios') {
-      Alert.prompt('Yeni plan', 'Ne yapıyoruz? Saat en geç 04:00 olabilir.', (value) => value?.trim() && post(value.trim()), 'plain-text', '', 'default');
+      Alert.prompt(t.messages.plan.newTitle, t.messages.plan.newPrompt, (value) => value?.trim() && post(value.trim()), 'plain-text', '', 'default');
     } else {
-      post('Buluşalım');
+      post(t.messages.plan.defaultTitle);
     }
   };
 
   const openAttachments = () => {
-    const options = ['Plan', 'Fotoğraf', 'Buluşma noktası'];
+    const { attach } = t.messages.chat;
+    const options = [t.plan, attach.photo, attach.meetingPoint];
     const handle = (index: number) => {
       if (index === 0) createPlan();
-      else if (index < options.length) Alert.alert(options[index], 'Prototipte henüz yok.');
+      else if (index < options.length) Alert.alert(options[index], attach.notYet);
     };
     if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions({ options: [...options, 'Vazgeç'], cancelButtonIndex: options.length }, handle);
+      ActionSheetIOS.showActionSheetWithOptions({ options: [...options, t.actions.cancel], cancelButtonIndex: options.length }, handle);
     } else {
-      Alert.alert('Ekle', undefined, [...options.map((text, i) => ({ text, onPress: () => handle(i) })), { text: 'Vazgeç', style: 'cancel' }]);
+      Alert.alert(attach.title, undefined, [...options.map((text, i) => ({ text, onPress: () => handle(i) })), { text: t.actions.cancel, style: 'cancel' }]);
     }
   };
 
@@ -109,12 +114,12 @@ export default function ChatScreen() {
           style={styles.titleBox}
           accessible
           accessibilityRole="header"
-          accessibilityLabel={`${title}. ${venue ? `${venue.here} kişi burada. ` : ''}Sohbetin sıfırlanmasına ${remaining} kaldı`}>
+          accessibilityLabel={t.messages.chat.titleA11y(title, remaining, venue && t.live.here(venue.here))}>
           <Text style={[Type.headline, { color: theme.text }]} numberOfLines={1}>
             {title}
           </Text>
           <View style={styles.subtitle}>
-            {venue && <Text style={[Type.caption, { color: theme.textSecondary }]}>{venue.here} kişi burada ·</Text>}
+            {venue && <Text style={[Type.caption, { color: theme.textSecondary }]}>{t.live.here(venue.here)} ·</Text>}
             <Icon ios="hourglass" md="hourglass_top" size={11} color={lastHour ? theme.accent : theme.textSecondary} />
             <Text style={[Type.caption, { color: theme.textSecondary, fontVariant: ['tabular-nums'] }]}>{remaining}</Text>
           </View>
@@ -124,13 +129,13 @@ export default function ChatScreen() {
         {venue ? (
           <Stack.Toolbar.Button
             icon="info.circle"
-            accessibilityLabel="Mekân bilgisi"
+            accessibilityLabel={t.messages.chat.venueInfo}
             onPress={() => router.push({ pathname: '/venue/[id]', params: { id: venue.id } })}
           />
         ) : (
           <Stack.Toolbar.Button
             icon="person.crop.circle"
-            accessibilityLabel="Profili aç"
+            accessibilityLabel={t.messages.chat.openProfile}
             onPress={() => other && router.push({ pathname: '/user/[username]', params: { username: other.username } })}
           />
         )}
@@ -155,25 +160,24 @@ export default function ChatScreen() {
             ))}
           </View>
           <Icon ios="lock.fill" md="lock" size={30} color={theme.text} />
-          <Text style={[Type.title3, { color: theme.text }]}>Sohbet kilitli</Text>
+          <Text style={[Type.title3, { color: theme.text }]}>{t.messages.chat.locked.title}</Text>
           <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-            {nearby
-              ? `Bu sohbet yalnızca ${venue.name}’da yer bildirenlere açık.`
-              : `Bu sohbete katılmak için ${venue.name}’da olmalısın. Şu an ${formatDistance(venue.distanceM)} uzaktasın; yer bildirimi yalnızca 300 m içinde yapılabilir.`}
+            {nearby ? t.messages.chat.locked.checkInOnly : t.messages.chat.locked.tooFar(formatDistance(venue.distanceM, t))}
           </Text>
           <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-            {venue.here} kişi · {thread.length} mesaj{plans ? ` · ${plans} aktif plan` : ''}
+            {t.messages.chat.locked.stats(t.people(venue.here), thread.length, plans)}
           </Text>
         </View>
         <SafeAreaView edges={['bottom']} style={styles.bottomBar}>
           <View style={styles.barInner}>
           <ActionButton
-            title={nearby ? 'Yer bildir ve katıl' : 'Mekânda olmalısın'}
+            title={nearby ? t.messages.chat.locked.checkInAndJoin : t.messages.chat.locked.mustBeThere}
             systemImage={nearby ? 'mappin.and.ellipse' : 'location.slash'}
             variant="glassProminent"
             fullWidth
             disabled={!nearby}
-            onPress={() => router.push({ pathname: '/compose', params: { venueId: venue.id } })}
+            // Alttan yer bildirme sayfası (T-26); iğne saplanınca bu sohbete geri dönülür.
+            onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id, from: 'chat' } })}
           />
           </View>
         </SafeAreaView>
@@ -189,7 +193,7 @@ export default function ChatScreen() {
       return (
         <View style={[styles.mineWrap, spacing]}>
           {message.anonAlias && !grouped && (
-            <Text style={[Type.caption, { color: theme.textSecondary }]}>{message.anonAlias} olarak</Text>
+            <Text style={[Type.caption, { color: theme.textSecondary }]}>{t.messages.chat.asAlias(message.anonAlias)}</Text>
           )}
           <View style={[styles.bubble, styles.mine, { backgroundColor: theme.accent }]}>
             <Text style={[Type.body, { color: theme.onAccent }]}>{message.text}</Text>
@@ -204,7 +208,7 @@ export default function ChatScreen() {
 
     if (isVenue) {
       return (
-        <Pressable onLongPress={() => showSafetyMenu(name)} style={[styles.compact, spacing]} accessibilityHint="Bildirmek veya engellemek için basılı tut">
+        <Pressable onLongPress={() => showSafetyMenu(name)} style={[styles.compact, spacing]} accessibilityHint={t.messages.chat.reportHint}>
           <View style={styles.compactAvatar}>
             {!grouped && (
               <Pressable onPress={openProfile} disabled={anonymous} accessibilityLabel={name}>
@@ -216,7 +220,7 @@ export default function ChatScreen() {
             {!grouped && (
               <Text style={[Type.footnote, { color: theme.text, fontWeight: '600' }]} numberOfLines={1}>
                 {name}
-                <Text style={{ color: theme.textSecondary, fontWeight: '400' }}> · {minutesAgo(message.createdAt)}</Text>
+                <Text style={{ color: theme.textSecondary, fontWeight: '400' }}> · {minutesAgo(message.createdAt, t)}</Text>
               </Text>
             )}
             <Text style={[Type.body, { color: theme.text }]}>{message.text}</Text>
@@ -237,11 +241,11 @@ export default function ChatScreen() {
   const composer = incomingRequest ? (
     <Glass style={styles.panel}>
       <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-        {other?.displayName} sana mesaj isteği gönderdi. Kabul etmeden yanıt yazamazsın.
+        {t.messages.chat.incomingRequest(other?.displayName ?? '')}
       </Text>
       <View style={styles.panelActions}>
         <ActionButton
-          title="Sil"
+          title={t.messages.requests.delete}
           variant="tonal"
           size="regular"
           fullWidth
@@ -251,18 +255,18 @@ export default function ChatScreen() {
             router.back();
           }}
         />
-        <ActionButton title="Kabul et" size="regular" fullWidth style={{ flex: 1 }} onPress={() => acceptRequest(conversation.id)} />
+        <ActionButton title={t.messages.requests.accept} size="regular" fullWidth style={{ flex: 1 }} onPress={() => acceptRequest(conversation.id)} />
       </View>
     </Glass>
   ) : waitingAccept ? (
     <Glass style={styles.panel}>
       <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-        İsteğin gönderildi. {other?.displayName} kabul edene kadar yeni mesaj yazamazsın.
+        {t.messages.chat.waitingAccept(other?.displayName ?? '')}
       </Text>
     </Glass>
   ) : (
     <GlassGroup spacing={8} style={styles.composerRow}>
-      <Pressable onPress={openAttachments} accessibilityRole="button" accessibilityLabel="Ekle: plan, fotoğraf, buluşma noktası">
+      <Pressable onPress={openAttachments} accessibilityRole="button" accessibilityLabel={t.messages.chat.attach.a11y}>
         <Glass style={styles.circle} interactive>
           <Icon ios="plus" md="add" size={20} color={theme.text} />
         </Glass>
@@ -271,16 +275,16 @@ export default function ChatScreen() {
         <TextInput
           value={draft}
           onChangeText={setDraft}
-          placeholder={checkIn?.anonAlias && isVenue ? `${checkIn.anonAlias} olarak yaz…` : 'Mesaj'}
+          placeholder={checkIn?.anonAlias && isVenue ? t.messages.chat.placeholderAs(checkIn.anonAlias) : t.messages.chat.placeholder}
           placeholderTextColor={theme.textSecondary}
-          accessibilityLabel="Mesaj yaz"
+          accessibilityLabel={t.messages.chat.inputA11y}
           multiline
           // Metin silinince alan yeniden tek satıra insin (çok satırlı alan kendi kendine küçülmüyor).
           onContentSizeChange={(e) => setInputHeight(e.nativeEvent.contentSize.height)}
           style={[Type.body, styles.input, { color: theme.text, height: Math.min(120, Math.max(44, inputHeight)) }]}
         />
       </Glass>
-      <Pressable onPress={send} disabled={!canSend} accessibilityRole="button" accessibilityLabel="Gönder" accessibilityState={{ disabled: !canSend }}>
+      <Pressable onPress={send} disabled={!canSend} accessibilityRole="button" accessibilityLabel={t.messages.chat.send} accessibilityState={{ disabled: !canSend }}>
         <Glass style={styles.circle} tint={canSend ? theme.accent : undefined} interactive>
           <Icon ios="arrow.up" md="arrow_upward" size={18} color={canSend ? theme.onAccent : theme.textSecondary} />
         </Glass>
@@ -318,9 +322,7 @@ export default function ChatScreen() {
             <View style={styles.systemNote}>
               <Icon ios="hourglass" md="hourglass_top" size={13} color={theme.textSecondary} />
               <Text style={[Type.footnote, { color: theme.textSecondary, textAlign: 'center', flexShrink: 1 }]}>
-                {isVenue
-                  ? 'Bu sohbet her gece 04:00’te sıfırlanır. Yalnızca burada yer bildirenler katılabilir.'
-                  : `@${other?.username} ile birebir sohbet · her gece 04:00’te sıfırlanır.`}
+                {isVenue ? t.messages.chat.venueNote : t.messages.chat.directNote(other?.username ?? '')}
               </Text>
             </View>
           }
@@ -338,16 +340,15 @@ export default function ChatScreen() {
 /** Plan kartı: "Ben de varım" → "Varsın" (geri alınabilir). */
 function PlanCard({ message }: { message: Message }) {
   const theme = useTheme();
+  const t = useT();
   const { joinedPlans, togglePlan, userById, users } = useApp();
   const plan = message.plan!;
   const joined = joinedPlans.has(message.id);
   const going = plan.going + (joined ? 1 : 0);
-  const author = message.senderId === 'me' ? 'Sen' : userById(message.senderId).displayName.split(' ')[0];
+  const author = message.senderId === 'me' ? null : userById(message.senderId).displayName.split(' ')[0];
   return (
     <GlassCard style={styles.plan}>
-      <Text style={[Type.caption, { color: theme.textSecondary }]}>
-        {author} bir plan paylaştı · {minutesAgo(message.createdAt)}
-      </Text>
+      <Text style={[Type.caption, { color: theme.textSecondary }]}>{t.messages.plan.shared(author, minutesAgo(message.createdAt, t))}</Text>
       <View style={styles.planHead}>
         <Text style={styles.planEmoji}>{plan.emoji}</Text>
         <View style={{ flex: 1, gap: 2 }}>
@@ -361,10 +362,10 @@ function PlanCard({ message }: { message: Message }) {
       <View style={styles.planFoot}>
         {going > 0 && <AvatarStack users={users.slice(0, Math.min(3, going))} size={24} />}
         <Text style={[Type.footnote, { color: theme.textSecondary, flex: 1 }]}>
-          {going > 0 ? `${going} kişi katılıyor` : 'İlk katılan sen ol'}
+          {going > 0 ? t.messages.plan.going(t.people(going)) : t.messages.plan.beFirst}
         </Text>
         <ActionButton
-          title={joined ? 'Varsın' : 'Ben de varım'}
+          title={joined ? t.messages.plan.joined : t.messages.plan.join}
           systemImage={joined ? 'checkmark' : undefined}
           variant={joined ? 'filled' : 'tonal'}
           size="regular"

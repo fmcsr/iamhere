@@ -1,6 +1,14 @@
 # HERE
 
-Konum bazlı, grup aktivitelerine odaklı sosyal uygulama. Bulunduğun mekânda yer bildir, fotoğraf ya da yorum paylaş, orada olanlarla mekânın grup sohbetine katıl. Sohbetler **her gece 04:00'te** sıfırlanır; paylaşımlar kalır.
+**I am Here · #iamhere** — a venue-first social app for nights out. See which venues are live, check in where you are, share a photo of the moment and join the venue’s group chat with everyone who’s there. Chats reset every night at 04:00; posts and memories stay.
+
+![HERE media kit: screens from the iOS 27 prototype](docs/media-kit/here-media-kit.jpg)
+
+iOS prototype built with Expo (SDK 58) on iOS 27. The app speaks English and Turkish (Settings › Language). Individual screens: [docs/media-kit](docs/media-kit/README.md).
+
+---
+
+Konum bazlı, grup aktivitelerine odaklı sosyal uygulama. Bulunduğun mekânda yer bildir, fotoğraf ya da yorum paylaş, orada olanlarla mekânın grup sohbetine katıl. Sohbetler **her gece 04:00'te** sıfırlanır; paylaşımlar kalır. Prototipte paylaşım, yer bildirirken o an çekilen fotoğraftan ibaret; yorumun ne olacağı açık ([ROTA §14](docs/ROTA.md#14-sıradaki-adım), S3).
 
 Mağaza adı **I am Here** · etiket **#iamhere** · uygulama simgesinde ve içinde **HERE**.
 
@@ -40,7 +48,7 @@ cd apps/mobile && npx expo start
 
   Yerel kodlu yeni bir paket eklendiğinde (ör. 17.10.2026'da expo-blur, masked-view, AsyncStorage, segmented-control) derleme yeniden alınmalı; eski derleme açılışta "AsyncStorage is null" gibi bir hata verir.
 
-- **Logo ve simge:** `apps/mobile/scripts/generate-brand.py` hepsini tek kaynaktan üretir (Pillow gerekir). HERE simgesi Expo Go'da görünmez; geliştirme veya mağaza derlemesinde görünür.
+- **Logo ve simge:** `apps/mobile/scripts/generate-brand.py` hepsini tek kaynaktan üretir: fuşya balon harfli simge, açılış ekranı ve aşağı çekince dönen logonun 60 karesi (Pillow ve numpy gerekir, yaklaşık bir dakika sürer). HERE simgesi Expo Go'da görünmez; geliştirme veya mağaza derlemesinde görünür.
 
 ## Hızlı başlangıç (Docker)
 

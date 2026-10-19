@@ -12,17 +12,12 @@ import { ActionButton, MenuPicker } from '@/components/native-controls';
 import { PageColumn } from '@/components/page-column';
 import { Text, TextInput } from '@/components/text';
 import { Type } from '@/constants/theme';
-import { CATEGORY_LABEL, type Audience } from '@/data/mock';
+import { type Audience } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 const MAX = 280;
-
-const AUDIENCE_NOTE: Record<Audience, string> = {
-  herkes: 'Paylaşımın yakındakilerin akışında ve mekân sayfasında görünür.',
-  takipciler: 'Yalnızca seni takip edenler görür.',
-  anonim: 'Adın ve profilin gizli kalır; mekân görünür. Bu gece “Gezgin Martı 17” olarak görünürsün.',
-};
 
 /**
  * Yer bildirme + paylaşım (TASARIM.md §5.3): tek ekranlık sayfa, sihirbaz değil. Mekân sabit,
@@ -30,6 +25,7 @@ const AUDIENCE_NOTE: Record<Audience, string> = {
  */
 export default function ComposeScreen() {
   const theme = useTheme();
+  const t = useT();
   const { venueId } = useLocalSearchParams<{ venueId: string }>();
   const { venueById, settings, doCheckIn, canCheckIn } = useApp();
   const venue = venueById(venueId);
@@ -39,7 +35,7 @@ export default function ComposeScreen() {
   const [audience, setAudience] = useState<Audience>(settings.lastAudience);
   const [joinChat, setJoinChat] = useState(true);
 
-  if (!venue) return <Text style={{ color: theme.text, padding: 16 }}>Mekân bulunamadı.</Text>;
+  if (!venue) return <Text style={{ color: theme.text, padding: 16 }}>{t.messages.compose.notFound}</Text>;
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7, allowsEditing: true, aspect: [4, 5] });
@@ -61,7 +57,7 @@ export default function ComposeScreen() {
   return (
     <View style={{ flex: 1 }}>
       <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Button icon="xmark" accessibilityLabel="Vazgeç" onPress={() => router.back()} />
+        <Stack.Toolbar.Button icon="xmark" accessibilityLabel={t.actions.cancel} onPress={() => router.back()} />
       </Stack.Toolbar>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView
@@ -76,28 +72,30 @@ export default function ComposeScreen() {
                   {venue.name}
                 </Text>
                 <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-                  {CATEGORY_LABEL[venue.category]} · {formatDistance(venue.distanceM)}
+                  {t.categories[venue.category]} · {formatDistance(venue.distanceM, t)}
                 </Text>
               </View>
-              <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Mekânı değiştir">
-                <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>Değiştir</Text>
+              <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel={t.messages.compose.changeVenueA11y}>
+                <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{t.messages.compose.change}</Text>
               </Pressable>
             </View>
 
             {!nearby && (
               <GlassCard style={styles.farNote}>
                 <Icon ios="location.slash" md="location_off" size={20} color={theme.text} />
-                <Text style={[Type.subheadline, { color: theme.text, flex: 1 }]}>
-                  Bu mekâna {formatDistance(venue.distanceM)} uzaktasın. Yer bildirmek ve sohbete katılmak için mekânda
-                  (300 m içinde) olmalısın.
-                </Text>
+                <Text style={[Type.subheadline, { color: theme.text, flex: 1 }]}>{t.messages.compose.tooFar(formatDistance(venue.distanceM, t))}</Text>
               </GlassCard>
             )}
 
             {imageUri ? (
               <View>
-                <Image source={{ uri: imageUri }} style={styles.image} contentFit="cover" accessibilityLabel="Seçilen fotoğraf" />
-                <Pressable onPress={() => setImageUri(undefined)} style={styles.remove} accessibilityRole="button" accessibilityLabel="Fotoğrafı kaldır" hitSlop={8}>
+                <Image source={{ uri: imageUri }} style={styles.image} contentFit="cover" accessibilityLabel={t.messages.compose.selectedPhoto} />
+                <Pressable
+                  onPress={() => setImageUri(undefined)}
+                  style={styles.remove}
+                  accessibilityRole="button"
+                  accessibilityLabel={t.messages.compose.removePhoto}
+                  hitSlop={8}>
                   <Icon ios="xmark" md="close" size={14} color="#fff" />
                 </Pressable>
               </View>
@@ -106,21 +104,21 @@ export default function ComposeScreen() {
                 onPress={pickImage}
                 style={({ pressed }) => [styles.addPhoto, { borderColor: theme.separator, backgroundColor: theme.fill, opacity: pressed ? 0.7 : 1 }]}
                 accessibilityRole="button"
-                accessibilityLabel="Fotoğraf ekle, isteğe bağlı">
+                accessibilityLabel={t.messages.compose.addPhotoA11y}>
                 <Icon ios="camera" md="photo_camera" size={28} color={theme.text} />
-                <Text style={[Type.headline, { color: theme.text }]}>Fotoğraf ekle</Text>
-                <Text style={[Type.footnote, { color: theme.textSecondary }]}>İsteğe bağlı</Text>
+                <Text style={[Type.headline, { color: theme.text }]}>{t.messages.compose.addPhoto}</Text>
+                <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.messages.compose.optional}</Text>
               </Pressable>
             )}
 
             <GlassCard style={styles.field}>
               <TextInput
                 value={text}
-                onChangeText={(t) => setText(t.slice(0, MAX))}
-                placeholder="Neler oluyor? (isteğe bağlı)"
+                onChangeText={(value) => setText(value.slice(0, MAX))}
+                placeholder={t.messages.compose.placeholder}
                 placeholderTextColor={theme.textSecondary}
                 multiline
-                accessibilityLabel="Yorum"
+                accessibilityLabel={t.messages.compose.textA11y}
                 style={[Type.body, styles.input, { color: theme.text }]}
               />
               <Text style={[Type.caption, { color: theme.textSecondary, alignSelf: 'flex-end', fontVariant: ['tabular-nums'] }]}>
@@ -131,28 +129,28 @@ export default function ComposeScreen() {
             <GlassCard style={styles.group}>
               <View style={styles.groupRow}>
                 <Icon ios="eye" md="visibility" size={18} color={theme.text} />
-                <Text style={[Type.body, { color: theme.text, flex: 1 }]}>Kim görebilir</Text>
+                <Text style={[Type.body, { color: theme.text, flex: 1 }]}>{t.messages.compose.whoCanSee}</Text>
                 <MenuPicker<Audience>
                   options={[
-                    { value: 'herkes', label: 'Herkes' },
-                    { value: 'takipciler', label: 'Takipçilerim' },
-                    { value: 'anonim', label: 'Anonim' },
+                    { value: 'herkes', label: t.messages.compose.audience.herkes },
+                    { value: 'takipciler', label: t.messages.compose.audience.takipciler },
+                    { value: 'anonim', label: t.messages.compose.audience.anonim },
                   ]}
                   value={audience}
                   onChange={setAudience}
-                  accessibilityLabel="Kim görebilir"
+                  accessibilityLabel={t.messages.compose.whoCanSee}
                 />
               </View>
-              <Text style={[Type.footnote, styles.groupNote, { color: theme.textSecondary }]}>{AUDIENCE_NOTE[audience]}</Text>
+              <Text style={[Type.footnote, styles.groupNote, { color: theme.textSecondary }]}>{t.messages.compose.audienceNote[audience]}</Text>
               <View style={[styles.separator, { backgroundColor: theme.separator }]} />
               <View style={styles.groupRow}>
                 <Icon ios="bubble.left.and.bubble.right" md="forum" size={18} color={theme.text} />
                 <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={[Type.body, { color: theme.text }]}>Mekân sohbetine katıl</Text>
-                  <LiveCount count={venue.here} suffix="kişi sohbette" />
+                  <Text style={[Type.body, { color: theme.text }]}>{t.messages.compose.joinChat}</Text>
+                  <LiveCount count={venue.here} text={t.live.inChat(venue.here)} />
                 </View>
                 {/* T-3: anahtarlar iOS'un kendi yeşili. */}
-                <Switch value={joinChat} onValueChange={setJoinChat} accessibilityLabel="Mekân sohbetine katıl" />
+                <Switch value={joinChat} onValueChange={setJoinChat} accessibilityLabel={t.messages.compose.joinChat} />
               </View>
             </GlassCard>
           </PageColumn>
@@ -161,7 +159,15 @@ export default function ComposeScreen() {
         <SafeAreaView edges={['bottom']} style={styles.bottomBar}>
           <View style={styles.barInner}>
           <ActionButton
-            title={!nearby ? 'Mekânda olmalısın' : posting ? (joinChat ? 'Paylaş ve katıl' : 'Paylaş') : 'Buradayım'}
+            title={
+              !nearby
+                ? t.messages.compose.mustBeThere
+                : posting
+                  ? joinChat
+                    ? t.messages.compose.shareAndJoin
+                    : t.actions.share
+                  : t.messages.compose.checkIn
+            }
             systemImage={!nearby ? 'location.slash' : posting ? 'paperplane.fill' : 'mappin.and.ellipse'}
             variant="glassProminent"
             fullWidth

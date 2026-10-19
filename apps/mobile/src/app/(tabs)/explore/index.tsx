@@ -9,20 +9,15 @@ import { LiveCount, VenueIcon, formatDistance } from '@/components/kit';
 import { Text } from '@/components/text';
 import { VenueMap } from '@/components/venue-map';
 import { Type } from '@/constants/theme';
-import { CATEGORY_LABEL, type Category } from '@/data/mock';
+import { type Category } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 type Filter = 'all' | Category;
 
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: 'all', label: 'Şu an canlı' },
-  { value: 'bar', label: 'Bar' },
-  { value: 'konser', label: 'Konser' },
-  { value: 'yemek', label: 'Yemek' },
-  { value: 'kafe', label: 'Kafe' },
-  { value: 'acik', label: 'Açık hava' },
-];
+/** Süzgeçler; 'all' "Şu an canlı", diğerleri kategori adıyla görünür. */
+const FILTERS: Filter[] = ['all', 'bar', 'konser', 'yemek', 'kafe', 'acik'];
 
 const CARD_WIDTH = 264;
 const CARD_GAP = 10;
@@ -33,6 +28,7 @@ const CARD_GAP = 10;
  */
 export default function ExploreScreen() {
   const theme = useTheme();
+  const t = useT();
   const { venues } = useApp();
   const [filter, setFilter] = useState<Filter>('all');
   const [selected, setSelected] = useState<string>();
@@ -56,20 +52,23 @@ export default function ExploreScreen() {
             <Glass style={styles.place}>
               <Icon ios="location.fill" md="near_me" size={14} color={theme.text} />
               <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>Kadıköy</Text>
-              <Text style={[Type.subheadline, { color: theme.textSecondary }]}>· {shown.length} canlı mekân</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary }]}>· {t.home.explore.liveVenues(shown.length)}</Text>
             </Glass>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+          {/* flexGrow 0: yatay ScrollView aksi hâlde tüm boşluğu kaplayıp haritaya giden dokunuşları yutuyor. */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsView} contentContainerStyle={styles.chips}>
             {FILTERS.map((f) => {
-              const active = f.value === filter;
+              const active = f === filter;
               return (
                 <Pressable
-                  key={f.value}
-                  onPress={() => setFilter(f.value)}
+                  key={f}
+                  onPress={() => setFilter(f)}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}>
                   <Glass style={styles.chip} tint={active ? theme.accent : undefined} interactive>
-                    <Text style={[Type.subheadline, { color: active ? theme.onAccent : theme.text, fontWeight: '600' }]}>{f.label}</Text>
+                    <Text style={[Type.subheadline, { color: active ? theme.onAccent : theme.text, fontWeight: '600' }]}>
+                      {f === 'all' ? t.home.liveNow : t.categories[f]}
+                    </Text>
                   </Glass>
                 </Pressable>
               );
@@ -90,7 +89,7 @@ export default function ExploreScreen() {
               key={v.id}
               onPress={() => router.push({ pathname: '/venue/[id]', params: { id: v.id } })}
               accessibilityRole="button"
-              accessibilityLabel={`${v.name}, ${CATEGORY_LABEL[v.category]}, ${formatDistance(v.distanceM)}, ${v.here} kişi burada`}>
+              accessibilityLabel={t.venueCard.a11y(v.name, t.categories[v.category], formatDistance(v.distanceM, t), v.here)}>
               <Glass
                 style={[styles.card, { width: CARD_WIDTH }]}
                 tint={v.id === selected ? 'rgba(225, 29, 73, 0.22)' : undefined}
@@ -101,9 +100,9 @@ export default function ExploreScreen() {
                     {v.name}
                   </Text>
                   <Text style={[Type.footnote, { color: theme.textSecondary }]} numberOfLines={1}>
-                    {CATEGORY_LABEL[v.category]} · {formatDistance(v.distanceM)}
+                    {t.categories[v.category]} · {formatDistance(v.distanceM, t)}
                   </Text>
-                  <LiveCount count={v.here} suffix="burada" />
+                  <LiveCount count={v.here} text={t.live.short(v.here)} />
                 </View>
               </Glass>
             </Pressable>
@@ -118,6 +117,7 @@ const styles = StyleSheet.create({
   top: { flex: 1, gap: 10, paddingTop: 8 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 16 },
   place: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: 20, flexShrink: 1 },
+  chipsView: { flexGrow: 0 },
   chips: { gap: 8, paddingHorizontal: 16 },
   chip: { height: 36, paddingHorizontal: 14, borderRadius: 18, justifyContent: 'center' },
   carouselView: { flexGrow: 0 },

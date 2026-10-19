@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useIsFocused, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Linking, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,27 +11,32 @@ import { ActionButton } from '@/components/native-controls';
 import { PageColumn } from '@/components/page-column';
 import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
-import { CATEGORY_LABEL, CHECK_IN_RADIUS_M } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
 /**
  * Mekân sayfası (TASARIM.md §5.4): kapak fotoğrafı cam geri düğmesinin altında, "kimler burada",
- * bu gecenin fotoğrafları, sohbet önizlemesi ve altta duruma göre değişen tek cam düğme.
+ * bu gecenin fotoğrafları, sohbet önizlemesi. Altta yan yana solda cam "Yol tarifi", sağda fuşya
+ * "Yer bildir" (alttan açılan sayfada iğne aşağı kaydırılır, T-26); yer bildirdiysen yalnızca "Sohbete katıl".
  */
 export default function VenueScreen() {
   const theme = useTheme();
+  const t = useT();
   const { id } = useLocalSearchParams<{ id: string }>();
   // Izgara hücreleri ölçülen genişlikten hesaplanır (yüzde genişlik görselleri çizdirmiyordu).
   const [gridWidth, setGridWidth] = useState(0);
   const cell = Math.floor((gridWidth - 8) / 3);
-  const { venueById, posts, messages, checkIn, following, peopleAt } = useApp();
+  const { venueById, posts, messages, checkIn, following, peopleAt, savedOf, toggleSaved } = useApp();
   const venue = venueById(id);
+  // Yer bildirme sayfası açıkken alttaki düğmeler gizlenir: cam sayfanın ardında fuşya leke kalmasın.
+  const focused = useIsFocused();
 
-  if (!venue) return <Text style={{ color: theme.text, padding: 16 }}>Mekân bulunamadı.</Text>;
+  if (!venue) return <Text style={{ color: theme.text, padding: 16 }}>{t.home.venue.notFound}</Text>;
 
   const isHere = checkIn?.venueId === venue.id;
-  const tooFar = venue.distanceM > CHECK_IN_RADIUS_M;
+  // To-HERE: gitmek istediğin yerler listesi (profilin üçüncü sekmesi).
+  const isSaved = savedOf('me').includes(venue.id);
   const venuePosts = posts.filter(
     (p) => p.venueId === venue.id && (p.audience !== 'takipciler' || p.userId === 'me' || following.has(p.userId)),
   );
@@ -41,24 +46,28 @@ export default function VenueScreen() {
   const lastChat = chat.at(-1);
   const plans = chat.filter((m) => m.plan).length;
 
-  const primary = isHere
-    ? { title: 'Sohbete katıl', icon: 'bubble.left.and.bubble.right.fill' as const, onPress: () => router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } }) }
-    : tooFar
-      ? { title: `Yol tarifi · ${formatDistance(venue.distanceM)}`, icon: 'arrow.triangle.turn.up.right.diamond.fill' as const, onPress: () => Linking.openURL(`https://maps.apple.com/?daddr=${venue.latitude},${venue.longitude}`) }
-      : { title: 'Buradayım', icon: 'mappin.and.ellipse' as const, onPress: () => router.push({ pathname: '/compose', params: { venueId: venue.id } }) };
+  const joinChat = () => router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } });
+  const directions = () => Linking.openURL(`https://maps.apple.com/?daddr=${venue.latitude},${venue.longitude}`);
 
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: 120 }}>
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button
+            icon={isSaved ? 'bookmark.fill' : 'bookmark'}
+            tintColor={isSaved ? theme.accent : undefined}
+            selected={isSaved}
+            accessibilityLabel={isSaved ? t.home.venue.unsave : t.home.venue.save}
+            onPress={() => toggleSaved(venue.id)}
+          />
+          <Stack.Toolbar.Button
             icon="square.and.arrow.up"
-            accessibilityLabel="Mekânı paylaş"
-            onPress={() => Share.share({ message: `Bu gece ${venue.name}'dayız · HERE #iamhere` })}
+            accessibilityLabel={t.home.venue.share}
+            onPress={() => Share.share({ message: t.home.venue.shareMessage(venue.name) })}
           />
         </Stack.Toolbar>
 
-        <Image source={{ uri: venue.coverUri }} style={styles.cover} contentFit="cover" transition={200} accessibilityLabel={`${venue.name} kapak fotoğrafı`} />
+        <Image source={{ uri: venue.coverUri }} style={styles.cover} contentFit="cover" transition={200} accessibilityLabel={t.home.venue.cover(venue.name)} />
 
         <PageColumn style={styles.body}>
           <View style={styles.titleRow}>
@@ -66,22 +75,22 @@ export default function VenueScreen() {
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={[Type.title2, { color: theme.text }]}>{venue.name}</Text>
               <Text style={[Type.subheadline, { color: theme.textSecondary }]}>
-                {CATEGORY_LABEL[venue.category]} · {formatDistance(venue.distanceM)}
+                {t.categories[venue.category]} · {venue.area} · {formatDistance(venue.distanceM, t)}
               </Text>
             </View>
           </View>
           {venue.event && (
             <View style={styles.event}>
               <Icon ios="sparkles" md="auto_awesome" size={15} color={theme.text} />
-              <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>Bu gece: {venue.event}</Text>
+              <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>{t.home.venue.event(venue.event)}</Text>
             </View>
           )}
 
           <GlassCard
             onPress={() => router.push({ pathname: '/people/[venueId]', params: { venueId: venue.id } })}
-            accessibilityLabel={`${venue.here} kişi şu an burada. Listeyi aç`}
+            accessibilityLabel={t.home.venue.openPeople(venue.here)}
             style={styles.hereRow}>
-            <LiveCount count={venue.here} suffix="kişi şu an burada" />
+            <LiveCount count={venue.here} text={t.live.hereNow(venue.here)} />
             <View style={{ flex: 1 }} />
             {people.length > 0 && <AvatarStack users={people.slice(0, 4)} />}
             <Icon ios="chevron.right" md="chevron_right" size={13} color={theme.textSecondary} />
@@ -89,46 +98,45 @@ export default function VenueScreen() {
 
           {photos.length > 0 && (
             <View style={styles.section}>
-              <Text style={[Type.title3, { color: theme.text }]}>Bu gece</Text>
+              <Text style={[Type.section, { color: theme.text }]}>{t.home.venue.photos}</Text>
               <View style={styles.grid} onLayout={(e) => setGridWidth(e.nativeEvent.layout.width)}>
                 {photos.map((uri) => (
-                  <Image key={uri} source={{ uri }} style={{ width: cell, height: cell }} contentFit="cover" transition={150} accessibilityLabel="Bu geceden fotoğraf" />
+                  <Image key={uri} source={{ uri }} style={{ width: cell, height: cell }} contentFit="cover" transition={150} accessibilityLabel={t.home.venue.photo} />
                 ))}
               </View>
             </View>
           )}
 
           <View style={styles.section}>
-            <Text style={[Type.title3, { color: theme.text }]}>Mekân sohbeti</Text>
-            <GlassCard onPress={primary.onPress} disabled={!isHere} style={styles.chatCard}>
+            <Text style={[Type.section, { color: theme.text }]}>{t.home.venue.chat}</Text>
+            <GlassCard onPress={joinChat} disabled={!isHere} style={styles.chatCard}>
               <View style={styles.chatMeta}>
                 <Icon ios={isHere ? 'bubble.left.and.bubble.right.fill' : 'lock.fill'} md={isHere ? 'forum' : 'lock'} size={16} color={theme.text} />
                 <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600', flex: 1 }]}>
-                  {venue.here} kişi{lastChat ? ` · son mesaj ${minutesAgo(lastChat.createdAt)}` : ''}
-                  {plans > 0 ? ` · ${plans} aktif plan` : ''}
+                  {t.people(venue.here)}
+                  {lastChat ? ` · ${t.home.venue.lastMessage(minutesAgo(lastChat.createdAt, t))}` : ''}
+                  {plans > 0 ? ` · ${t.home.venue.plans(plans)}` : ''}
                 </Text>
               </View>
               {isHere && lastChat ? (
                 <Text style={[Type.subheadline, { color: theme.textSecondary }]} numberOfLines={2}>
-                  {messagePreview(lastChat)}
+                  {messagePreview(lastChat, t)}
                 </Text>
               ) : (
-                <View style={styles.skeleton} accessibilityLabel="Sohbet kilitli">
+                <View style={styles.skeleton} accessibilityLabel={t.home.venue.chatLocked}>
                   {[0.82, 0.56, 0.7].map((w, i) => (
                     <View key={w} style={[styles.skeletonLine, { width: `${w * 100}%`, backgroundColor: theme.fill, alignSelf: i === 1 ? 'flex-end' : 'flex-start' }]} />
                   ))}
-                  <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-                    Yalnızca burada yer bildirenlere açık
-                  </Text>
+                  <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.home.venue.chatLockedNote}</Text>
                 </View>
               )}
             </GlassCard>
           </View>
 
           <View style={styles.section}>
-            <Text style={[Type.title3, { color: theme.text }]}>Paylaşımlar · {venuePosts.length}</Text>
+            <Text style={[Type.section, { color: theme.text }]}>{t.titles.posts} · {venuePosts.length}</Text>
             {venuePosts.length === 0 && (
-              <Text style={[Type.subheadline, { color: theme.textSecondary }]}>Henüz paylaşım yok. İlk sen paylaş.</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary }]}>{t.home.venue.noPosts}</Text>
             )}
             {venuePosts.map((p) => (
               <PostCard key={p.id} post={p} />
@@ -137,15 +145,28 @@ export default function VenueScreen() {
         </PageColumn>
       </ScrollView>
 
-      <SafeAreaView edges={['bottom']} style={styles.bottomBar} pointerEvents="box-none">
+      <SafeAreaView edges={['bottom']} style={[styles.bottomBar, !focused && styles.hidden]} pointerEvents="box-none">
         <View style={styles.barInner}>
-        <ActionButton
-          title={primary.title}
-          systemImage={primary.icon}
-          variant={tooFar && !isHere ? 'glass' : 'glassProminent'}
-          fullWidth
-          onPress={primary.onPress}
-        />
+          {isHere ? (
+            <View style={styles.half}>
+              <ActionButton title={t.card.goToChat} systemImage="bubble.left.and.bubble.right.fill" variant="glassProminent" fullWidth onPress={joinChat} />
+            </View>
+          ) : (
+            <>
+              <View style={styles.half}>
+                <ActionButton title={t.home.directions} systemImage="arrow.triangle.turn.up.right.diamond.fill" variant="glass" fullWidth onPress={directions} />
+              </View>
+              <View style={styles.half}>
+                <ActionButton
+                  title={t.home.checkIn}
+                  systemImage="mappin.and.ellipse"
+                  variant="glassProminent"
+                  fullWidth
+                  onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id } })}
+                />
+              </View>
+            </>
+          )}
         </View>
       </SafeAreaView>
     </View>
@@ -165,5 +186,7 @@ const styles = StyleSheet.create({
   skeleton: { gap: 8 },
   skeletonLine: { height: 14, borderRadius: 7 },
   bottomBar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 8, alignItems: 'center' },
-  barInner: { width: '100%', maxWidth: 600 },
+  barInner: { width: '100%', maxWidth: 600, flexDirection: 'row', gap: 10 },
+  half: { flex: 1 },
+  hidden: { opacity: 0 },
 });

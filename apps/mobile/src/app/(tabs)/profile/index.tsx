@@ -1,85 +1,91 @@
-import { router, Stack } from 'expo-router';
-import { Alert, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
+import { Share, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 
-import { GlassCard } from '@/components/glass';
-import { Icon } from '@/components/icon';
-import { LiveCount, PostCard, VenueIcon } from '@/components/kit';
-import { ActionButton } from '@/components/native-controls';
+import { HereRefreshIndicator, useHereRefresh } from '@/components/here-refresh';
 import { PageColumn } from '@/components/page-column';
+import { ProfileCover, useCoverStatusBar } from '@/components/profile-cover';
 import { ProfileHeader } from '@/components/profile-header';
-import { Text } from '@/components/text';
-import { TitleFonts, Type } from '@/constants/theme';
+import { nightPhoto } from '@/components/profile-sections';
+import { ProfileTabs } from '@/components/profile-tabs';
+import { HeaderButton } from '@/components/screen-header';
+import { StatusBarBlur } from '@/components/status-bar-blur';
+import { Gap } from '@/constants/theme';
 import { useApp } from '@/data/store';
-import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
+import { editProfile } from '@/lib/profile';
 
 /**
- * Kendi profilin (TASARIM.md §5.8). Paylaşımlar kalıcı (K-16): tek bir "Paylaşımların" bölümü,
- * yer bildirmişsen en üstte "Şu an buradasın" kartı. Paylaş ve Ayarlar başlıkta, sistemin cam düğmelerinde.
+ * Kendi profilin (TASARIM.md §5.8, T-22, T-25): seçtiğin kapak ya da son gecenin fotoğrafından bulanık kapak, kimlik, sayılar ve
+ * etiketler; altında üç sekme: Paylaşımlar, Etiketlenenler, To-HERE. "anı" sayısına dokununca anı takvimi açılır.
+ * Düzenle, paylaş ve ayarlar kapaktaki cam düğmelerde. Başlık çubuğu yok: kapak ekranın en üstünden başlar.
  */
 export default function ProfileScreen() {
-  const theme = useTheme();
-  const { me, posts, settings, checkIn, venueById } = useApp();
-  const myPosts = posts.filter((p) => p.userId === 'me');
-  const current = checkIn ? venueById(checkIn.venueId) : undefined;
+  const t = useT();
+  const { me, posts, settings, checkIn, venueById, followersOf, followingOf, nightsOf } = useApp();
+  // Sekme içinde iOS durum çubuğu rengini değiştirmiyor; kapak üstünde ince geçiş kullanılıyor.
+  const { onScroll, overCover } = useCoverStatusBar({ setStyle: false });
+  const { ref, refreshControl, angle, pull } = useHereRefresh();
+
+  const nights = nightsOf('me');
+  const myPosts = posts.filter((p) => p.userId === 'me' && !p.anonAlias).sort((a, b) => b.createdAt - a.createdAt);
+  const postById = (id: string) => posts.find((p) => p.id === id);
+  const last = nights[0];
+  // Seçtiğin kapak net; seçmediysen son gecenin fotoğrafı bulanık.
+  const cover = me.coverUri ?? (last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined);
 
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
-      <Stack.Title {...TitleFonts}>{`@${me.username}`}</Stack.Title>
-      <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button
-          icon="square.and.arrow.up"
-          accessibilityLabel="Profili paylaş"
-          onPress={() => Share.share({ message: `HERE'de @${me.username} #iamhere` })}
+    <View style={styles.screen} collapsable={false}>
+      <Animated.ScrollView
+        ref={ref}
+        refreshControl={refreshControl}
+        // iOS güvenli alanı kadar üst boşluk bırakır; kapak bu boşluk kadar yukarı taşınarak en üstten başlar.
+        contentInsetAdjustmentBehavior="automatic"
+        onScroll={onScroll} scrollEventThrottle={32} contentContainerStyle={styles.scroll}>
+        <ProfileCover
+          uri={cover ?? me.avatarUri}
+          blur={!me.coverUri}
+          title={`@${me.username}`}
+          statusFade
+          pull={pull}
+          left={<HeaderButton icon="pencil" md="edit" label={t.titles.editProfile} onImage onPress={editProfile} />}
+          right={
+            <>
+              <HeaderButton
+                icon="square.and.arrow.up"
+                md="ios_share"
+                label={t.profile.me.share}
+                onImage
+                onPress={() => Share.share({ message: t.profile.me.shareMessage(me.username) })}
+              />
+              <HeaderButton icon="gearshape" md="settings" label={t.titles.settings} onImage onPress={() => router.push('/settings')} />
+            </>
+          }
         />
-        <Stack.Toolbar.Button icon="gearshape" accessibilityLabel="Ayarlar" onPress={() => router.push('/settings')} />
-      </Stack.Toolbar>
+        <PageColumn style={styles.content}>
+          <ProfileHeader
+            user={me}
+            ring={Boolean(checkIn)}
+            isPrivate={settings.privateAccount}
+            followers={followersOf('me').length}
+            following={followingOf('me').length}
+            memories={nights.length}
+            onFollowers={() => router.push({ pathname: '/follows', params: { user: 'me', tab: 'followers' } })}
+            onFollowing={() => router.push({ pathname: '/follows', params: { user: 'me', tab: 'following' } })}
+            onMemories={() => router.push({ pathname: '/nights', params: { user: 'me' } })}
+          />
 
-      <PageColumn style={styles.content}>
-        <ProfileHeader user={me} isPrivate={settings.privateAccount} />
-        <ActionButton
-          title="Profili düzenle"
-          variant="tonal"
-          fullWidth
-          onPress={() => Alert.alert('Profili düzenle', 'Prototipte henüz yok.')}
-        />
-
-        <View style={styles.section}>
-          <Text style={[Type.title3, { color: theme.text }]}>Paylaşımların{myPosts.length ? ` · ${myPosts.length}` : ''}</Text>
-          {current ? (
-            <GlassCard style={styles.nowCard}>
-              <VenueIcon category={current.category} size={44} />
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={[Type.footnote, { color: theme.textSecondary }]}>
-                  {checkIn?.anonAlias ? `Anonim · ${checkIn.anonAlias}` : 'Şu an buradasın'}
-                </Text>
-                <Text style={[Type.headline, { color: theme.text }]} numberOfLines={1}>
-                  {current.name}
-                </Text>
-                <LiveCount count={current.here} suffix="kişi burada" />
-              </View>
-            </GlassCard>
-          ) : myPosts.length === 0 ? (
-            <GlassCard style={styles.empty}>
-              <Icon ios="moon.stars" md="bedtime" size={26} color={theme.textSecondary} />
-              <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
-                Henüz bir yer bildirmedin. Bulunduğun mekânda yer bildirdiğinde paylaşımların burada görünür.
-              </Text>
-              <ActionButton title="Buradayım" size="regular" onPress={() => router.navigate('/checkin')} />
-            </GlassCard>
-          ) : null}
-          {myPosts.map((p) => (
-            <PostCard key={p.id} post={p} />
-          ))}
-        </View>
-      </PageColumn>
-    </ScrollView>
+          <ProfileTabs userId="me" posts={myPosts} />
+        </PageColumn>
+      </Animated.ScrollView>
+      <HereRefreshIndicator pull={pull} angle={angle} />
+      {!overCover && <StatusBarBlur />}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: 24 },
-  content: { padding: 16, paddingTop: 8, gap: 18 },
-  section: { gap: 12 },
-  nowCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 22, padding: 14 },
-  empty: { alignItems: 'center', gap: 10, borderRadius: 22, padding: 20 },
+  screen: { flex: 1 },
+  scroll: { paddingBottom: 48 },
+  content: { paddingHorizontal: Gap.page, gap: 20 },
 });

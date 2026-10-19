@@ -2,12 +2,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/icon';
 import { Text } from '@/components/text';
-import { Wordmark } from '@/components/wordmark';
-import { Backdrops, Colors, type BackdropVariant } from '@/constants/theme';
+import { HereMark } from '@/components/here-mark';
+import { Backdrops, type BackdropVariant } from '@/constants/theme';
 import type { AppearanceMode } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
+import { useT } from '@/i18n/use-t';
 
-const LABEL: Record<AppearanceMode, string> = { system: 'Sistem', light: 'Açık', dark: 'Koyu' };
 const W = 84;
 const H = 148;
 
@@ -27,6 +27,7 @@ export function AppearancePreviews({
   variant: BackdropVariant;
 }) {
   const theme = useTheme();
+  const label = useT().settings.appearance.mode;
   return (
     <View style={[styles.row, modes.length === 2 && styles.rowWide]}>
       {modes.map((mode) => {
@@ -37,7 +38,7 @@ export function AppearancePreviews({
             onPress={() => onSelect(mode)}
             accessibilityRole="radio"
             accessibilityState={{ selected: active }}
-            accessibilityLabel={LABEL[mode]}
+            accessibilityLabel={label[mode]}
             style={styles.item}>
             <View style={[styles.frame, { borderColor: active ? theme.accent : theme.separator }]}>
               {mode === 'system' ? (
@@ -54,7 +55,7 @@ export function AppearancePreviews({
                 <MiniScreen scheme={mode} variant={variant} />
               )}
             </View>
-            <Text style={{ color: theme.text, fontSize: 15, fontWeight: '500' }}>{LABEL[mode]}</Text>
+            <Text style={{ color: theme.text, fontSize: 15, fontWeight: '500' }}>{label[mode]}</Text>
             <Icon
               ios={active ? 'checkmark.circle.fill' : 'circle'}
               md={active ? 'check_circle' : 'radio_button_unchecked'}
@@ -70,12 +71,11 @@ export function AppearancePreviews({
 
 /** Küçültülmüş ana sayfa: zemin, HERE, iki cam kart ve sekme çubuğu. */
 function MiniScreen({ scheme, variant }: { scheme: 'light' | 'dark'; variant: BackdropVariant }) {
-  const c = Colors[scheme];
   const card = scheme === 'dark' ? 'rgba(255, 255, 255, 0.10)' : 'rgba(255, 255, 255, 0.62)';
   const line = scheme === 'dark' ? 'rgba(255, 255, 255, 0.28)' : 'rgba(11, 12, 16, 0.16)';
   return (
     <View style={[styles.screen, Backdrops[variant][scheme]]}>
-      <Wordmark height={8} color={c.text} />
+      <HereMark height={11} />
       <View style={[styles.card, { backgroundColor: card }]}>
         <View style={[styles.line, { backgroundColor: line, width: '70%' }]} />
         <View style={[styles.photo, { backgroundColor: line }]} />
