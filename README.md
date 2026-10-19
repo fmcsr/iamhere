@@ -1,96 +1,105 @@
-# HERE
+<p align="center">
+  <img src="apps/mobile/assets/images/icon.png" width="112" alt="HERE app icon" />
+</p>
 
-**I am Here · #iamhere** — a venue-first social app for nights out. See which venues are live, check in where you are, share a photo of the moment and join the venue’s group chat with everyone who’s there. Chats reset every night at 04:00; posts and memories stay.
+<h1 align="center">HERE</h1>
 
-![HERE media kit: screens from the iOS 27 prototype](docs/media-kit/here-media-kit.jpg)
+<p align="center">
+  <b>I am Here · #iamhere</b><br />
+  A venue-first social app for nights out: check in where you are, chat with who’s there.
+</p>
 
-iOS prototype built with Expo (SDK 58) on iOS 27. The app speaks English and Turkish (Settings › Language). Individual screens: [docs/media-kit](docs/media-kit/README.md).
+<p align="center">
+  <a href="https://github.com/fmcsr/iamhere/actions/workflows/ci.yml"><img src="https://github.com/fmcsr/iamhere/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/iOS-27-000000?logo=apple&logoColor=white" alt="iOS 27" />
+  <img src="https://img.shields.io/badge/Expo-SDK%2058-000020?logo=expo&logoColor=white" alt="Expo SDK 58" />
+  <img src="https://img.shields.io/badge/React%20Native-0.88-61DAFB?logo=react&logoColor=black" alt="React Native 0.88" />
+  <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/PostgreSQL-18%20%2B%20PostGIS-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL 18 + PostGIS" />
+  <img src="https://img.shields.io/badge/status-prototype-E11D49" alt="Status: prototype" />
+</p>
 
----
+<p align="center">
+  <a href="README.tr.md">Türkçe</a> ·
+  <a href="docs/media-kit/README.md">Media kit</a> ·
+  <a href="docs/ROTA.md">Roadmap</a> ·
+  <a href="docs/TASARIM.md">Design system</a> ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a>
+</p>
 
-Konum bazlı, grup aktivitelerine odaklı sosyal uygulama. Bulunduğun mekânda yer bildir, fotoğraf ya da yorum paylaş, orada olanlarla mekânın grup sohbetine katıl. Sohbetler **her gece 04:00'te** sıfırlanır; paylaşımlar kalır. Prototipte paylaşım, yer bildirirken o an çekilen fotoğraftan ibaret; yorumun ne olacağı açık ([ROTA §14](docs/ROTA.md#14-sıradaki-adım), S3).
+![HERE: screens from the iOS 27 prototype, light mode, dark mode and iPhone Duo](docs/media-kit/here-media-kit.jpg)
 
-Mağaza adı **I am Here** · etiket **#iamhere** · uygulama simgesinde ve içinde **HERE**.
+## The idea
 
-- **Rota, beyin fırtınası ve açık kararlar:** [docs/ROTA.md](docs/ROTA.md)
-- Tasarım sistemi, Liquid Glass ilkeleri ve Mobbin araştırması: [docs/TASARIM.md](docs/TASARIM.md)
-- Mimari, teknoloji yığını ve klasör yapısı: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+Most social apps are built around people. HERE is built around **places, tonight**. Open the app and you see which venues are live around you: how many people are there, which of your friends are there, what’s on. When you arrive, you **check in** (only possible within 300 m of the venue) and you’re in the venue’s **group chat** with everyone else who’s actually there: plan the after-party, find a table, share the moment.
 
-## Durum
+Chats are ephemeral by design: **every chat resets at 04:00**. What stays is yours: the photos you posted and a calendar of the nights you went out.
 
-**Adım 1 tamamlandı:** veritabanı şeması, 04:00 → 04:00 silme (TTL) motoru, konum maskeleme ve testler.
+## Highlights
 
-| Migration | İçerik |
-|---|---|
-| `…0001_foundation` | PostGIS, `core` / `ephemeral` şemaları, `anlik_app` rolü |
-| `…0002_core_schema` | Kalıcı veri: kullanıcı, kimlik, cihaz, profil, engelleme, şikâyet |
-| `…0003_ephemeral_cycle_engine` | Gece hesabı, bölüm açma/düşürme, `run_maintenance()` |
-| `…0004_ephemeral_schema` | Gecelik tablolar (persona, konum pini, sohbet, üyelik, mesaj) + RLS |
-| `…0005_geo_privacy_discovery` | Izgara maskeleme, mesafe kovaları, yakındaki kişi ve odalar |
-| `…0006_moderation` | Şikâyet anında delil kopyası (90 gün) |
-| `…0007_scheduler` | pg_cron: dakikada bir bakım turu |
+- **Check in by sliding a pin.** A bottom sheet with a vertical slider: drag the pin down and it “pins” you to the venue, then drops you straight into the venue chat. Photos are camera-only, taken in the moment.
+- **Venue chats that reset every night.** Messages, plans (“I’m in”) and message requests are all gone at 04:00. The countdown lives in the chat, not in your face.
+- **Liquid Glass on iOS 27.** Native tab bar with a prominent “Here” tab and a live accessory while you’re checked in, glass sheets and cards, SwiftUI controls via `@expo/ui`, an Instagram-style red dot drawn into the tab icon by iOS itself.
+- **A profile built around nights.** Memories calendar, tagged posts, a To-HERE list of places you want to go (with friends who saved them too) and a classic edit screen.
+- **Bilingual.** English and Turkish, switchable live in Settings, including dates, distances, plurals and the seed content.
+- **Brand made in code.** The balloon wordmark is rendered procedurally (Poisson inflation, latex shading, ray-marched spin frames for pull-to-refresh) by [`generate-brand.py`](apps/mobile/scripts/generate-brand.py).
+- **A database designed to forget.** Chat data is partitioned per night, hidden at 04:00 by row-level security and dropped from disk within a minute by `pg_cron`. Locations are masked to a grid and never stored raw. Time-travel SQL tests prove it.
 
-## Mobil prototip (Expo)
+## Tech stack
 
-`apps/mobile`: Expo SDK 58 + Expo Router. Backend yok; bütün veriler cihaz içindeki sahte veridir (`src/data/mock.ts`).
+| Layer | Prototype in this repo | Planned |
+|---|---|---|
+| **Mobile** | Expo SDK 58, React Native 0.88 (New Architecture, React Compiler), Expo Router native tabs, Reanimated 4, Gesture Handler, `expo-glass-effect`, `@expo/ui` (SwiftUI), `react-native-maps` | Android polish |
+| **App data** | In-app store on mock data, persisted settings (AsyncStorage) | TanStack Query, Socket.IO |
+| **API** | — | NestJS (Fastify), Kysely, Zod contracts, BullMQ |
+| **Database** | PostgreSQL 18, PostGIS 3.6, `pg_cron`, dbmate migrations, SQL tests | — |
+| **Infra** | Docker Compose (PostgreSQL + Valkey) | S3-compatible storage, Expo Push |
 
-```bash
-cd apps/mobile && npx expo start
+## Repository
+
+```
+apps/mobile/        Expo app, the iOS-first prototype (runs fully on mock data)
+db/                 SQL migrations (dbmate) and time-travel tests
+infra/docker/       PostgreSQL + PostGIS + pg_cron image
+docs/               roadmap, design system and architecture (Turkish) · media kit (English)
 ```
 
-- **iPhone'da:** App Store'dan Expo Go'yu kur (güncel sürüm), aynı Wi-Fi'da terminaldeki QR kodu iPhone kamerasıyla okut.
-- **Simülatörde:** Xcode lisansı bir kez onaylanmalı (`sudo xcodebuild -license accept`), sonra sunucu açıkken `i` tuşuna bas.
-- **Geliştirme derlemesi (iOS 27 SDK ve gerçek HERE simgesi):** Xcode 27 ve CocoaPods gerekir. Paket kimliği geçici (`com.iamhere.prototype`); mağazaya çıkmadan değiştirilmeli. iOS 27.1 simülatörü yalnızca katlanabilir iPhone Duo'yu destekliyor; standart iPhone için iOS 27.0'daki iPhone 18 Pro kullanılır.
+## Getting started
 
-  ```bash
-  cd apps/mobile && npx expo run:ios --device "iPhone 18 Pro"
-  ```
+### Mobile prototype
 
-  Yerel kodlu yeni bir paket eklendiğinde (ör. 17.10.2026'da expo-blur, masked-view, AsyncStorage, segmented-control) derleme yeniden alınmalı; eski derleme açılışta "AsyncStorage is null" gibi bir hata verir.
+Needs Node 22, Xcode 27 with the iOS 27 simulator, and CocoaPods. The app uses native modules, so it runs as a development build (not in Expo Go). No backend is needed.
 
-- **Logo ve simge:** `apps/mobile/scripts/generate-brand.py` hepsini tek kaynaktan üretir: fuşya balon harfli simge, açılış ekranı ve aşağı çekince dönen logonun 60 karesi (Pillow ve numpy gerekir, yaklaşık bir dakika sürer). HERE simgesi Expo Go'da görünmez; geliştirme veya mağaza derlemesinde görünür.
+```bash
+cd apps/mobile
+npm install
+npx expo run:ios --device "iPhone 18 Pro"
+```
 
-## Hızlı başlangıç (Docker)
+Switch the language in **Settings › Language**. More in [apps/mobile/README.md](apps/mobile/README.md).
+
+### Database
 
 ```bash
 cp .env.example .env
-```
-
-```bash
 docker compose up -d --wait
-```
-
-```bash
 npx dbmate up
-```
-
-Testler (depo kökünden):
-
-```bash
 PSQL="docker compose exec -T postgres psql -U anlik_owner" ./db/tests/run.sh
 ```
 
-## Docker olmadan
+How the nightly purge works: [db/README.md](db/README.md).
 
-PostgreSQL 18 ve PostGIS 3.6 yeterlidir; pg_cron isteğe bağlıdır. pg_cron yoksa bakım turunu bir worker'ın dakikada bir çağırması gerekir. Testler standart `PGHOST` / `PGPORT` / `PGUSER` değişkenleriyle bağlanır ve süper kullanıcı ister:
+## Status
 
-```bash
-PGHOST=localhost PGUSER=postgres ./db/tests/run.sh
-```
+| Part | State |
+|---|---|
+| iOS app | Core loop works end to end on mock data: discover, check in, chat, plan, profile, settings, two languages |
+| Database | Nightly purge engine, geo privacy, moderation and scheduler implemented and tested; schema update for persistent posts pending |
+| API and realtime | Designed ([architecture](docs/ARCHITECTURE.md)), not built yet |
+| Open product questions | Tracked in the [roadmap](docs/ROTA.md#14-sıradaki-adım) |
 
-## 04:00'ü elle denemek
+Product, design and architecture decisions are logged as they’re made (K-xx in the roadmap, T-xx in the design system). Those documents are in Turkish.
 
-Yalnızca geliştirme ortamında yapın; zaman yolculuğu üretimde kapalıdır.
+## License
 
-```sql
-UPDATE ephemeral.config SET allow_time_travel = true;
-SET ephemeral.now = '2026-10-17 04:00:01+03';   -- bu oturumun saati
-CALL ephemeral.run_maintenance();
-SELECT * FROM ephemeral.purge_log ORDER BY id DESC;
-```
-
-## Kurallar
-
-- Geçici yeni bir tablo eklerken: `cycle_date` ile bölümle, `ephemeral.cycle_tables` tablosuna kaydet, RLS politikasını ekle. Unutulursa `30_privileges` testi kırılır.
-- Fonksiyon oluşturan her migration, GRANT'lerden önce `REVOKE EXECUTE ON ALL ROUTINES IN SCHEMA core, ephemeral FROM PUBLIC;` çalıştırır.
-- Konum yalnızca `upsert_presence()` / `create_room()` üzerinden yazılır; ham koordinat log'a, hata mesajına veya tabloya girmez.
+Copyright © 2026 HERE. All rights reserved. This repository is shared as a portfolio piece; the code, designs and brand may not be reused without permission.

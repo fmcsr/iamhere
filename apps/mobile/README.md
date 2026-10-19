@@ -1,56 +1,70 @@
-# Welcome to your Expo app 👋
+# HERE · iOS app
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The HERE prototype: an iOS-first [Expo](https://expo.dev) app built for iOS 27 and Liquid Glass with Expo SDK 58 and React Native 0.88 (New Architecture, React Compiler). It runs entirely on mock data, so no backend is needed.
 
-## Get started
+## Run
 
-1. Install dependencies
+You need:
 
-   ```bash
-   npm install
-   ```
+- Node 22
+- Xcode 27 with the iOS 27 simulator
+- CocoaPods
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+The app uses native modules, so it runs as a development build, not in Expo Go.
 
 ```bash
-npm run reset-project
+npm install
+npx expo run:ios --device "iPhone 18 Pro"
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Once the build is installed, `npx expo start` is enough for JavaScript changes.
 
-### Other setup steps
+Rebuild after any change to `app.json`, the config plugins or native packages:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npx expo prebuild -p ios --clean && npx expo run:ios
+```
 
-## Learn more
+Checks (CI runs both):
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+npx tsc --noEmit
+npx expo lint
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Structure
 
-## Join the community
+```
+src/app/          screens (Expo Router)
+                  (tabs): home · explore · here · messages · profile
+                  venue/[id] · chat/[id] · check-in sheet · settings · edit-profile · …
+src/components/   shared UI: glass surfaces, cards and rows, pin slider, profile parts,
+                  native controls (SwiftUI on iOS through @expo/ui)
+src/data/         mock data (mock.ts), its English version (mock.en.ts), app state (store.tsx)
+src/i18n/         strings per area (common, home, messages, profile, settings), Turkish and English
+src/lib/          the 04:00 night cycle, Turkish name grammar, profile rules
+plugins/          config plugin that copies the tab icons into the iOS asset catalog
+scripts/          generate-brand.py · generate-tab-icons.swift · build-media-kit.py
+```
 
-Join our community of developers creating universal apps.
+## Notes
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Mock world.**
+  - The seed data covers venues around Kadıköy, people, posts, chats and plans.
+  - Your location is simulated.
+  - Check-in only works within 300 m of a venue.
+  - Settings, language and profile edits are saved on the device.
+- **Languages.** Pick one in Settings › Language: System, Türkçe or English.
+  - To add a string, put it in the matching module under `src/i18n/strings/` in both `tr` and `en`; TypeScript enforces the same shape.
+  - Read strings with `useT()`.
+  - Helpers like `formatDistance(m, t)` and `minutesAgo(ts, t)` take the dictionary so they update the moment the language changes.
+- **Brand.**
+  - `python3 scripts/generate-brand.py` (Pillow, numpy) regenerates:
+    - the app icon (Icon Composer)
+    - the splash and Android icons
+    - the favicon
+    - the pull-to-refresh spin sprite
+  - The balloon letters come from a Poisson-inflated glyph mask, shaded like latex.
+- **Messages tab dot.** iOS draws this tab icon itself: a Swift script runs in the simulator and writes it to `assets/xcassets/`, and `plugins/with-xcassets.js` copies it into the asset catalog at prebuild. That keeps the dot red while the icon follows light and dark mode.
+- **Media kit.** `scripts/build-media-kit.py` builds [`docs/media-kit/here-media-kit.jpg`](../../docs/media-kit/README.md) from English screenshots.
+- **Design rules.** Liquid Glass usage, colors, type and every design decision (T-xx) are in [docs/TASARIM.md](../../docs/TASARIM.md) (Turkish).

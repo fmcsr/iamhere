@@ -22,8 +22,10 @@ Every screen comes from the iOS prototype (Expo SDK 58) running in the iOS 27 si
 
 1. Run the app in the iOS simulator (iPhone 18 Pro, iOS 27) and set Settings › Language to English.
 2. Save the screenshots listed in [`apps/mobile/scripts/build-media-kit.py`](../../apps/mobile/scripts/build-media-kit.py) to `docs/media-kit/screens/` as 804 px wide JPGs.
-3. Build the board (needs Pillow):
+3. Build the board and the GitHub social preview (needs Pillow):
 
    ```bash
    cd apps/mobile && python3 scripts/build-media-kit.py
    ```
+
+The social preview ([`social-preview.jpg`](social-preview.jpg), 1280 × 640) is uploaded by hand in the repository’s Settings › General › Social preview.

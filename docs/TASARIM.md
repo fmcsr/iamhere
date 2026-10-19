@@ -404,7 +404,7 @@ Her adım iOS 27 simülatörlerinde (iPhone 18 Pro · iOS 27.0 ve iPhone Duo · 
 | 18 | Mesajlar'da küçücük kırmızı nokta (T-27); Profili düzenle (T-28): kapak, fotoğraf, ad, kullanıcı adı, hakkında, ilgi alanları, cihazda saklanır | ✅ Simülatörde klavyeyle yazma denenemedi; kullanıcı adı kuralları ayrıca sınandı. "Fotoğraf çek" yalnızca cihazda |
 | 19 | Dil seçimi (T-29): Türkçe ve İngilizce; İngilizce ekranlardan medya kiti (`docs/media-kit/`) | ✅ |
 
-Ekran görüntüleri: [ekranlar/ozet.jpg](ekranlar/ozet.jpg) (17.10.2026, T-20 ve T-21 sonrası: mekân odaklı ana sayfa, gerçekçi içerik, grup sohbetleri) · T-22…T-24 sonrası ana sayfa, profil ve ayarlar: [ekranlar/01-ana-sayfa.jpg](ekranlar/01-ana-sayfa.jpg), [ekranlar/09-profil.jpg](ekranlar/09-profil.jpg), [ekranlar/10-ayarlar.jpg](ekranlar/10-ayarlar.jpg) · karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
+Ekran görüntüleri: [media-kit/here-media-kit.jpg](media-kit/here-media-kit.jpg) (19.10.2026, son hâl, İngilizce arayüz; tek tek ekranlar [media-kit/README.md](media-kit/README.md)). Önceki turların ekran görüntüleri git geçmişinde (`docs/ekranlar/`). Karar bekleyen seçenekler: [ekranlar/secenekler.jpg](ekranlar/secenekler.jpg).
 
 ### 7.1 Kullanılan yerel parçalar
 
