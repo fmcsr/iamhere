@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router, Stack } from 'expo-router';
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { ActionSheetIOS, Alert, Linking, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Glass, GlassCard } from '@/components/glass';
@@ -50,7 +50,7 @@ function choose(title: string, choices: Choice[]) {
  * hakkında ve ilgi alanları (en fazla 5). Kapak seçilmezse son gecenin fotoğrafı bulanık kullanılır.
  * Alttan açılan sayfa; içeriği kendi içinde kaymaz, klavye açılınca da hiçbir şey yerinden oynamaz. Hakkında kutusu
  * en uzun yazıya (150 karakter) göre baştan büyük; çiplerde hep bir işaret (+ / ✓) olduğu için seçince genişlik değişmez.
- * Kaydedilmemiş değişiklik varsa sayfa aşağı çekilerek kapanmaz; ✕ önce sorar.
+ * Kaydedilmemiş değişiklik varsa sayfa aşağı çekilerek kapanmaz; ✕ önce sorar. ✓ değişiklik yokken de profile döner.
  */
 export default function EditProfileScreen() {
   const theme = useTheme();
@@ -64,6 +64,13 @@ export default function EditProfileScreen() {
   const [avatarUri, setAvatarUri] = useState(me.avatarUri);
   const [coverUri, setCoverUri] = useState(me.coverUri);
   const [saving, setSaving] = useState(false);
+  // Sayfa kapanırken ✓ / ✕'e ikinci kez basılırsa alttaki ekran (ör. Ayarlar) da kapanmasın.
+  const leaving = useRef(false);
+  const leave = () => {
+    if (leaving.current) return;
+    leaving.current = true;
+    router.back();
+  };
 
   // Kapak seçilmediyse profildeki gibi son gecenin fotoğrafı, bulanık.
   const last = nightsOf('me')[0];
@@ -79,7 +86,8 @@ export default function EditProfileScreen() {
     interests.join('|') !== me.interests.join('|') ||
     avatarUri !== me.avatarUri ||
     coverUri !== me.coverUri;
-  const canSave = dirty && !usernameError && !nameError && !saving;
+  // ✓ değişiklik yokken de basılır ve profile döner; yalnızca hata varken ya da kaydederken kapalı.
+  const canSave = !usernameError && !nameError && !saving;
 
   /** Fotoğraflardan seç ya da (cihazda) çek. Profil fotoğrafı kare kırpılır; kapak olduğu gibi kalır. */
   const pickPhoto = async (kind: 'avatar' | 'cover', source: 'library' | 'camera') => {
@@ -129,6 +137,7 @@ export default function EditProfileScreen() {
     setInterests((prev) => (prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest]));
 
   const save = async () => {
+    if (!dirty) return leave();
     setSaving(true);
     try {
       const [avatar, cover] = await Promise.all([
@@ -138,7 +147,7 @@ export default function EditProfileScreen() {
       if (avatar !== me.avatarUri) dropPhoto(me.avatarUri);
       if (cover !== me.coverUri) dropPhoto(me.coverUri);
       updateMe({ displayName: name.trim(), username, bio: bio.trim(), interests, avatarUri: avatar, coverUri: cover });
-      router.back();
+      leave();
     } catch {
       setSaving(false);
       Alert.alert(edit.saveFailed.title, edit.saveFailed.message);
@@ -146,10 +155,10 @@ export default function EditProfileScreen() {
   };
 
   const close = () => {
-    if (!dirty) return router.back();
+    if (!dirty) return leave();
     Alert.alert(edit.discard.title, undefined, [
       { text: edit.discard.keepEditing, style: 'cancel' },
-      { text: edit.discard.discard, style: 'destructive', onPress: () => router.back() },
+      { text: edit.discard.discard, style: 'destructive', onPress: leave },
     ]);
   };
 

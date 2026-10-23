@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import { AppearancePreviews } from '@/components/appearance-previews';
 import { GlassCard } from '@/components/glass';
-import { SegmentedPicker } from '@/components/native-controls';
+import { ActionButton, SegmentedPicker } from '@/components/native-controls';
 import { Text } from '@/components/text';
 import { Type, type BackdropVariant } from '@/constants/theme';
 import { type PresenceVisibility, useApp } from '@/data/store';
@@ -89,11 +89,14 @@ export function SettingsForm() {
       </GlassCard>
       <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.presence.note[settings.presenceVisibility]}</Text>
 
-      <GlassCard style={[styles.group, styles.signOut]}>
-        <Pressable onPress={() => confirmSignOut(strings, signOut)} accessibilityRole="button" style={styles.row}>
-          <Text style={[Type.body, { color: '#D92D20', flex: 1 }]}>{t.signOut.button}</Text>
-        </Pressable>
-      </GlassCard>
+      <ActionButton
+        title={t.signOut.button}
+        variant="tonal"
+        destructive
+        fullWidth
+        onPress={() => confirmSignOut(strings, signOut)}
+        style={styles.signOut}
+      />
     </ScrollView>
   );
 }

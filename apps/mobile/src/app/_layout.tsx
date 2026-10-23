@@ -73,8 +73,7 @@ function RootStack() {
       <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal', contentStyle: backdrop, ...HeaderFonts }}>
         {/* Girişsiz kullanıcı yalnızca hoş geldin ve giriş sayfalarını görür; çıkış yapınca oraya döner. */}
         <Stack.Protected guard={!signedIn}>
-          <Stack.Screen name="welcome/index" options={{ headerShown: false, animation: 'fade' }} />
-          <Stack.Screen name="welcome/phone" options={{ title: '' }} />
+          <Stack.Screen name="welcome" options={{ headerShown: false, animation: 'fade' }} />
         </Stack.Protected>
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

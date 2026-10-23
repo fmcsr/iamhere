@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Platform, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ActionButton } from '@/components/native-controls';
@@ -12,7 +12,7 @@ import { useT } from '@/i18n/use-t';
 
 /**
  * Hoş geldin (giriş öncesi): simge, ad, kısa tanıtım ve üç giriş yolu (K-09). Zemin marka gradyanı.
- * Apple ve Google prototipte doğrudan girer; telefon kod adımına gider (welcome/phone.tsx).
+ * Apple ve Google prototipte doğrudan girer; telefon numara ve kod adımlarına gider (welcome/phone.tsx, welcome/code.tsx).
  */
 export default function Welcome() {
   const theme = useTheme();
@@ -21,7 +21,11 @@ export default function Welcome() {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.page, { paddingTop: insets.top + 72, paddingBottom: insets.bottom + 16 }]}>
+    // Sığdığı sürece kaymaz; küçük ekranda ya da büyük yazı boyutunda düğmeler ekran dışında kalmasın diye kayar.
+    <ScrollView
+      alwaysBounceVertical={false}
+      contentInsetAdjustmentBehavior="never"
+      contentContainerStyle={[styles.page, { paddingTop: insets.top + 72, paddingBottom: insets.bottom + 16 }]}>
       <View style={styles.hero}>
         <Image source={require('@/assets/images/icon.png')} style={styles.icon} accessibilityIgnoresInvertColors />
         <Text style={[styles.name, { color: theme.text }]}>HERE</Text>
@@ -37,12 +41,12 @@ export default function Welcome() {
         <ActionButton title={t.phone} systemImage="phone" variant="glass" onPress={() => router.push('/welcome/phone')} fullWidth />
         <Text style={[Type.caption, styles.center, styles.terms, { color: theme.textSecondary }]}>{t.terms}</Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, justifyContent: 'space-between', paddingHorizontal: 24, width: '100%', maxWidth: 520, alignSelf: 'center' },
+  page: { flexGrow: 1, justifyContent: 'space-between', gap: 40, paddingHorizontal: 24, width: '100%', maxWidth: 520, alignSelf: 'center' },
   hero: { alignItems: 'center', gap: Gap.block },
   icon: { width: 96, height: 96, borderRadius: 22, marginBottom: 4 },
   name: { fontSize: 44, fontWeight: '800', letterSpacing: 1 },
