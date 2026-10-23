@@ -63,6 +63,11 @@ export const tr = {
     empty: 'Henüz kimse yok.',
     footer: 'I am Here · prototip · #iamhere',
   },
+  signOut: {
+    button: 'Çıkış yap',
+    confirm: 'Çıkış yapılsın mı?',
+    note: 'Profilin ve ayarların bu cihazda kalır.',
+  },
 };
 
 export const en: typeof tr = {
@@ -115,5 +120,10 @@ export const en: typeof tr = {
     muted: 'Muted',
     empty: 'No one yet.',
     footer: 'I am Here · prototype · #iamhere',
+  },
+  signOut: {
+    button: 'Sign out',
+    confirm: 'Sign out?',
+    note: 'Your profile and settings stay on this device.',
   },
 };

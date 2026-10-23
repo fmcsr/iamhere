@@ -19,6 +19,7 @@ import { useTheme } from '@/hooks/use-theme';
 import type { LanguageSetting } from '@/i18n';
 import { useT } from '@/i18n/use-t';
 import { editProfile } from '@/lib/profile';
+import { confirmSignOut } from '@/lib/session';
 
 const BACKDROPS: BackdropVariant[] = ['ust', 'kose', 'genis'];
 const APPEARANCE_UIS: AppearanceUI[] = ['onizleme', 'ios', 'menu'];
@@ -39,8 +40,9 @@ const footer = (note: string) => <Text modifiers={[FOOTNOTE]}>{note}</Text>;
  */
 export function SettingsForm() {
   const theme = useTheme();
-  const t = useT().settings;
-  const { settings, updateSettings, setAppearance, setLanguage, trial, setTrial } = useApp();
+  const strings = useT();
+  const t = strings.settings;
+  const { settings, updateSettings, setAppearance, setLanguage, trial, setTrial, signOut } = useApp();
   const soon = (title: string) => Alert.alert(title, t.safety.empty);
   // Satırlar yarı saydam dolgu: beyaz zeminde kaybolmaz, gradyanın rengini alır.
   const row = listRowBackground(theme.fill);
@@ -129,6 +131,16 @@ export function SettingsForm() {
             systemImage="speaker.slash"
             onPress={() => soon(t.safety.muted)}
             modifiers={[foregroundStyle(theme.text), BODY, row]}
+          />
+        </Section>
+
+        <Section>
+          <Button
+            label={t.signOut.button}
+            systemImage="rectangle.portrait.and.arrow.right"
+            role="destructive"
+            onPress={() => confirmSignOut(strings, signOut)}
+            modifiers={[BODY, row]}
           />
         </Section>
       </Form>

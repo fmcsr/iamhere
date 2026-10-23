@@ -50,6 +50,8 @@ const LANGUAGE_KEY = 'here.language';
 const LANGUAGES: LanguageSetting[] = ['system', 'tr', 'en'];
 /** Profilde düzenlenen alanlar (Profili düzenle); cihazda saklanır. */
 const PROFILE_KEY = 'here.profile';
+/** Oturum: girişli mi (prototip; gerçek kimlik doğrulama yok). */
+const SESSION_KEY = 'here.session';
 type ProfileEdit = Pick<User, 'displayName' | 'username' | 'bio' | 'interests' | 'avatarUri' | 'coverUri'>;
 const BACKDROPS: BackdropVariant[] = ['ust', 'kose', 'genis'];
 const APPEARANCE_UIS: AppearanceUI[] = ['onizleme', 'ios', 'menu'];
@@ -99,6 +101,7 @@ function useAppState() {
     language: 'system',
   });
   const [appearanceLoaded, setAppearanceLoaded] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [trial, setTrialState] = useState<Trial>({ backdrop: 'ust', appearanceUI: 'onizleme' });
 
   // İngilizcede prototip verisinin İngilizcesi gösterilir (mock.en.ts); kullanıcının kendi yazdıkları olduğu gibi kalır.
@@ -133,8 +136,10 @@ function useAppState() {
       AsyncStorage.getItem(TRIAL_KEY),
       AsyncStorage.getItem(PROFILE_KEY),
       AsyncStorage.getItem(LANGUAGE_KEY),
+      AsyncStorage.getItem(SESSION_KEY),
     ])
-      .then(([value, saved, profile, language]) => {
+      .then(([value, saved, profile, language, session]) => {
+        setSignedIn(session === 'in');
         if (LANGUAGES.includes(language as LanguageSetting)) {
           const setting = language as LanguageSetting;
           setLang(resolveLang(setting));
@@ -173,6 +178,18 @@ function useAppState() {
     setLang(resolveLang(language));
     setSettings((s) => ({ ...s, language }));
     AsyncStorage.setItem(LANGUAGE_KEY, language).catch(() => {});
+  };
+
+  /** Giriş (hoş geldin sayfası): prototipte her yol başarılı. */
+  const signIn = () => {
+    setSignedIn(true);
+    AsyncStorage.setItem(SESSION_KEY, 'in').catch(() => {});
+  };
+
+  /** Ayarlar › Çıkış yap: hoş geldin sayfasına dönülür; profil ve ayarlar cihazda kalır. */
+  const signOut = () => {
+    setSignedIn(false);
+    AsyncStorage.removeItem(SESSION_KEY).catch(() => {});
   };
 
   const setAppearance = (mode: AppearanceMode) => {
@@ -405,6 +422,9 @@ function useAppState() {
     setAppearance,
     lang,
     setLanguage,
+    signedIn,
+    signIn,
+    signOut,
   };
 }
 

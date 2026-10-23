@@ -49,13 +49,15 @@ export default function RootLayout() {
 function RootStack() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const backdrop = useBackdrop();
-  const { settings, appearanceLoaded, lang } = useApp();
+  const { settings, appearanceLoaded, lang, signedIn } = useApp();
   const title = STRINGS[lang].titles;
   const ready = appearanceLoaded && (settings.appearance === 'system' || settings.appearance === scheme);
 
   useEffect(() => {
     if (ready) SplashScreen.hide();
   }, [ready]);
+  // Oturum kaydı okunmadan yönlendirme yapılmasın (açılış ekranı hâlâ üstte).
+  if (!appearanceLoaded) return null;
 
   const theme = Colors[scheme];
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
@@ -69,35 +71,42 @@ function RootStack() {
     <ThemeProvider value={navigationTheme}>
       {/* Her ekranın zemini marka gradyanı; ekran kendi zeminini taşıdığı için geçişlerde üst üste binme olmaz. */}
       <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal', contentStyle: backdrop, ...HeaderFonts }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="venue/[id]" options={{ title: '' }} />
-        <Stack.Screen name="chat/[id]" options={{ title: title.chat }} />
-        {/* Profil kapağı ekranın en üstünden başlar; geri ve ••• düğmeleri kapağın üstünde (kendi profilin gibi). */}
-        <Stack.Screen name="user/[username]" options={{ headerShown: false }} />
-        <Stack.Screen name="compose" options={{ presentation: 'modal', title: title.compose }} />
-        {/* Yer bildirme sayfası (T-26): ekranın üstünde saydam katman; sayfa alttan kendi animasyonuyla kayar. */}
-        <Stack.Screen
-          name="check-in/[venueId]"
-          options={{ presentation: 'transparentModal', animation: 'none', headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}
-        />
-        {/* Yarım yükseklikte cam sayfa: zemin şeffaf kalır ki iOS 26+ camı görünsün. */}
-        <Stack.Screen
-          name="people/[venueId]"
-          options={{
-            presentation: 'formSheet',
-            sheetAllowedDetents: [0.5, 1],
-            sheetGrabberVisible: true,
-            headerShown: false,
-            contentStyle: { backgroundColor: 'transparent' },
-          }}
-        />
-        <Stack.Screen name="settings" options={{ title: title.settings }} />
-        {/* Alttan açılan sayfa; üstte arkadaki profil görünür. İçerik kendi içinde kaymaz (edit-profile.tsx). */}
-        <Stack.Screen name="edit-profile" options={{ presentation: 'modal', title: title.editProfile }} />
-        <Stack.Screen name="new-message" options={{ title: title.newMessage }} />
-        <Stack.Screen name="follows" options={{ title: '' }} />
-        <Stack.Screen name="posts" options={{ title: title.posts }} />
-        <Stack.Screen name="nights" options={{ title: title.memories }} />
+        {/* Girişsiz kullanıcı yalnızca hoş geldin ve giriş sayfalarını görür; çıkış yapınca oraya döner. */}
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen name="welcome/index" options={{ headerShown: false, animation: 'fade' }} />
+          <Stack.Screen name="welcome/phone" options={{ title: '' }} />
+        </Stack.Protected>
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="venue/[id]" options={{ title: '' }} />
+          <Stack.Screen name="chat/[id]" options={{ title: title.chat }} />
+          {/* Profil kapağı ekranın en üstünden başlar; geri ve ••• düğmeleri kapağın üstünde (kendi profilin gibi). */}
+          <Stack.Screen name="user/[username]" options={{ headerShown: false }} />
+          <Stack.Screen name="compose" options={{ presentation: 'modal', title: title.compose }} />
+          {/* Yer bildirme sayfası (T-26): ekranın üstünde saydam katman; sayfa alttan kendi animasyonuyla kayar. */}
+          <Stack.Screen
+            name="check-in/[venueId]"
+            options={{ presentation: 'transparentModal', animation: 'none', headerShown: false, contentStyle: { backgroundColor: 'transparent' } }}
+          />
+          {/* Yarım yükseklikte cam sayfa: zemin şeffaf kalır ki iOS 26+ camı görünsün. */}
+          <Stack.Screen
+            name="people/[venueId]"
+            options={{
+              presentation: 'formSheet',
+              sheetAllowedDetents: [0.5, 1],
+              sheetGrabberVisible: true,
+              headerShown: false,
+              contentStyle: { backgroundColor: 'transparent' },
+            }}
+          />
+          <Stack.Screen name="settings" options={{ title: title.settings }} />
+          {/* Alttan açılan sayfa; üstte arkadaki profil görünür. İçerik kendi içinde kaymaz (edit-profile.tsx). */}
+          <Stack.Screen name="edit-profile" options={{ presentation: 'modal', title: title.editProfile }} />
+          <Stack.Screen name="new-message" options={{ title: title.newMessage }} />
+          <Stack.Screen name="follows" options={{ title: '' }} />
+          <Stack.Screen name="posts" options={{ title: title.posts }} />
+          <Stack.Screen name="nights" options={{ title: title.memories }} />
+        </Stack.Protected>
       </Stack>
     </ThemeProvider>
   );

@@ -11,11 +11,13 @@ import { useTheme } from '@/hooks/use-theme';
 import type { LanguageSetting } from '@/i18n';
 import { useT } from '@/i18n/use-t';
 import { editProfile } from '@/lib/profile';
+import { confirmSignOut } from '@/lib/session';
 
 export function SettingsForm() {
   const theme = useTheme();
-  const t = useT().settings;
-  const { settings, updateSettings, setAppearance, setLanguage, trial, setTrial } = useApp();
+  const strings = useT();
+  const t = strings.settings;
+  const { settings, updateSettings, setAppearance, setLanguage, trial, setTrial, signOut } = useApp();
 
   return (
     <ScrollView
@@ -86,6 +88,12 @@ export function SettingsForm() {
         />
       </GlassCard>
       <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.presence.note[settings.presenceVisibility]}</Text>
+
+      <GlassCard style={[styles.group, styles.signOut]}>
+        <Pressable onPress={() => confirmSignOut(strings, signOut)} accessibilityRole="button" style={styles.row}>
+          <Text style={[Type.body, { color: '#D92D20', flex: 1 }]}>{t.signOut.button}</Text>
+        </Pressable>
+      </GlassCard>
     </ScrollView>
   );
 }
@@ -96,4 +104,5 @@ const styles = StyleSheet.create({
   group: { borderRadius: 14, padding: 12 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 32 },
   footer: { marginHorizontal: 16 },
+  signOut: { marginTop: 24 },
 });
