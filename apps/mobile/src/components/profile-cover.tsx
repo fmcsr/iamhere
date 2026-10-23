@@ -49,7 +49,12 @@ export function ProfileCover({
   const dark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
   const height = insets.top + COVER_HEIGHT;
-  const stretch = useAnimatedStyle(() => ({ top: pull ? -pull.get() : 0 }));
+  // Çekince kapak alt kenarı yerinde kalarak büyür. `top` yerine dönüşüm: kapak her karede yeniden boyutlanıp
+  // düzen (layout) baştan hesaplanmaz; `top` ile yenileme başlarken dönen logo bir an takılıyordu.
+  const stretch = useAnimatedStyle(() => {
+    const distance = pull ? pull.get() : 0;
+    return { transform: [{ translateY: -distance / 2 }, { scale: (height + distance) / height }] };
+  });
 
   return (
     <View style={{ height, marginTop: -insets.top }}>

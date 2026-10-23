@@ -63,12 +63,12 @@ export default function EditProfileScreen() {
   const [interests, setInterests] = useState(me.interests);
   const [avatarUri, setAvatarUri] = useState(me.avatarUri);
   const [coverUri, setCoverUri] = useState(me.coverUri);
-  const [saving, setSaving] = useState(false);
-  // Sayfa kapanırken ✓ / ✕'e ikinci kez basılırsa alttaki ekran (ör. Ayarlar) da kapanmasın.
-  const leaving = useRef(false);
+  // ✓ / ✕ bir kez iş görür: ikinci dokunuş kaydı yinelemez, alttaki ekranı (ör. Ayarlar) da kapatmaz.
+  // Durum (state) değil: kaydederken ✓ griye dönüp sayfa yeniden çizilmesin.
+  const closing = useRef(false);
   const leave = () => {
-    if (leaving.current) return;
-    leaving.current = true;
+    if (closing.current) return;
+    closing.current = true;
     router.back();
   };
 
@@ -86,8 +86,8 @@ export default function EditProfileScreen() {
     interests.join('|') !== me.interests.join('|') ||
     avatarUri !== me.avatarUri ||
     coverUri !== me.coverUri;
-  // ✓ değişiklik yokken de basılır ve profile döner; yalnızca hata varken ya da kaydederken kapalı.
-  const canSave = !usernameError && !nameError && !saving;
+  // ✓ değişiklik yokken de basılır ve profile döner; yalnızca hata varken kapalı.
+  const canSave = !usernameError && !nameError;
 
   /** Fotoğraflardan seç ya da (cihazda) çek. Profil fotoğrafı kare kırpılır; kapak olduğu gibi kalır. */
   const pickPhoto = async (kind: 'avatar' | 'cover', source: 'library' | 'camera') => {
@@ -138,18 +138,24 @@ export default function EditProfileScreen() {
 
   const save = async () => {
     if (!dirty) return leave();
-    setSaving(true);
+    if (closing.current) return;
+    closing.current = true;
     try {
+      // Yalnızca yeni seçilen fotoğraf belgeler klasörüne kopyalanır; değişmediyse beklemeden döner.
       const [avatar, cover] = await Promise.all([
         avatarUri ? keepPhoto(avatarUri, 'avatar') : undefined,
         coverUri ? keepPhoto(coverUri, 'cover') : undefined,
       ]);
-      if (avatar !== me.avatarUri) dropPhoto(me.avatarUri);
-      if (cover !== me.coverUri) dropPhoto(me.coverUri);
-      updateMe({ displayName: name.trim(), username, bio: bio.trim(), interests, avatarUri: avatar, coverUri: cover });
-      leave();
+      router.back();
+      // Önce sayfa kapanmaya başlasın; profili gösteren her ekranı yeniden çizen güncelleme kapanırken uygulanır.
+      // İkisi aynı anda yapılınca ✓'ten sonra sayfa bir an takılıyordu.
+      setTimeout(() => {
+        updateMe({ displayName: name.trim(), username, bio: bio.trim(), interests, avatarUri: avatar, coverUri: cover });
+        if (avatar !== me.avatarUri) dropPhoto(me.avatarUri);
+        if (cover !== me.coverUri) dropPhoto(me.coverUri);
+      });
     } catch {
-      setSaving(false);
+      closing.current = false;
       Alert.alert(edit.saveFailed.title, edit.saveFailed.message);
     }
   };
