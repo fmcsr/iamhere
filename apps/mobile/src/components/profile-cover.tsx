@@ -56,33 +56,40 @@ export function ProfileCover({
     return { transform: [{ translateY: -distance / 2 }, { scale: (height + distance) / height }] };
   });
 
+  const photo = uri ? (
+    <Image source={{ uri }} style={blur ? styles.blurred : StyleSheet.absoluteFill} contentFit="cover" blurRadius={blur ? 22 : 0} transition={200} />
+  ) : (
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.accentSoft }]} />
+  );
+  // Hafif karartma: beyaz kullanıcı adı ve durum çubuğu her fotoğrafta okunsun.
+  const shade = <View style={[StyleSheet.absoluteFill, styles.shade]} />;
+  const fade = statusFade && (
+    <LinearGradient
+      pointerEvents="none"
+      colors={dark ? ['rgba(0,0,0,0.5)', 'rgba(0,0,0,0)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
+      style={[styles.fade, { height: insets.top + 6 }]}
+    />
+  );
+
   return (
     <View style={{ height, marginTop: -insets.top }}>
+      {/* Kapağın ters çevrilmiş kopyası, hemen üstünde; içerikle birlikte kayar, kendisi hiç oynamaz. Çekerken uzayan kapak
+          kaydırmanın bir kare gerisinden gelse de üstte zemin şeridi değil fotoğrafın devamı görünür. */}
+      {pull && (
+        <View pointerEvents="none" style={[styles.mirror, { height, top: -height }]}>
+          {photo}
+          {shade}
+          {fade}
+        </View>
+      )}
       <Animated.View style={[StyleSheet.absoluteFill, stretch]}>
         <MaskedView
           style={StyleSheet.absoluteFill}
           maskElement={<LinearGradient colors={['#000', '#000', 'transparent']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />}>
-          {uri ? (
-            <Image
-              source={{ uri }}
-              style={blur ? styles.blurred : StyleSheet.absoluteFill}
-              contentFit="cover"
-              blurRadius={blur ? 22 : 0}
-              transition={200}
-            />
-          ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.accentSoft }]} />
-          )}
-          {/* Hafif karartma: beyaz kullanıcı adı ve durum çubuğu her fotoğrafta okunsun. */}
-          <View style={[StyleSheet.absoluteFill, styles.shade]} />
+          {photo}
+          {shade}
         </MaskedView>
-        {statusFade && (
-          <LinearGradient
-            pointerEvents="none"
-            colors={dark ? ['rgba(0,0,0,0.5)', 'rgba(0,0,0,0)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
-            style={[styles.fade, { height: insets.top + 6 }]}
-          />
-        )}
+        {fade}
       </Animated.View>
 
       <View style={[styles.bar, { top: insets.top + 4 }]}>
@@ -127,6 +134,7 @@ const styles = StyleSheet.create({
   // Bulanık fotoğrafın kenarları solmasın diye taşar.
   blurred: { position: 'absolute', top: -30, left: -30, right: -30, bottom: -30 },
   shade: { backgroundColor: 'rgba(0, 0, 0, 0.18)' },
+  mirror: { position: 'absolute', left: 0, right: 0, overflow: 'hidden', transform: [{ scaleY: -1 }] },
   fade: { position: 'absolute', top: 0, left: 0, right: 0 },
   bar: { position: 'absolute', left: 16, right: 16, height: 44, flexDirection: 'row', alignItems: 'center' },
   side: { width: 92, flexDirection: 'row', gap: 8 },

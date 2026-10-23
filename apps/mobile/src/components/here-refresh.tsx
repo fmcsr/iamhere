@@ -8,7 +8,6 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedRef,
   useAnimatedStyle,
-  useDerivedValue,
   useScrollOffset,
   useSharedValue,
   withRepeat,
@@ -45,8 +44,15 @@ export function useHereRefresh(onRefresh?: () => Promise<unknown> | void) {
   const armed = useSharedValue(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Başlıksız ekranda kaydırma, durum çubuğu kadar yukarıda durur (-insets.top).
-  const pull = useDerivedValue(() => Math.max(0, -insets.top - offset.get()));
+  // Başlıksız ekranda kaydırma, durum çubuğu kadar yukarıda durur (-insets.top). Yalnızca değişince yazılır:
+  // normal kaydırmada 0'da kalır, ona bağlı logo ve kapak her karede yeniden işlenmez.
+  const pull = useSharedValue(0);
+  useAnimatedReaction(
+    () => Math.max(0, -insets.top - offset.get()),
+    (distance, previous) => {
+      if (distance !== previous) pull.set(distance);
+    },
+  );
 
   useAnimatedReaction(
     () => pull.get(),
