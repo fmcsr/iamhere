@@ -11,19 +11,31 @@ import Animated, {
   useScrollOffset,
   useSharedValue,
   withRepeat,
+  withSequence,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { scheduleOnRN, scheduleOnUI } from 'react-native-worklets';
 
 import { HereMark } from '@/components/here-mark';
+import { HERE_SPRITE } from '@/components/here-mark-sprite';
 
 /** Bir tam tur için çekme mesafesi (pt); iOS'un yenileme eşiğine yakın. */
 const PULL_FOR_TURN = 110;
 /** Yenilerken bir tur süresi (ms). */
 const TURN_MS = 900;
-/** Prototipte veri sunucudan gelmiyor; yenileme bu kadar sürer. */
-const MIN_REFRESH_MS = 1400;
+/** Dönüş hızı (derece/ms). */
+const SPIN_SPEED = 360 / TURN_MS;
+/** Prototipte veri sunucudan gelmiyor; logo en az bu kadar döner, sonra yavaşlayıp durur. */
+const MIN_REFRESH_MS = 1000;
+/** Logo öne bakmadan önceki son bu kadar açıda frenler; öncesinde aynı hızla döner. */
+const BRAKE_DEG = 60;
+/** Logo karesi bu açıda bir değişir (60 kare). */
+const FRAME_DEG = 360 / HERE_SPRITE.frames;
+/** İçerik, logonun son karesinden bu kadar önce yerine dönmeye başlar: ikisinin arasında donmuş bir an kalmaz
+ * (geliştirme sürümünde JS'ten iOS'un içeriği geri kaydırmaya başlamasına kadar ~250 ms geçiyor). */
+const RETURN_LEAD_MS = 260;
 const MARK_HEIGHT = 34;
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -74,24 +86,39 @@ export function useHereRefresh(onRefresh?: () => Promise<unknown> | void) {
     angle.set(withRepeat(withTiming(from + 360, { duration: TURN_MS, easing: Easing.linear }), -1, false));
     await Promise.all([onRefresh?.(), wait(MIN_REFRESH_MS)]);
 
-    // Turu tamamla, öne bakarak dur; sonra içerik yerine döner.
-    cancelAnimation(angle);
-    const now = angle.get();
-    const target = (Math.floor(now / 360) + 1) * 360;
-    const duration = ((target - now) / 360) * TURN_MS * 1.6;
-    angle.set(
-      withTiming(target, { duration, easing: Easing.out(Easing.cubic) }, () => {
-        angle.set(0);
-        spinning.set(false);
-      }),
-    );
-    await wait(duration);
-    setRefreshing(false);
+    // Bitince logo öne bakana dek aynı hızla döner, son BRAKE_DEG'de düzgünce frenleyip durur. Ease-out quad'ın başlangıç
+    // hızı ortalamanın iki katı; fren süresi 2·BRAKE_DEG/hız seçilince hız kesintisiz sürer (ani hızlanma ya da sert fren
+    // yok, uzun "neredeyse durmuş" bir kuyruk da yok). Açı UI iş parçacığında okunur.
+    scheduleOnUI(() => {
+      'worklet';
+      cancelAnimation(angle);
+      const now = angle.get();
+      let delta = Math.ceil(now / 360) * 360 - now;
+      if (delta < BRAKE_DEG) delta += 360;
+      const cruise = (delta - BRAKE_DEG) / SPIN_SPEED;
+      const brake = (2 * BRAKE_DEG) / SPIN_SPEED;
+      angle.set(
+        withSequence(
+          withTiming(now + delta - BRAKE_DEG, { duration: cruise, easing: Easing.linear }),
+          withTiming(now + delta, { duration: brake, easing: Easing.out(Easing.quad) }, () => {
+            angle.set(0);
+            spinning.set(false);
+          }),
+        ),
+      );
+      // Kare en yakın açıya yuvarlanır: kalan açı yarım karenin altına inince logo gözle durmuş görünür
+      // (quad: kalan = BRAKE_DEG·(1−t/T)²). İçerik o andan biraz önce dönmeye başlar.
+      const lastFrameAt = cruise + brake * (1 - Math.sqrt(FRAME_DEG / 2 / BRAKE_DEG));
+      scheduleOnRN(endRefreshingIn, lastFrameAt - RETURN_LEAD_MS);
+    });
   };
+
+  // İçerik, logo durmadan biraz önce yerine dönmeye başlar.
+  const endRefreshingIn = (ms: number) => setTimeout(() => setRefreshing(false), Math.max(0, ms));
 
   // Çark saydam: yalnızca iOS'un çekme davranışı (eşik, içerik boşluğu) kullanılır.
   const refreshControl = <RefreshControl refreshing={refreshing} onRefresh={start} tintColor="transparent" />;
-  return { ref, refreshControl, angle, pull };
+  return { ref, refreshControl, angle, pull, offset };
 }
 
 /** Çekince açılan boşlukta, durum çubuğunun altında dönen logo. */

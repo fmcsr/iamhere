@@ -23,9 +23,9 @@ import { editProfile } from '@/lib/profile';
 export default function ProfileScreen() {
   const t = useT();
   const { me, posts, settings, checkIn, venueById, followersOf, followingOf, nightsOf } = useApp();
+  const { ref, refreshControl, angle, pull, offset } = useHereRefresh();
   // Sekme içinde iOS durum çubuğu rengini değiştirmiyor; kapak üstünde ince geçiş kullanılıyor.
-  const { onScroll, overCover } = useCoverStatusBar({ setStyle: false });
-  const { ref, refreshControl, angle, pull } = useHereRefresh();
+  const { overCover } = useCoverStatusBar({ setStyle: false, offset });
 
   const nights = nightsOf('me');
   const myPosts = posts.filter((p) => p.userId === 'me' && !p.anonAlias).sort((a, b) => b.createdAt - a.createdAt);
@@ -41,7 +41,9 @@ export default function ProfileScreen() {
         refreshControl={refreshControl}
         // iOS güvenli alanı kadar üst boşluk bırakır; kapak bu boşluk kadar yukarı taşınarak en üstten başlar.
         contentInsetAdjustmentBehavior="automatic"
-        onScroll={onScroll} scrollEventThrottle={32} contentContainerStyle={styles.scroll}>
+        // scrollEventThrottle verilmez: Animated.ScrollView her karede kaydırma olayı gönderir; kapak, logo ve gösterge
+        // içerikle aynı karede hareket eder (32 ms ile her iki-dört karede bir güncelleniyor, takılıyordu).
+        contentContainerStyle={styles.scroll}>
         <ProfileCover
           uri={cover ?? me.avatarUri}
           blur={!me.coverUri}

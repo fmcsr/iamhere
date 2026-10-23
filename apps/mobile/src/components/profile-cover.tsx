@@ -5,8 +5,9 @@ import { useFocusEffect } from 'expo-router';
 import { setStatusBarStyle } from 'expo-status-bar';
 import { useCallback, useState, type ComponentType, type ReactElement, type ReactNode } from 'react';
 import { StyleSheet, View, type NativeScrollEvent, type NativeSyntheticEvent, type ViewProps } from 'react-native';
-import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedReaction, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { Text } from '@/components/text';
 import { Type } from '@/constants/theme';
@@ -50,46 +51,39 @@ export function ProfileCover({
   const insets = useSafeAreaInsets();
   const height = insets.top + COVER_HEIGHT;
   // Çekince kapak alt kenarı yerinde kalarak büyür. `top` yerine dönüşüm: kapak her karede yeniden boyutlanıp
-  // düzen (layout) baştan hesaplanmaz; `top` ile yenileme başlarken dönen logo bir an takılıyordu.
+  // düzen (layout) baştan hesaplanmaz.
   const stretch = useAnimatedStyle(() => {
     const distance = pull ? pull.get() : 0;
     return { transform: [{ translateY: -distance / 2 }, { scale: (height + distance) / height }] };
   });
 
-  const photo = uri ? (
-    <Image source={{ uri }} style={blur ? styles.blurred : StyleSheet.absoluteFill} contentFit="cover" blurRadius={blur ? 22 : 0} transition={200} />
-  ) : (
-    <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.accentSoft }]} />
-  );
-  // Hafif karartma: beyaz kullanıcı adı ve durum çubuğu her fotoğrafta okunsun.
-  const shade = <View style={[StyleSheet.absoluteFill, styles.shade]} />;
-  const fade = statusFade && (
-    <LinearGradient
-      pointerEvents="none"
-      colors={dark ? ['rgba(0,0,0,0.5)', 'rgba(0,0,0,0)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
-      style={[styles.fade, { height: insets.top + 6 }]}
-    />
-  );
-
   return (
     <View style={{ height, marginTop: -insets.top }}>
-      {/* Kapağın ters çevrilmiş kopyası, hemen üstünde; içerikle birlikte kayar, kendisi hiç oynamaz. Çekerken uzayan kapak
-          kaydırmanın bir kare gerisinden gelse de üstte zemin şeridi değil fotoğrafın devamı görünür. */}
-      {pull && (
-        <View pointerEvents="none" style={[styles.mirror, { height, top: -height }]}>
-          {photo}
-          {shade}
-          {fade}
-        </View>
-      )}
       <Animated.View style={[StyleSheet.absoluteFill, stretch]}>
         <MaskedView
           style={StyleSheet.absoluteFill}
           maskElement={<LinearGradient colors={['#000', '#000', 'transparent']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />}>
-          {photo}
-          {shade}
+          {uri ? (
+            <Image
+              source={{ uri }}
+              style={blur ? styles.blurred : StyleSheet.absoluteFill}
+              contentFit="cover"
+              blurRadius={blur ? 22 : 0}
+              transition={200}
+            />
+          ) : (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.accentSoft }]} />
+          )}
+          {/* Hafif karartma: beyaz kullanıcı adı ve durum çubuğu her fotoğrafta okunsun. */}
+          <View style={[StyleSheet.absoluteFill, styles.shade]} />
         </MaskedView>
-        {fade}
+        {statusFade && (
+          <LinearGradient
+            pointerEvents="none"
+            colors={dark ? ['rgba(0,0,0,0.5)', 'rgba(0,0,0,0)'] : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
+            style={[styles.fade, { height: insets.top + 6 }]}
+          />
+        )}
       </Animated.View>
 
       <View style={[styles.bar, { top: insets.top + 4 }]}>
@@ -109,10 +103,22 @@ export function ProfileCover({
  * (açık modda) yeniden koyu. Ekrandan çıkınca sistem ayarına döner. `overCover`: kapak hâlâ durum
  * çubuğunun altında mı (o sırada ada bulanıklığına gerek yok; kapağın kendisi bulanık).
  */
-export function useCoverStatusBar({ setStyle = true }: { setStyle?: boolean } = {}) {
+export function useCoverStatusBar({ setStyle = true, offset }: { setStyle?: boolean; offset?: SharedValue<number> } = {}) {
   const dark = useColorScheme() === 'dark';
   const insets = useSafeAreaInsets();
   const [overCover, setOverCover] = useState(true);
+  // Kaydırma en üstteyken konum -insets.top (güvenli alan boşluğu); bu sınırın altında kapak hâlâ durum çubuğunun altında.
+  const edge = COVER_HEIGHT - 60 - insets.top;
+
+  // Kaydırma konumu Reanimated'dan geliyorsa (çekip yenileme olan ekran) sınır UI iş parçacığında izlenir: kaydırma
+  // olayları JS'e her karede gitmez, yalnızca sınır geçilince bildirilir. Böylece kaydırma olayları seyreltilmez
+  // (scrollEventThrottle) ve kapakla logo her karede içerikle birlikte hareket eder.
+  useAnimatedReaction(
+    () => (offset ? offset.get() < edge : null),
+    (next, previous) => {
+      if (next !== null && previous !== null && next !== previous) scheduleOnRN(setOverCover, next);
+    },
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -122,9 +128,9 @@ export function useCoverStatusBar({ setStyle = true }: { setStyle?: boolean } = 
     }, [overCover, dark, setStyle]),
   );
 
+  /** Kaydırma konumu verilmeyen ekranlar için (JS'te izlenir). */
   const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // Kaydırma en üstteyken konum -insets.top (güvenli alan boşluğu).
-    const next = event.nativeEvent.contentOffset.y + insets.top < COVER_HEIGHT - 60;
+    const next = event.nativeEvent.contentOffset.y < edge;
     if (next !== overCover) setOverCover(next);
   };
   return { onScroll, overCover };
@@ -134,7 +140,6 @@ const styles = StyleSheet.create({
   // Bulanık fotoğrafın kenarları solmasın diye taşar.
   blurred: { position: 'absolute', top: -30, left: -30, right: -30, bottom: -30 },
   shade: { backgroundColor: 'rgba(0, 0, 0, 0.18)' },
-  mirror: { position: 'absolute', left: 0, right: 0, overflow: 'hidden', transform: [{ scaleY: -1 }] },
   fade: { position: 'absolute', top: 0, left: 0, right: 0 },
   bar: { position: 'absolute', left: 16, right: 16, height: 44, flexDirection: 'row', alignItems: 'center' },
   side: { width: 92, flexDirection: 'row', gap: 8 },
