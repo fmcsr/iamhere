@@ -46,6 +46,7 @@ Konum bazlı, grup aktivitelerine odaklı bir sosyal medya uygulaması. Kullanı
 - **Firebase/Firestore:** TTL silmesi kesin değil; belgelere göre "genellikle 24 saat içinde" yapılır. 04:00 garantisi verilemez. Coğrafi sorgu desteği zayıf, ayrıca veri yerelliği (KVKK) sorunu var.
 - **Supabase:** Şemamız düz PostgreSQL olduğu için Supabase'de de çalışır (PostGIS ve pg_cron mevcut). Fakat maskeleme, sahte konum tespiti, hız sınırı ve moderasyon gibi iş kuralları istemcide ya da RLS'de değil, API katmanında olmalı.
   - **Karar (ROTA K-18, 28.10.2026):** beta Supabase üzerinde kurulur (Postgres + PostGIS + pg_cron, Auth, Storage, Realtime). İş kuralları (yakınlık doğrulama, hız sınırı, moderasyon) SQL fonksiyonlarında ve Edge Functions'ta. NestJS gerekirse sonra; şema düz SQL olduğu için taşınabilir.
+  - Şema değişiklikleri depodaki `supabase/migrations` klasöründe sırayla tutulur ve Supabase komut satırı aracıyla (Homebrew ile kurulu) projeye gönderilir; testler `supabase/tests` altında.
 - **Flutter:** Güçlü bir alternatif. React Native'i seçme nedenimiz tek dil (TypeScript) ve mobil ile API arasında paylaşılan sözleşmeler.
 - **Elixir/Phoenix:** Gerçek zamanlı iletişimde çok güçlü. Ölçek sınırına gelinirse yalnızca realtime katmanı ayrıştırılabilir.
 
@@ -255,12 +256,12 @@ sequenceDiagram
 
 > Bu liste ilk taslaktan kaldı; ürün kararları artık [ROTA.md](ROTA.md) §6 ve §13'te. Her maddenin sonunda güncel durumu var.
 
-- **Saat dilimi:** Lansmanın Türkiye'de (`Europe/Istanbul`, tek dilim) yapılacağı varsayıldı. → Açık (ROTA K-10).
-- **Gece sonu sınırı:** 03:59'da başlayan bir sohbet 1 dakika sonra silinir. Bu, "04:00'te sohbetler sıfırlanır" kuralının (ROTA K-16) doğal sonucudur; paylaşımlar ve yer bildirimleri bundan etkilenmez. Uygulama 03:30'dan sonra bir uyarı gösterebilir. → Açık (ROTA K-10).
+- **Saat dilimi:** Lansmanın Türkiye'de (`Europe/Istanbul`, tek dilim) yapılacağı varsayıldı. → ✅ Karar (ROTA K-10, 28.10.2026): tek dilim, `Europe/Istanbul`.
+- **Gece sonu sınırı:** 03:59'da başlayan bir sohbet 1 dakika sonra silinir. Bu, "04:00'te sohbetler sıfırlanır" kuralının (ROTA K-16) doğal sonucudur; paylaşımlar ve yer bildirimleri bundan etkilenmez. Uygulama 03:30'dan sonra bir uyarı gösterebilir. → ✅ Karar (ROTA K-10, 28.10.2026): 04:00 sabit; 03:30'dan sonra sohbette "30 dk sonra sıfırlanıyor" uyarısı.
 - **Anonimlik kapsamı:** Şu an gece başına tek persona var. Sohbet başına ayrı persona daha anonimdir ama gece içinde tutarlılık kaybolur. → ✅ Karar (ROTA K-04, 24.10.2026): anonim mod yok, sohbette @kullanıcı adı. Gecelik persona ve üyelik/mesajdaki `persona_id` Faz 2'de kaldırılır.
 - **Yaş sınırı:** 18+ varsayıldı. → MVP için geçici karar: 18+ (ROTA K-01).
 - **Ana sayfa yaklaşımı:** akış, harita veya mekân kartları (bkz. [ROTA.md §7](ROTA.md)). → Karar: mekân odaklı bölümler, altında iki sekmeli paylaşım akışı (ROTA K-14, TASARIM T-20).
-- **"Burada" süresi:** Yer bildirimi ne kadar süre "burada" sayılır? Örneğin 3 saat ya da başka bir yerde bildirene kadar. "342 kişi burada" sayacı buna dayanır. → Açık (ROTA K-06, ROTA §14 S6).
+- **"Burada" süresi:** Yer bildirimi ne kadar süre "burada" sayılır? Örneğin 3 saat ya da başka bir yerde bildirene kadar. "342 kişi burada" sayacı buna dayanır. → ✅ Karar (ROTA K-06, 28.10.2026): başka yerde yer bildirene kadar (en geç 04:00) orada sayılırsın; canlı sayı yalnızca son 3 saatte yer bildirenleri ve "Hâlâ buradayım" diyenleri sayar.
 - **Yer bildirimi yarıçapı:** 300 m varsayıldı. → Karar: 300 m (ROTA K-17).
 - **Sosyal bağ:** Arkadaş veya takip sistemi olacak mı? → Karar: tek yönlü takip (ROTA K-03).
 - **Birebir mesajlaşma:** DM kalacak mı, yoksa yalnızca grup sohbeti mi olacak? → Karar: istek modeliyle mesajlaşma var (ROTA K-08).
@@ -274,7 +275,8 @@ sequenceDiagram
 | Mekân (konser alanı, restoran, park…) | `core.venues`: ad, kategori, konum, yer bildirimi yarıçapı | kalıcı (herkese açık yer) |
 | Yer bildirimi | `core.check_ins`: kullanıcı, mekân, gece (anonim yer bildirimi yok: ROTA K-04). Yakınlık (300 m, K-17) sunucuda doğrulanır, ham konum saklanmaz. Profildeki "anı" sayısı ve anı takvimi buradan gelir (T-22). | **kalıcı** (K-16) |
 | Paylaşım (fotoğraf + kısa yazı) | `core.posts` (yazı en fazla 150 harf) + `post_tags` (yalnızca o gece aynı mekânda yer bildirmiş karşılıklı takipleşenler; etiketlenen kaldırabilir) + `post_reactions` (beğeni). `post_comments` betadan sonra: yalnızca takipçiler yazar, paylaşan kapatabilir (ROTA §14 S3). Kişi kendi paylaşımını siler. Kimin göreceği hesabın gizliliğinden gelir (paylaşım başına kitle yok, ROTA §14 S2) | **kalıcı** (K-16) |
-| Mekân sohbeti | `conversations.kind = 'venue'` (mekân başına gecede tek). Üyelik yer bildirimiyle açılır. | gece sonu |
+| Mekân sohbeti | `conversations.kind = 'venue'` (mekân başına gecede tek). Üyelik yer bildirimiyle açılır. Kalabalık mekânlar ileride alt sohbetlere bölünebilsin diye `section` alanı baştan var; betada her mekânın tek bölümü olur (ROTA K-07). | gece sonu |
+| Mekân hesabı | `core.venue_accounts`: bir işletmenin kendi mekân sayfasını yönettiği hesap. Şemada baştan var, betada kullanılmaz ve arayüzü yok (ROTA K-12). | kalıcı |
 | Plan (grup aktivitesi) | `ephemeral.plans` + `plan_participants`. Başlangıç saati 04:00'ü geçemez. | gece sonu |
 
 - Mevcut maskeleme, RLS ve 04:00 bölüm düşürme mekanizması yeni gecelik tablolara (sohbet, plan) aynen uygulanır: her tablo `cycle_tables`'a kaydedilir ve RLS politikası alır. Kalıcı tablolar (yer bildirimi, paylaşım) bu motora girmez; paylaşımlar için saklama süresi (KVKK) ayrıca belirlenecek (ROTA K-16).

@@ -55,7 +55,7 @@
 | Veritabanı şeması + 04:00 silme motoru | ✅ Yazıldı, 80 test ile doğrulandı (ilk ürün modeline göre) |
 | Ürün modeli güncellemesi (yer bildirimi + mekân sohbeti) | 🟡 Belirlendi, şemaya henüz işlenmedi |
 | Arayüz | 🟡 Çalışan prototip var (`apps/mobile`, sahte veri), Liquid Glass ile yeniden tasarlandı ve iOS 27'de denendi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, boş durumlar, T-18 ve T-19 kararları |
-| Ürün kararları | 🟡 Çekirdek kararlar kapandı (§13); K-04, K-06, K-07, K-10, K-12 ve beta/lansman açık; incelemeden çıkan sorular S1–S7 açık (§14) |
+| Ürün kararları | 🟡 Çekirdek kararlar kapandı (§13); açık kalanlar: K-11'in beta ve lansman kısmı, incelemeden çıkan S7 (§14) |
 
 ---
 
@@ -254,7 +254,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **B) Alt sohbetler** (bölge/kapı/sahne).
 - **C) Rastgele küçük gruplar** (ör. 50'şer kişi).
 - **Öneri:** MVP'de A, eşik aşılırsa B.
-- **Karar:** ⬜
+- **Karar:** ✅ **Mekân başına tek sohbet** (28.10.2026). Şemada sohbetin bir "bölüm" alanı baştan bulunur; böylece kalabalık mekânlar ileride hiçbir şeyi bozmadan alt sohbetlere (sahne önü, kapı…) bölünebilir. Betada her mekânın tek bölümü var.
 
 ### K-08 · Birebir mesaj (DM) 🔴
 - **A) Yok** — En güvenli; grup odağı net.
@@ -284,7 +284,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 ### K-10 · Gece sınırı ve saat dilimi 🟡
 - 04:00'te sıfırlanma sabit mi? 03:59'da başlayan sohbet 1 dakika yaşar (03:30 sonrası uyarı gösterilebilir).
 - Lansman Türkiye, tek saat dilimi (`Europe/Istanbul`) varsayıldı.
-- **Karar:** ⬜
+- **Karar:** ✅ **Sabit 04:00, İstanbul saati** (28.10.2026). Sohbetler her gece 04:00'te sıfırlanır; 03:30'dan sonra sohbetin üstünde kalan süre yazar ("30 dk sonra sıfırlanıyor"). Tek saat dilimi (`Europe/Istanbul`); başka ülkeye açılınca yeniden bakılır.
 
 ### K-11 · Platform ve lansman şehri 🔴
 - iOS + Android birlikte mi (Expo ile mümkün), önce biri mi?
@@ -294,7 +294,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 ### K-12 · Gelir modeli 🟢
 - Mekân ortaklıkları (öne çıkarma, "bu gece burada" duyurusu), etkinlik/bilet ortaklığı, premium (ör. anonim profil özelleştirme), reklam.
 - **Öneri:** MVP'de gelir yok; ama mekân tarafını (mekân hesabı) şemada baştan düşünmek.
-- **Karar:** ⬜
+- **Karar:** ✅ **Betada gelir yok** (28.10.2026). Mekân hesabı (bir işletmenin kendi mekân sayfasını yönettiği hesap) şemada baştan bulunur ama betada kullanılmaz ve arayüzü yoktur; gelir modeli betadan sonra konuşulur.
 
 ### K-14 · Ana sayfa akışı 🟡
 - **Güncelleme (17.10.2026):** Ana sayfa artık mekân odaklı bölümlerle başlıyor; iki sekmeli akış "Paylaşımlar" bölümünün içinde (TASARIM.md T-20).
@@ -542,12 +542,13 @@ Faz 6  Lansman
 | 28.10.2026 | **K-18: Sunucu yolu Supabase** (beta için): Postgres + PostGIS + pg_cron, giriş, dosya deposu, gerçek zamanlı; ücretsiz planla başlanır | Kurucu kararı: hızlı başlangıç, yerel kurulum gerekmiyor; şema düz SQL olduğu için ileride taşınabilir |
 | 28.10.2026 | **İlk TestFlight sürümü şimdiki prototiple** (sahte veri; testçiler birbirini göremez), mevcut bir Apple Developer hesabı üzerinden. Kararlar sonraki sürümlerde | Kurucu kararı: çevredeki insanlar uygulamayı kendi telefonlarında denesin |
 | 28.10.2026 | **TestFlight hazırlığı:** uygulamanın kalıcı kimliği `com.iamhere.app`; "Apple ile devam et" gerçek Apple girişi olur, Google düğmesi şimdilik gizli; gizlilik politikası GitHub'daki depodan yayınlanan bir sayfada; derleme ve yükleme kurucunun Mac'inden. Sıra: önce veritabanı (Supabase), sonra TestFlight | Kurucu kararı: Apple incelemesinde çalışmayan giriş düğmesi riski olmasın; ek maliyet olmasın |
+| 28.10.2026 | **K-07, K-10, K-12:** mekân başına tek sohbet (şemada "bölüm" alanı baştan var, kalabalık mekânlar sonra bölünebilir); sohbetler sabit 04:00'te (İstanbul saati) sıfırlanır, 03:30'dan sonra "30 dk sonra sıfırlanıyor" uyarısı; betada gelir yok, mekân hesabı şemada baştan var ama kullanılmaz. Veritabanı değişiklikleri depodaki `supabase/` klasöründe tutulur ve Supabase'in komut satırı aracıyla gönderilir | Kurucu kararı: beta küçük, tek sohbet yeter; sonradan gelecek bölme ve mekân hesabı şemayı bozmasın; gece kuralı herkes için aynı ve tahmin edilebilir kalsın |
 
 ---
 
 ## 14. Sıradaki adım
 
-**Kapanan kararlar:** K-01 (MVP için geçici: 18+), K-02 (mekân), K-03 (tek yönlü takip), K-05 (Google Places), K-08 (istek modeliyle mesajlaşma), K-09 (telefon + Apple + Google), K-11'in platform kısmı (iOS + Android), K-13 (ad ve renkler), K-14 (iki sekmeli akış), K-15 (görünen ad + @kullanıcı adı), K-16 (04:00'te yalnızca sohbetler sıfırlanır), K-17 (sohbete yalnızca yakında yer bildirerek), K-04 (anonim mod yok; sohbette @kullanıcı adı, 24.10.2026), K-06 (aynı anda tek mekân; canlı sayı son 3 saat, 28.10.2026), K-18 (sunucu yolu Supabase, 28.10.2026).
+**Kapanan kararlar:** K-01 (MVP için geçici: 18+), K-02 (mekân), K-03 (tek yönlü takip), K-05 (Google Places), K-08 (istek modeliyle mesajlaşma), K-09 (telefon + Apple + Google), K-11'in platform kısmı (iOS + Android), K-13 (ad ve renkler), K-14 (iki sekmeli akış), K-15 (görünen ad + @kullanıcı adı), K-16 (04:00'te yalnızca sohbetler sıfırlanır), K-17 (sohbete yalnızca yakında yer bildirerek), K-04 (anonim mod yok; sohbette @kullanıcı adı, 24.10.2026), K-06 (aynı anda tek mekân; canlı sayı son 3 saat, 28.10.2026), K-18 (sunucu yolu Supabase, 28.10.2026), K-07 (mekân başına tek sohbet, sonradan bölünebilir yapıda, 28.10.2026), K-10 (sabit 04:00, 03:30'dan sonra uyarı, 28.10.2026), K-12 (betada gelir yok; mekân hesabı şemada, 28.10.2026).
 
 **Sıradaki adımlar:**
 1. ~~[TASARIM.md §6](TASARIM.md#6-raporlar-arasındaki-çelişkiler-ve-karar-önerileri)'daki tasarım kararlarını (T-1…T-10) birlikte ver.~~ ✅ Hepsi kabul edildi (17.10.2026).
@@ -564,4 +565,4 @@ Faz 6  Lansman
 - **S6 Mekân değiştirme (K-06):** ✅ **Karar (kısmi, 24.10.2026):** başka yerde bildirene kadar (en geç 04:00) orada sayılırsın, aynı anda tek mekân; değiştirirken her seferinde onay; ayrıldığın sohbet 04:00'e kadar okunur, yazılamaz, yeniden yer bildirince yazma geri gelir. 28.10.2026: canlı sayı yalnızca son 3 saat + "Hâlâ buradayım" diyenler; 3 saat sonra bir kez yerel bildirimle "Hâlâ orada mısın?" (K-06). *Soru şuydu:* başka yerde yer bildirince önceki sohbet sessizce tamamen kilitleniyor. Onay mı sorulsun, 04:00'e kadar okunabilir mi kalsın?
 - **S7 Sekme aksesuarındaki sayaç:** her sekmede "342 kişi · 4 sa 12 dk" görünüyor; K-16'ya göre sayaç yalnızca sohbetlerde. Kalsın mı?
 
-**Açık kararlar:** K-07 (büyük mekânlarda sohbet ölçeği), K-10 (gece sınırı ve saat dilimi), K-11'in beta ve lansman kısmı, K-12 (gelir modeli).
+**Açık kararlar:** K-11'in beta ve lansman kısmı, S7 (sekme aksesuarındaki sayaç).

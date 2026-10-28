@@ -278,7 +278,7 @@ Her başlıkta önce **karar önerisi**, sonra en iyi referanslar.
 
 ### 5.7 Sohbetler (mekân sohbeti, DM, plan kartı)
 
-- **Başlık:** ad (17 semibold), altında "142 kişi burada · ⏳ 6 sa 16 dk" (13, ikincil renk); son 60 dakikada alt satır fuşya kapsüle döner. Başlığa dokununca 04:00 kuralını anlatan sayfa. İlk girişte tek sistem mesajı: "Bu sohbet her gece 04:00'te sıfırlanır. Yalnızca burada yer bildirenler katılabilir."
+- **Başlık:** ad (17 semibold), altında "142 kişi burada · ⏳ 6 sa 16 dk" (13, ikincil renk); son 60 dakikada alt satır fuşya kapsüle döner; 03:30'dan sonra kapsülde kalan süre yazıyla görünür: "30 dk sonra sıfırlanıyor" (ROTA K-10, 28.10.2026). Başlığa dokununca 04:00 kuralını anlatan sayfa. İlk girişte tek sistem mesajı: "Bu sohbet her gece 04:00'te sıfırlanır. Yalnızca burada yer bildirenler katılabilir."
 - **Mekân sohbeti = kompakt satırlar** (balonsuz): 24–28 pt avatar, "Ad · saat" tek satırda, altında metin; kendi mesajın sağda fuşya balon. **DM ve küçük gruplar = balon.** Ardışık mesajlar gruplanır (ad bir kez üstte, avatar bir kez altta); saat yalnızca 15 dk'dan uzun aralıklarda ayırıcı.
 - **Kimlik (K-04, 24.10.2026):** sohbette herkes @kullanıcı adıyla görünür (gerçek ad yerine); takma ad yok. Ada dokununca profil açılır; Engelle/Bildir ••• menüsünde.
 - **Plan kartı:** emoji + başlık; "00:30 · 2 no'lu kapı · 45 dk sonra"; avatar yığını + "12 kişi katılıyor"; tek buton **Ben de varım** → fuşya dolu "✓ Varsın" (geri alınabilir). Saati geçen kart soluklaşır. "+" → Plan; saat seçici en geç 04:00.
