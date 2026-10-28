@@ -46,13 +46,13 @@ function parseEvent(event?: string) {
 export default function HomeScreen() {
   const theme = useTheme();
   const t = useT();
-  const { me, posts, users, venues, following, canSee, canSeePresence, venueById, checkIn, tonightPostOf } = useApp();
+  const { me, posts, users, venues, following, canSee, canSeePresence, venueById, checkIn, tonightPostOf, muted } = useApp();
   const [feed, setFeed] = useState<Feed>('ozel');
   const { ref, refreshControl, angle } = useHereRefresh();
 
   const interestCategories = new Set(me.interests.map((i) => INTEREST_CATEGORY[i]).filter(Boolean));
-  // Paylaşımlar hesabın gizliliğine uyar (S2).
-  const visible = posts.filter(canSee);
+  // Paylaşımlar hesabın gizliliğine uyar (S2); sessize aldıkların akışta görünmez.
+  const visible = posts.filter((p) => canSee(p) && !muted.includes(p.userId));
   // İki akış da yeniden eskiye.
   const data = (
     feed === 'ozel'

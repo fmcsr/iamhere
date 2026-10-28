@@ -47,7 +47,15 @@ export const tr = {
   decimal: ',',
   and: 've',
   actions: { cancel: 'Vazgeç', share: 'Paylaş', back: 'Geri', close: 'Kapat', clearSearch: 'Aramayı temizle', more: 'Diğer seçenekler' },
-  safety: { report: 'Bildir', block: 'Engelle', mute: 'Sessize al', notSaved: 'Prototipte bu işlem henüz kaydedilmiyor.' },
+  safety: {
+    report: 'Bildir',
+    block: 'Engelle',
+    unblock: 'Engeli kaldır',
+    mute: 'Sessize al',
+    unmute: 'Sesini aç',
+    blockConfirm: (name: string) => `${name} engellensin mi?`,
+    blockNote: 'Birbirinizin profilini, paylaşımlarını ve mesajlarını görmezsiniz; takip iki yönde de biter. Engellendiğini bilmez.',
+  },
   /** Paylaşım kartı (akış ve profil). */
   card: {
     withYou: 'Seninle',
@@ -138,7 +146,15 @@ export const en: typeof tr = {
   decimal: '.',
   and: 'and',
   actions: { cancel: 'Cancel', share: 'Share', back: 'Back', close: 'Close', clearSearch: 'Clear search', more: 'More options' },
-  safety: { report: 'Report', block: 'Block', mute: 'Mute', notSaved: 'The prototype doesn’t save this yet.' },
+  safety: {
+    report: 'Report',
+    block: 'Block',
+    unblock: 'Unblock',
+    mute: 'Mute',
+    unmute: 'Unmute',
+    blockConfirm: (name: string) => `Block ${name}?`,
+    blockNote: 'You won’t see each other’s profile, posts or messages, and follows end both ways. They won’t be told.',
+  },
   card: {
     withYou: 'With you',
     withYouAnd: (names: string) => `With you and ${names}`,

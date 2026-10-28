@@ -58,11 +58,15 @@ export const tr = {
   },
   safety: {
     title: 'Güvenlik',
+    report: 'Ekibe bildir',
     blocked: 'Engellenenler',
     muted: 'Sessize alınanlar',
     empty: 'Henüz kimse yok.',
-    footer: 'I am Here · prototip · #iamhere',
+    blockedNote: 'Engellediğin kişiler seni göremez ve sana yazamaz; sen de onları görmezsin. Engellendiklerini bilmezler.',
+    mutedNote: 'Sessize aldığın kişilerin paylaşımları akışında görünmez. Bundan haberleri olmaz.',
+    footer: 'Rahatsız edildiysen ya da engellediğin biri başka bir yoldan yazmaya devam ediyorsa ekibe bildir. Acil durumda 112’yi ara.',
   },
+  brand: 'I am Here · prototip · #iamhere',
   signOut: {
     button: 'Çıkış yap',
     confirm: 'Çıkış yapılsın mı?',
@@ -116,11 +120,15 @@ export const en: typeof tr = {
   },
   safety: {
     title: 'Safety',
+    report: 'Report to the team',
     blocked: 'Blocked',
     muted: 'Muted',
     empty: 'No one yet.',
-    footer: 'I am Here · prototype · #iamhere',
+    blockedNote: 'People you block can’t see you or message you, and you won’t see them. They aren’t told.',
+    mutedNote: 'Posts from people you mute don’t show in your feed. They aren’t told.',
+    footer: 'If someone bothered you, or someone you blocked keeps reaching you another way, report it to the team. In an emergency, call 112.',
   },
+  brand: 'I am Here · prototype · #iamhere',
   signOut: {
     button: 'Sign out',
     confirm: 'Sign out?',

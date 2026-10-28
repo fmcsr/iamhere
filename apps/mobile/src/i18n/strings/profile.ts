@@ -14,6 +14,8 @@ export const tr = {
     message: 'Mesaj',
     requestNote: 'Karşılıklı takipleşmediğiniz için mesajın onun “İstekler” bölümüne düşer.',
     privateTitle: 'Bu hesap gizli',
+    blockedTitle: 'Bu kişiyi engelledin',
+    blockedNote: 'Birbirinizin profilini, paylaşımlarını ve mesajlarını görmüyorsunuz.',
     privateNote: 'Paylaşımlarını ve gecelerini görmek için takip isteği gönder.',
   },
   /** Takip kapsülü ve takibi bırakma onayı (başkasının profili ve takipçi listeleri). */
@@ -147,6 +149,8 @@ export const en: typeof tr = {
     message: 'Message',
     requestNote: 'You don’t follow each other, so your message will go to their “Requests”.',
     privateTitle: 'This account is private',
+    blockedTitle: 'You blocked this person',
+    blockedNote: 'You don’t see each other’s profile, posts or messages.',
     privateNote: 'Send a follow request to see their posts and nights out.',
   },
   follow: {

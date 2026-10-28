@@ -1,4 +1,5 @@
 // Android ve web için ayar listesi. iOS sürümü: settings-form.ios.tsx (SwiftUI Form).
+import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 
 import { AppearancePreviews } from '@/components/appearance-previews';
@@ -88,6 +89,20 @@ export function SettingsForm() {
         />
       </GlassCard>
       <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.presence.note[settings.presenceVisibility]}</Text>
+
+      <Text style={[Type.footnote, styles.section, { color: theme.textSecondary }]}>{t.safety.title.toLocaleUpperCase()}</Text>
+      <GlassCard style={styles.group}>
+        {[
+          { label: t.safety.report, onPress: () => router.push({ pathname: '/report', params: { kind: 'other' } }) },
+          { label: t.safety.blocked, onPress: () => router.push('/blocked') },
+          { label: t.safety.muted, onPress: () => router.push({ pathname: '/blocked', params: { list: 'muted' } }) },
+        ].map(({ label, onPress }) => (
+          <Pressable key={label} onPress={onPress} accessibilityRole="button" style={styles.row}>
+            <Text style={[Type.body, { color: theme.text, flex: 1 }]}>{label}</Text>
+          </Pressable>
+        ))}
+      </GlassCard>
+      <Text style={[Type.footnote, styles.footer, { color: theme.textSecondary }]}>{t.safety.footer}</Text>
 
       <ActionButton
         title={t.signOut.button}

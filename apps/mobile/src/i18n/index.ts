@@ -7,6 +7,7 @@ import * as common from './strings/common';
 import * as home from './strings/home';
 import * as messages from './strings/messages';
 import * as profile from './strings/profile';
+import * as report from './strings/report';
 import * as settings from './strings/settings';
 
 /**
@@ -18,8 +19,8 @@ export type Lang = 'tr' | 'en';
 export type LanguageSetting = 'system' | Lang;
 
 export const STRINGS = {
-  tr: { ...common.tr, settings: settings.tr, home: home.tr, messages: messages.tr, profile: profile.tr, auth: auth.tr },
-  en: { ...common.en, settings: settings.en, home: home.en, messages: messages.en, profile: profile.en, auth: auth.en },
+  tr: { ...common.tr, settings: settings.tr, home: home.tr, messages: messages.tr, profile: profile.tr, auth: auth.tr, report: report.tr },
+  en: { ...common.en, settings: settings.en, home: home.en, messages: messages.en, profile: profile.en, auth: auth.en, report: report.en },
 };
 export type Strings = (typeof STRINGS)['tr'];
 

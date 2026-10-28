@@ -107,6 +107,9 @@ function RootStack() {
           <Stack.Screen name="follows" options={{ title: '' }} />
           <Stack.Screen name="posts" options={{ title: title.posts }} />
           <Stack.Screen name="nights" options={{ title: title.memories }} />
+          {/* Bildir ve Ayarlar › Ekibe bildir: alttan açılan sayfa. */}
+          <Stack.Screen name="report" options={{ presentation: 'modal', title: '' }} />
+          <Stack.Screen name="blocked" options={{ title: '' }} />
         </Stack.Protected>
       </Stack>
     </ThemeProvider>

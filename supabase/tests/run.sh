@@ -3,8 +3,9 @@
 # sonunda bilerek geri alınır: projede hiçbir test verisi kalmaz.
 #
 #   supabase/tests/run.sh               şema projede yüklüyken yalnızca testler
-#   supabase/tests/run.sh --migrations  önce migration'lar, sonra testler (yüklemeden önce
-#                                       denemek için; bu da geri alınır)
+#   supabase/tests/run.sh --migrations  önce bütün migration'lar, sonra testler (boş projede
+#                                       yüklemeden önce denemek için; bu da geri alınır)
+#   supabase/tests/run.sh <dosya>…      önce verilen (henüz yüklenmemiş) migration'lar, sonra testler
 #
 # Gereken: `supabase login` ve `supabase link` yapılmış olmalı.
 set -eu
@@ -18,6 +19,8 @@ trap 'rm -rf "$work"' EXIT
 {
   if [ "${1:-}" = "--migrations" ]; then
     cat "$root"/supabase/migrations/*.sql
+  elif [ $# -gt 0 ]; then
+    cat "$@"
   fi
   cat "$root"/supabase/tests/[0-9]*.sql
   echo 'SELECT t.finish();'

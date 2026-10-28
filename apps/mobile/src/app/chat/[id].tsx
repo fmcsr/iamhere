@@ -6,7 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Glass, GlassCard, GlassGroup } from '@/components/glass';
 import { Icon } from '@/components/icon';
-import { Avatar, AvatarStack, formatDistance, minutesAgo, showSafetyMenu } from '@/components/kit';
+import { Avatar, AvatarStack, formatDistance, minutesAgo, useSafetyMenu } from '@/components/kit';
 import { ActionButton } from '@/components/native-controls';
 import { Text, TextInput } from '@/components/text';
 import { Type } from '@/constants/theme';
@@ -33,8 +33,23 @@ export default function ChatScreen() {
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { conversations, messages, venueById, userById, checkIn, visited, canCheckIn, sendMessage, leaveVenue, acceptRequest, declineRequest, markRead } =
-    useApp();
+  const {
+    conversations,
+    messages,
+    venueById,
+    userById,
+    checkIn,
+    visited,
+    canCheckIn,
+    sendMessage,
+    leaveVenue,
+    acceptRequest,
+    declineRequest,
+    markRead,
+    blocked,
+    unblock,
+  } = useApp();
+  const safetyMenu = useSafetyMenu();
   const { remaining, lastHour } = useNight(t);
   const [draft, setDraft] = useState('');
   const [composerHeight, setComposerHeight] = useState(64);
@@ -56,7 +71,8 @@ export default function ChatScreen() {
   const conversation = conversations.find((c) => c.id === id) ?? venueChat;
   if (!conversation) return <Text style={{ color: theme.text, padding: 16 }}>{t.messages.chat.notFound}</Text>;
 
-  const thread = messages.filter((m) => m.conversationId === id);
+  // Engellediğin kişinin mesajları görünmez.
+  const thread = messages.filter((m) => m.conversationId === id && !blocked.includes(m.senderId));
   const isVenue = conversation.kind === 'venue';
   const venue = isVenue ? venueById(conversation.venueId) : undefined;
   const other = !isVenue ? userById(conversation.userId) : undefined;
@@ -218,7 +234,9 @@ export default function ChatScreen() {
 
     if (isVenue) {
       return (
-        <Pressable onLongPress={() => showSafetyMenu(name)} style={[styles.compact, spacing]} accessibilityHint={t.messages.chat.reportHint}>
+        <Pressable
+          onLongPress={() => safetyMenu({ title: name, userId: sender.id, kind: 'message', id: message.id })}
+          style={[styles.compact, spacing]} accessibilityHint={t.messages.chat.reportHint}>
           <View style={styles.compactAvatar}>
             {!grouped && (
               <Pressable onPress={openProfile} accessibilityLabel={name}>
@@ -239,7 +257,10 @@ export default function ChatScreen() {
       );
     }
     return (
-      <Pressable onLongPress={() => showSafetyMenu(name)} style={[styles.theirsWrap, spacing]}>
+      <Pressable
+        onLongPress={() => safetyMenu({ title: name, userId: sender.id, kind: 'message', id: message.id })}
+        accessibilityHint={t.messages.chat.reportHint}
+        style={[styles.theirsWrap, spacing]}>
         <View style={[styles.bubble, styles.theirs, { backgroundColor: theme.surface }]}>
           <Text style={[Type.body, { color: theme.text }]}>{message.text}</Text>
         </View>
@@ -248,7 +269,12 @@ export default function ChatScreen() {
   };
 
   const canSend = draft.trim().length > 0;
-  const composer = readOnly && venue ? (
+  const composer = other && blocked.includes(other.id) ? (
+    <Glass style={styles.panel}>
+      <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>{t.profile.user.blockedTitle}</Text>
+      <ActionButton title={t.safety.unblock} variant="tonal" size="regular" fullWidth onPress={() => unblock(other.id)} />
+    </Glass>
+  ) : readOnly && venue ? (
     <Glass style={styles.panel}>
       <View style={{ gap: 2 }}>
         <Text style={[Type.headline, { color: theme.text, textAlign: 'center' }]}>{t.messages.chat.readOnly.title}</Text>

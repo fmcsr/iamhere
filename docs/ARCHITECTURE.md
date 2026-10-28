@@ -127,6 +127,7 @@ Güncel şema `supabase/migrations` klasöründe ve bugüne kadarki bütün kara
 | 04 posts | `posts`, `post_tags`, `post_likes` | Yalnızca etkin yer bildirimiyle paylaşım, "Kimlerle?" etiketi kuralı, beğeni |
 | 05 chat | `conversations`, `messages`, `plans`, `plan_participants` | Mekân sohbeti (okuma/yazma hakkı yer bildiriminden), istek modeliyle birebir mesaj, planlar, gerçek zamanlı yayın, 04:00 silme |
 | 06 safety_storage | `reports` | Kanıtlı şikâyet, fotoğraf depoları (`profiles`, `posts`), hesap silme |
+| 07 reports_general | `reports` | "Ekibe bildir": hedefsiz genel bildirim (ör. engellenen kişi başka hesaptan rahatsız ediyor), adı verilen hesabın kanıtı; ekip takip durumu (yeni → inceleniyor → kapandı) |
 
 - **Yer bildirimi, mesaj isteği ve hesap silme** yalnızca fonksiyonla yapılır (`check_in`, `start_direct`, `delete_account`…); bu tablolara uygulama doğrudan yazamaz.
 - **04:00:** RLS eski geceyi saat 04:00:00'te anında gizler; `pg_cron` her dakika süresi dolan sohbetleri `DELETE` ile siler (mesajlar ve planlar onlarla gider). Beta hacminde bölümlemeye (§6.2) gerek yok; trafik büyüyünce aynı tablolara bölümleme eklenebilir, uygulama değişmez.

@@ -9,7 +9,8 @@ import {
   tag,
   tint,
 } from '@expo/ui/swift-ui/modifiers';
-import { Alert, PlatformColor } from 'react-native';
+import { router } from 'expo-router';
+import { PlatformColor } from 'react-native';
 
 import { AppearancePreviews } from '@/components/appearance-previews';
 import { NativeFonts, type BackdropVariant } from '@/constants/theme';
@@ -43,7 +44,6 @@ export function SettingsForm() {
   const strings = useT();
   const t = strings.settings;
   const { settings, updateSettings, setAppearance, setLanguage, trial, setTrial, signOut } = useApp();
-  const soon = (title: string) => Alert.alert(title, t.safety.empty);
   // Satırlar yarı saydam dolgu: beyaz zeminde kaybolmaz, gradyanın rengini alır.
   const row = listRowBackground(theme.fill);
   // Menü değerleri metin renginde: cam üstünde küçük fuşya metin yok (§2.3 kural 5).
@@ -119,22 +119,29 @@ export function SettingsForm() {
           </Picker>
         </Section>
 
+        {/* Rahatsız eden biri engellense de başka bir yoldan devam ederse: ekibe bildir (genel bildirim). */}
         <Section header={header(t.safety.title)} footer={footer(t.safety.footer)}>
+          <Button
+            label={t.safety.report}
+            systemImage="exclamationmark.bubble"
+            onPress={() => router.push({ pathname: '/report', params: { kind: 'other' } })}
+            modifiers={[foregroundStyle(theme.text), BODY, row]}
+          />
           <Button
             label={t.safety.blocked}
             systemImage="hand.raised"
-            onPress={() => soon(t.safety.blocked)}
+            onPress={() => router.push('/blocked')}
             modifiers={[foregroundStyle(theme.text), BODY, row]}
           />
           <Button
             label={t.safety.muted}
             systemImage="speaker.slash"
-            onPress={() => soon(t.safety.muted)}
+            onPress={() => router.push({ pathname: '/blocked', params: { list: 'muted' } })}
             modifiers={[foregroundStyle(theme.text), BODY, row]}
           />
         </Section>
 
-        <Section>
+        <Section footer={footer(t.brand)}>
           <Button
             label={t.signOut.button}
             systemImage="rectangle.portrait.and.arrow.right"

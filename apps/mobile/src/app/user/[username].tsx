@@ -3,7 +3,8 @@ import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
 import { GlassCard } from '@/components/glass';
 import { Icon } from '@/components/icon';
-import { showSafetyMenu } from '@/components/kit';
+import { useSafetyMenu } from '@/components/kit';
+import { ActionButton } from '@/components/native-controls';
 import { PageColumn } from '@/components/page-column';
 import { Pill } from '@/components/pill';
 import { ProfileCover, useCoverStatusBar } from '@/components/profile-cover';
@@ -46,7 +47,10 @@ export default function UserProfileScreen() {
     nightCountOf,
     isOutTonight,
     canSeeProfile,
+    blocked,
+    unblock,
   } = useApp();
+  const safetyMenu = useSafetyMenu();
   const { onScroll, overCover } = useCoverStatusBar();
   const user = users.find((u) => u.username === username);
 
@@ -56,6 +60,7 @@ export default function UserProfileScreen() {
   const requested = followRequests.has(user.id);
   const mutual = isMutual(user.id);
   const locked = !canSeeProfile(user.id);
+  const isBlocked = blocked.includes(user.id);
   // Paylaşımlar hesabın gizliliğine uyar (S2).
   const theirPosts = locked ? [] : posts.filter((p) => p.userId === user.id).sort((a, b) => b.createdAt - a.createdAt);
   const postById = (id: string) => posts.find((p) => p.id === id);
@@ -89,7 +94,7 @@ export default function UserProfileScreen() {
           blur={locked || !user.coverUri}
           title={`@${user.username}`}
           left={<HeaderButton icon="chevron.left" md="arrow_back" label={t.actions.back} onImage onPress={() => router.back()} />}
-          right={<HeaderButton icon="ellipsis" md="more_horiz" label={t.actions.more} onImage onPress={() => showSafetyMenu(`@${user.username}`)} />}
+          right={<HeaderButton icon="ellipsis" md="more_horiz" label={t.actions.more} onImage onPress={() => safetyMenu({ title: `@${user.username}`, userId: user.id, kind: 'user', id: user.id })} />}
         />
         <PageColumn style={styles.content}>
           <View style={{ gap: 10 }}>
@@ -104,27 +109,36 @@ export default function UserProfileScreen() {
               onFollowing={locked ? undefined : () => router.push({ pathname: '/follows', params: { user: user.id, tab: 'following' } })}
               onMemories={locked ? undefined : () => router.push({ pathname: '/nights', params: { user: user.id } })}
               actions={
-                <>
-                  <Pill
-                    title={t.profile.user.message}
-                    icon={{ ios: 'bubble.left', md: 'chat_bubble_outline' }}
-                    onPress={() => router.push({ pathname: '/chat/[id]', params: { id: openDirect(user.id) } })}
-                  />
-                  <Pill
-                    title={followTitle}
-                    tone={isFollowing || requested ? 'fill' : 'ink'}
-                    icon={isFollowing ? { ios: 'checkmark', md: 'check' } : requested ? { ios: 'clock', md: 'schedule' } : undefined}
-                    onPress={onFollowPress}
-                  />
-                </>
+                isBlocked ? undefined : (
+                  <>
+                    <Pill
+                      title={t.profile.user.message}
+                      icon={{ ios: 'bubble.left', md: 'chat_bubble_outline' }}
+                      onPress={() => router.push({ pathname: '/chat/[id]', params: { id: openDirect(user.id) } })}
+                    />
+                    <Pill
+                      title={followTitle}
+                      tone={isFollowing || requested ? 'fill' : 'ink'}
+                      icon={isFollowing ? { ios: 'checkmark', md: 'check' } : requested ? { ios: 'clock', md: 'schedule' } : undefined}
+                      onPress={onFollowPress}
+                    />
+                  </>
+                )
               }
             />
-            {!mutual && (
+            {!mutual && !isBlocked && (
               <Text style={[Type.footnote, { color: theme.textSecondary }]}>{t.profile.user.requestNote}</Text>
             )}
           </View>
 
-          {locked ? (
+          {isBlocked ? (
+            <GlassCard style={styles.lockedBox}>
+              <Icon ios="hand.raised.fill" md="block" size={26} color={theme.text} />
+              <Text style={[Type.headline, { color: theme.text }]}>{t.profile.user.blockedTitle}</Text>
+              <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>{t.profile.user.blockedNote}</Text>
+              <ActionButton title={t.safety.unblock} variant="tonal" size="regular" onPress={() => unblock(user.id)} />
+            </GlassCard>
+          ) : locked ? (
             <GlassCard style={styles.lockedBox}>
               <Icon ios="lock.fill" md="lock" size={26} color={theme.text} />
               <Text style={[Type.headline, { color: theme.text }]}>{t.profile.user.privateTitle}</Text>

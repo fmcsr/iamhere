@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { GlassCard } from '@/components/glass';
 import { Icon } from '@/components/icon';
-import { Avatar, minutesAgo, showSafetyMenu } from '@/components/kit';
+import { Avatar, minutesAgo, useSafetyMenu } from '@/components/kit';
 import { ActionButton } from '@/components/native-controls';
 import { PageColumn } from '@/components/page-column';
 import { Text } from '@/components/text';
@@ -16,8 +16,9 @@ import { useT } from '@/i18n/use-t';
 export default function RequestsScreen() {
   const theme = useTheme();
   const t = useT();
-  const { conversations, messages, userById, followsMe, acceptRequest, declineRequest } = useApp();
-  const requests = conversations.filter((c) => c.kind === 'direct' && c.status === 'request');
+  const { conversations, messages, userById, followsMe, acceptRequest, declineRequest, blocked } = useApp();
+  const safetyMenu = useSafetyMenu();
+  const requests = conversations.filter((c) => c.kind === 'direct' && c.status === 'request' && !blocked.includes(c.userId));
 
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.scroll}>
@@ -45,7 +46,9 @@ export default function RequestsScreen() {
                     </Text>
                   </View>
                 </Pressable>
-                <Pressable onPress={() => showSafetyMenu(user.displayName)} hitSlop={12} accessibilityRole="button" accessibilityLabel={t.actions.more}>
+                <Pressable
+                  onPress={() => safetyMenu({ title: `@${user.username}`, userId: user.id, kind: 'user', id: user.id })}
+                  hitSlop={12} accessibilityRole="button" accessibilityLabel={t.actions.more}>
                   <Icon ios="ellipsis" md="more_horiz" size={18} color={theme.textSecondary} />
                 </Pressable>
               </View>

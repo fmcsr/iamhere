@@ -79,6 +79,19 @@ type CheckIn = { venueId: string; at: number; stillHereAt?: number };
 /** Yer bildirimi; fotoğraf çektiysen paylaşım da olur: altına yazı ve "Kimlerle?" etiketi (S3). */
 type CheckInInput = { venueId: string; text: string; imageUri?: string; tagged: string[] };
 
+/** Bildirme nedeni; ekip görür (veritabanında reports.reason). */
+export type ReportReason = 'taciz' | 'tehdit' | 'cinsel' | 'nefret' | 'spam' | 'sahte' | 'yas' | 'diger';
+
+/**
+ * Neyin bildirildiği: bir kişi, paylaşım ya da mesaj; ya da hiçbirine bağlı olmayan bir durum ("Ekibe bildir",
+ * ör. engellediğin biri başka bir hesaptan rahatsız etmeye devam ediyor).
+ */
+export type ReportTarget =
+  | { kind: 'user' | 'post' | 'message'; id: string; userId: string }
+  | { kind: 'other'; username?: string };
+
+type Report = { target: ReportTarget; reason: ReportReason; note: string; at: number };
+
 function useAppState() {
   const [rawMe, setMe] = useState<User>(ME);
   const [rawPosts, setPosts] = useState<Post[]>(POSTS);
@@ -92,6 +105,11 @@ function useAppState() {
   const [joinedPlans, setJoinedPlans] = useState<Set<string>>(() => new Set());
   const [readConversations, setReadConversations] = useState<Set<string>>(() => new Set());
   const [followRequests, setFollowRequests] = useState<Set<string>>(() => new Set());
+  // Engellediklerim (iki yönlü: birbirimizi göremeyiz, yazamayız) ve sessize aldıklarım (paylaşımları akışta görünmez).
+  const [blocked, setBlocked] = useState<string[]>([]);
+  const [muted, setMuted] = useState<string[]>([]);
+  // Prototip: bildirimler cihazda kalır; veritabanına bağlanınca ekibin gördüğü reports tablosuna yazılır.
+  const [reports, setReports] = useState<Report[]>([]);
   // To-HERE listem: gitmek istediğim mekânlar, en son kaydedilen önde.
   const [saved, setSaved] = useState<string[]>(() => SAVED_VENUES.me ?? []);
   const [settings, setSettings] = useState<Settings>({
@@ -224,7 +242,8 @@ function useAppState() {
    * Profilini, paylaşımlarını ve geçmiş gecelerini görebilir miyim (S2, S4): açık hesap herkese, gizli hesap
    * yalnızca onaylı takipçilere.
    */
-  const canSeeProfile = (userId: string) => userId === 'me' || !userById(userId).isPrivate || following.has(userId);
+  const canSeeProfile = (userId: string) =>
+    userId === 'me' || (!blocked.includes(userId) && (!userById(userId).isPrivate || following.has(userId)));
 
   /**
    * Bu geceki konumunu görebilir miyim (S4): kişinin "Şu an burada kimler görsün" ayarı. Burada listesi,
@@ -232,6 +251,7 @@ function useAppState() {
    */
   const canSeePresence = (userId: string) => {
     if (userId === 'me') return true;
+    if (blocked.includes(userId)) return false;
     const presence = userById(userId).presence ?? 'karsilikli';
     return presence === 'herkes' || (presence === 'karsilikli' && isMutual(userId));
   };
@@ -395,6 +415,30 @@ function useAppState() {
     if (plan) setJoinedPlans((prev) => new Set(prev).add(id));
   };
 
+  /** Engelle: takip iki yönde biter; birbirinizin profilini, paylaşımlarını ve mesajlarını görmezsiniz. */
+  const block = (userId: string) => {
+    setBlocked((prev) => (prev.includes(userId) ? prev : [userId, ...prev]));
+    setFollowing((prev) => {
+      const next = new Set(prev);
+      next.delete(userId);
+      return next;
+    });
+    setFollowRequests((prev) => {
+      const next = new Set(prev);
+      next.delete(userId);
+      return next;
+    });
+  };
+
+  const unblock = (userId: string) => setBlocked((prev) => prev.filter((id) => id !== userId));
+
+  /** Sessize al: paylaşımları akışta görünmez; haberi olmaz. */
+  const toggleMute = (userId: string) => setMuted((prev) => (prev.includes(userId) ? prev.filter((id) => id !== userId) : [userId, ...prev]));
+
+  /** Ekibe bildirim (bildirilen kişi bunu öğrenmez). */
+  const submitReport = (target: ReportTarget, reason: ReportReason, note: string) =>
+    setReports((prev) => [{ target, reason, note: note.trim(), at: Date.now() }, ...prev]);
+
   /** Gizli hesaba takip isteği gönder ya da geri çek (onay prototipte yok). */
   const toggleFollowRequest = (userId: string) =>
     setFollowRequests((prev) => {
@@ -468,6 +512,13 @@ function useAppState() {
     toggleFollow,
     followRequests,
     toggleFollowRequest,
+    blocked,
+    muted,
+    reports,
+    block,
+    unblock,
+    toggleMute,
+    submitReport,
     canCheckIn,
     doCheckIn,
     leaveVenue,

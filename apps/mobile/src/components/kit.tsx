@@ -161,26 +161,57 @@ export function VenueRow({
   );
 }
 
-/** Bildir / Engelle / Sessize al: her kişide ve paylaşımda bir dokunuş uzakta (TASARIM.md §1). */
-export function showSafetyMenu(title: string) {
-  const { safety, actions } = strings();
-  const options = [safety.report, safety.block, safety.mute];
-  const note = (index: number) => Alert.alert(options[index], safety.notSaved);
-  if (Platform.OS === 'ios') {
-    ActionSheetIOS.showActionSheetWithOptions(
-      { title, options: [...options, actions.cancel], cancelButtonIndex: 3, destructiveButtonIndex: [0, 1] },
-      (index) => index < 3 && note(index),
-    );
-  } else {
-    Alert.alert(title, undefined, [...options.map((text, i) => ({ text, onPress: () => note(i) })), { text: actions.cancel, style: 'cancel' }]);
-  }
+/** iOS, eylem menüsü kapanırken açılan sayfayı ya da uyarıyı gösteremiyor; menü kapandıktan sonra açılır. */
+const AFTER_SHEET_MS = 350;
+
+/** Bildir / Engelle / Sessize al menüsünün hedefi: kişi, paylaşımı ya da mesajı. `title`: menünün başlığı (@kullanıcı adı). */
+export type SafetyTarget = { title: string; userId: string; kind: 'user' | 'post' | 'message'; id: string };
+
+/**
+ * Bildir / Engelle / Sessize al: her kişide, paylaşımda ve mesajda bir dokunuş uzakta (TASARIM.md §1). "Bildir"
+ * nedenli bildirme sayfasını açar (ekibe gider, bildirilen bilmez); "Engelle" onay ister.
+ */
+export function useSafetyMenu() {
+  const t = useT();
+  const { blocked, muted, block, unblock, toggleMute } = useApp();
+  return ({ title, userId, kind, id }: SafetyTarget) => {
+    const { safety, actions } = t;
+    const isBlocked = blocked.includes(userId);
+    const options = [safety.report, isBlocked ? safety.unblock : safety.block, muted.includes(userId) ? safety.unmute : safety.mute];
+    const run = (index: number) => {
+      if (index === 0) setTimeout(() => router.push({ pathname: '/report', params: { kind, id, user: userId } }), AFTER_SHEET_MS);
+      else if (index === 1 && isBlocked) unblock(userId);
+      else if (index === 1) {
+        setTimeout(
+          () =>
+            Alert.alert(safety.blockConfirm(title), safety.blockNote, [
+              { text: actions.cancel, style: 'cancel' },
+              { text: safety.block, style: 'destructive', onPress: () => block(userId) },
+            ]),
+          AFTER_SHEET_MS,
+        );
+      } else if (index === 2) toggleMute(userId);
+    };
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { title, options: [...options, actions.cancel], cancelButtonIndex: 3, destructiveButtonIndex: [0, 1] },
+        (index) => index < 3 && run(index),
+      );
+    } else {
+      Alert.alert(title, undefined, [...options.map((text, i) => ({ text, onPress: () => run(i) })), { text: actions.cancel, style: 'cancel' }]);
+    }
+  };
 }
 
 /**
  * Paylaşımın ••• menüsü: kendi paylaşımını silersin, etiketlendiğin paylaşımdan etiketini kaldırırsın (S3);
  * başkasının paylaşımında Bildir / Engelle / Sessize al.
  */
-function showPostMenu(post: Post, title: string, { deletePost, removeMyTag }: { deletePost: (id: string) => void; removeMyTag: (id: string) => void }) {
+function showPostMenu(
+  post: Post,
+  title: string,
+  { deletePost, removeMyTag, safety }: { deletePost: (id: string) => void; removeMyTag: (id: string) => void; safety: () => void },
+) {
   const { card, actions } = strings();
   const confirmDelete = () =>
     Alert.alert(card.deleteConfirm, card.deleteNote, [
@@ -188,11 +219,11 @@ function showPostMenu(post: Post, title: string, { deletePost, removeMyTag }: { 
       { text: card.delete, style: 'destructive', onPress: () => deletePost(post.id) },
     ]);
   const own = post.userId === 'me' ? { label: card.delete, run: confirmDelete } : post.tagged?.includes('me') ? { label: card.removeTag, run: () => removeMyTag(post.id) } : null;
-  if (!own) return showSafetyMenu(title);
+  if (!own) return safety();
   if (Platform.OS === 'ios') {
     ActionSheetIOS.showActionSheetWithOptions(
       { title, options: [own.label, actions.cancel], cancelButtonIndex: 1, destructiveButtonIndex: 0 },
-      (index) => index === 0 && own.run(),
+      (index) => index === 0 && setTimeout(own.run, AFTER_SHEET_MS),
     );
   } else {
     Alert.alert(title, undefined, [{ text: own.label, style: 'destructive', onPress: own.run }, { text: actions.cancel, style: 'cancel' }]);
@@ -207,6 +238,7 @@ export function PostCard({ post }: { post: Post }) {
   const theme = useTheme();
   const t = useT();
   const { userById, venueById, liked, toggleLike, checkIn, deletePost, removeMyTag } = useApp();
+  const safetyMenu = useSafetyMenu();
   const lastTap = useRef(0);
   const user = userById(post.userId);
   const venue = venueById(post.venueId);
@@ -260,7 +292,13 @@ export function PostCard({ post }: { post: Post }) {
           )}
         </View>
         <Pressable
-          onPress={() => showPostMenu(post, name, { deletePost, removeMyTag })}
+          onPress={() =>
+            showPostMenu(post, name, {
+              deletePost,
+              removeMyTag,
+              safety: () => safetyMenu({ title: `@${user.username}`, userId: post.userId, kind: 'post', id: post.id }),
+            })
+          }
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t.actions.more}

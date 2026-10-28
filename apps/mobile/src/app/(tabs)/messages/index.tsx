@@ -28,8 +28,23 @@ import { useNight } from '@/lib/night';
 export default function MessagesScreen() {
   const theme = useTheme();
   const t = useT();
-  const { me, users, venues, conversations, messages, venueById, userById, checkIn, following, isUnread, isMutual, canSeePresence, openDirect, tonightPostOf } =
-    useApp();
+  const {
+    me,
+    users,
+    venues,
+    conversations,
+    messages,
+    venueById,
+    userById,
+    checkIn,
+    following,
+    blocked,
+    isUnread,
+    isMutual,
+    canSeePresence,
+    openDirect,
+    tonightPostOf,
+  } = useApp();
   const { remaining } = useNight(t);
   const [query, setQuery] = useState('');
 
@@ -40,7 +55,8 @@ export default function MessagesScreen() {
   const requests = conversations.filter((c) => c.kind === 'direct' && c.status === 'request');
   // Yer bildirdiğin mekânın sohbeti en üstte, gerisi son mesaja göre.
   const chats = conversations
-    .filter((c) => (c.kind === 'venue' || c.status !== 'request') && matches(titleOf(c)))
+    // Engellediğin kişiyle birebir sohbet listede görünmez.
+    .filter((c) => (c.kind === 'venue' || (c.status !== 'request' && !blocked.includes(c.userId))) && matches(titleOf(c)))
     .sort((a, b) => {
       const pinned = (c: Conversation) => (c.kind === 'venue' && c.venueId === checkIn?.venueId ? 1 : 0);
       return pinned(b) - pinned(a) || (lastMessage(b)?.createdAt ?? 0) - (lastMessage(a)?.createdAt ?? 0);
