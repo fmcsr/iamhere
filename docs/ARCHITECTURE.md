@@ -14,7 +14,7 @@ Konum bazlı, grup aktivitelerine odaklı bir sosyal medya uygulaması. Kullanı
 | **Sohbet iz bırakmaz, ham konum saklanmaz** | Ham GPS asla saklanmaz · Valkey kalıcılığı kapalı · log ve push'ta içerik yok · cihazdaki sohbet önbelleği de 04:00'te silinir. Yer bildirimleri kalıcı olduğu için (K-16) kimin hangi gece hangi mekânda olduğu saklanır; saklama süresi KVKK için ayrıca belirlenecek |
 | **Yakındakini keşfet ama yerini ele verme** | Izgara maskeleme (~250 m / ~1 km) · mesafe yalnızca kova ("< 500 m") · "görmek için görünür ol" |
 | **Gerçekten orada olanlar konuşur** | Mekân sohbeti yalnızca o mekânda yer bildirenlere açık; yer bildirimi için mekâna ~300 m yakınlık sunucuda doğrulanır |
-| **Anlık ve anonim kalabilme** | Kalıcı profil + gecelik anonim persona (günler arası bağlanamaz) |
+| **Anlık kalabilme** | Kalıcı profil; anonim persona yok (ROTA K-04, 24.10.2026): sohbette herkes @kullanıcı adıyla görünür |
 | **Güvenli sosyalleşme** | Kalıcı engelleme · şikâyette sınırlı süreli delil kopyası · DM istek/onay akışı · 18+ |
 | **Pil ve veri dostu** | Konum yalnızca uygulama açıkken, hareket eşiğiyle · tek WebSocket · istemcide kümeleme |
 
@@ -256,7 +256,7 @@ sequenceDiagram
 
 - **Saat dilimi:** Lansmanın Türkiye'de (`Europe/Istanbul`, tek dilim) yapılacağı varsayıldı. → Açık (ROTA K-10).
 - **Gece sonu sınırı:** 03:59'da başlayan bir sohbet 1 dakika sonra silinir. Bu, "04:00'te sohbetler sıfırlanır" kuralının (ROTA K-16) doğal sonucudur; paylaşımlar ve yer bildirimleri bundan etkilenmez. Uygulama 03:30'dan sonra bir uyarı gösterebilir. → Açık (ROTA K-10).
-- **Anonimlik kapsamı:** Şu an gece başına tek persona var. Sohbet başına ayrı persona daha anonimdir ama gece içinde tutarlılık kaybolur. → Açık (ROTA K-04); prototipte anonim yer bildirimi şu an yok (ROTA §14 S1).
+- **Anonimlik kapsamı:** Şu an gece başına tek persona var. Sohbet başına ayrı persona daha anonimdir ama gece içinde tutarlılık kaybolur. → ✅ Karar (ROTA K-04, 24.10.2026): anonim mod yok, sohbette @kullanıcı adı. Gecelik persona ve üyelik/mesajdaki `persona_id` Faz 2'de kaldırılır.
 - **Yaş sınırı:** 18+ varsayıldı. → MVP için geçici karar: 18+ (ROTA K-01).
 - **Ana sayfa yaklaşımı:** akış, harita veya mekân kartları (bkz. [ROTA.md §7](ROTA.md)). → Karar: mekân odaklı bölümler, altında iki sekmeli paylaşım akışı (ROTA K-14, TASARIM T-20).
 - **"Burada" süresi:** Yer bildirimi ne kadar süre "burada" sayılır? Örneğin 3 saat ya da başka bir yerde bildirene kadar. "342 kişi burada" sayacı buna dayanır. → Açık (ROTA K-06, ROTA §14 S6).
@@ -271,12 +271,13 @@ sequenceDiagram
 | Yeni kavram | Şemadaki karşılığı (planlanan) | Yaşam süresi |
 |---|---|---|
 | Mekân (konser alanı, restoran, park…) | `core.venues`: ad, kategori, konum, yer bildirimi yarıçapı | kalıcı (herkese açık yer) |
-| Yer bildirimi | `core.check_ins`: kullanıcı, mekân, gece (anonim yer bildirimi açık: ROTA K-04, ROTA §14 S1). Yakınlık (300 m, K-17) sunucuda doğrulanır, ham konum saklanmaz. Profildeki "anı" sayısı ve anı takvimi buradan gelir (T-22). | **kalıcı** (K-16) |
-| Paylaşım (fotoğraf / yorum) | `core.posts` + `post_comments`, `post_reactions` | **kalıcı** (K-16) |
+| Yer bildirimi | `core.check_ins`: kullanıcı, mekân, gece (anonim yer bildirimi yok: ROTA K-04). Yakınlık (300 m, K-17) sunucuda doğrulanır, ham konum saklanmaz. Profildeki "anı" sayısı ve anı takvimi buradan gelir (T-22). | **kalıcı** (K-16) |
+| Paylaşım (fotoğraf + kısa yazı) | `core.posts` (yazı en fazla 150 harf) + `post_tags` (yalnızca o gece aynı mekânda yer bildirmiş karşılıklı takipleşenler; etiketlenen kaldırabilir) + `post_reactions` (beğeni). `post_comments` betadan sonra: yalnızca takipçiler yazar, paylaşan kapatabilir (ROTA §14 S3). Kişi kendi paylaşımını siler. Kimin göreceği hesabın gizliliğinden gelir (paylaşım başına kitle yok, ROTA §14 S2) | **kalıcı** (K-16) |
 | Mekân sohbeti | `conversations.kind = 'venue'` (mekân başına gecede tek). Üyelik yer bildirimiyle açılır. | gece sonu |
 | Plan (grup aktivitesi) | `ephemeral.plans` + `plan_participants`. Başlangıç saati 04:00'ü geçemez. | gece sonu |
 
 - Mevcut maskeleme, RLS ve 04:00 bölüm düşürme mekanizması yeni gecelik tablolara (sohbet, plan) aynen uygulanır: her tablo `cycle_tables`'a kaydedilir ve RLS politikası alır. Kalıcı tablolar (yer bildirimi, paylaşım) bu motora girmez; paylaşımlar için saklama süresi (KVKK) ayrıca belirlenecek (ROTA K-16).
-- K-16'dan sonra kalıcı tablolar kişinin hangi gece hangi mekânda yer bildirdiğini de tutar (ham konum yine yok); §5'teki "`core` konum tutmaz" sınırı yeni şemada "ham konum tutmaz" olur. Bu geçmişi kimlerin göreceği açık (ROTA §14 S4).
-- Mekânlar herkese açık yerler olduğu için mekân konumu tam gösterilir. **Kişilerin** konumu ise yine gösterilmez: bir kişinin nerede olduğu yalnızca kendi yer bildirimiyle görünür. Anonim yer bildirimi (kimliksiz görünme) prototipte şu an yok; kapsamı açık (ROTA K-04, ROTA §14 S1).
+- K-16'dan sonra kalıcı tablolar kişinin hangi gece hangi mekânda yer bildirdiğini de tutar (ham konum yine yok); §5'teki "`core` konum tutmaz" sınırı yeni şemada "ham konum tutmaz" olur. Kimin göreceği (ROTA §14 S4, 24.10.2026): geçmiş geceler profili görebilene (hesabın gizliliği), bu gecenin yer bildirimi kişinin "Şu an burada kimler görsün" ayarına göre; ikisi tek bir görünürlük fonksiyonunda.
+- Mekânlar herkese açık yerler olduğu için mekân konumu tam gösterilir. **Kişilerin** konumu ise yine gösterilmez: bir kişinin nerede olduğu yalnızca kendi yer bildirimiyle görünür. Anonim yer bildirimi yok (ROTA K-04, 24.10.2026); sohbette herkes @kullanıcı adıyla görünür.
+- **Tek etkin yer bildirimi (ROTA K-06, 24.10.2026):** kişinin bir gecede aynı anda tek etkin yer bildirimi olur; yenisi öncekini kapatır (kayıt kalıcı kalır, K-16). Önceki mekânın sohbet üyeliği 04:00'e kadar salt okunur olur; 300 m içinde yeniden yer bildirince yazma hakkı geri gelir. Sohbete yazma hakkı fiziksel yakınlığa değil, o gecenin etkin yer bildirimine bağlıdır.
 - "Yakındaki kişiler" listesi yok (K-02); keşif kişiler yerine mekânlar üzerinden yapılır. Birebir mesajlaşma istek modeliyle var (K-08); mesajlar da 04:00'te sıfırlanır.

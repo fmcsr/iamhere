@@ -66,7 +66,7 @@ Uygulama "kim" için değil, **"hangi an" için** tasarlanmalı. Aynı kişi far
 | An | Kim? | İhtiyaç | Uygulamanın cevabı |
 |---|---|---|---|
 | **Konserde, kalabalıkta** | Arkadaşıyla ya da tek gelmiş genç | "Önde yer var mı? Bis olacak mı? Çıkışta kim nereye?" | Mekân sohbeti, planlar |
-| **Tek başına bir etkinlikte** | Şehre yeni gelmiş, tek gelmiş | "Burada benim gibi tek gelen var mı?" | "Tek gelenler" planı, anonim mod |
+| **Tek başına bir etkinlikte** | Şehre yeni gelmiş, tek gelmiş | "Burada benim gibi tek gelen var mı?" | "Tek gelenler" planı (anonim mod yok, K-04) |
 | **Restoranda / barda** | Arkadaş grubu | "Burada şu an neler oluyor? Masa boşaldı mı?" | Paylaşımlar, canlı sayaç |
 | **Evde, karar anı** | Çıkmak isteyen ama nereye bilmeyen | "Şu an nerede hareket var?" | Ana sayfa / harita, canlı mekânlar |
 | **Maç / festival** | Büyük kalabalık | "Kapı 3'te kuyruk ne durumda?" | Mekân sohbeti, alt alanlar (bkz. K-07) |
@@ -99,8 +99,8 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 |---|---|---|
 | Yakındaki mekân listesi + arama | Olmazsa olmaz | Mekân verisi nereden? → K-05 |
 | Yakınlık doğrulama (~300 m) | Olmazsa olmaz | Sohbetin güveni buna bağlı |
-| Fotoğraf ve/veya yorum (isteğe bağlı) | Olmazsa olmaz | Prototipte yalnızca o an çekilen fotoğraf (T-26); yazının eklenip eklenmeyeceği açık (§14 S3) |
-| Profilimle / anonim seçimi | Olmazsa olmaz | Kapsamı → K-04. Prototipte T-26'dan beri yok (§14 S1) |
+| Fotoğraf ve/veya kısa yazı (isteğe bağlı) | Olmazsa olmaz | Karar (§14 S3, 24.10.2026): o an çekilen fotoğraf, altına en fazla 150 harf yazı; yalnızca yazıdan oluşan paylaşım yok |
+| ~~Profilimle / anonim seçimi~~ | Kalktı | K-04 (24.10.2026): anonim yer bildirimi yok; sohbette herkes @kullanıcı adıyla görünür |
 | "Yeni yer ekle" | Güçlü aday | Spam riski; moderasyon gerek |
 | Arkadaşlarla birlikte yer bildirme | Belki | Arkadaş sistemi gerektirir → K-03 |
 | Çıkış yapma ("Ayrıldım") | Güçlü aday | "Burada" sayacının doğruluğu → K-06 |
@@ -111,7 +111,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 |---|---|---|
 | Fotoğraf/yorum paylaşımı ana sayfada | Olmazsa olmaz | |
 | Beğeni | Olmazsa olmaz | |
-| Paylaşıma yorum | Güçlü aday | Moderasyon yükü artar |
+| Paylaşıma yorum | Betadan sonra | Karar (§14 S3, 24.10.2026): betada yok, yalnızca beğeni. Betadan sonra yorum gelir: yalnızca takipçiler yazar, paylaşan kişi yorumları kapatabilir |
 | Yalnızca uygulama içi kamera (galeriden yükleme yok) | Olmazsa olmaz | Karar (T-26, 18.10.2026): yer bildirirken yalnızca o an çekilen fotoğraf. BeReal tarzı "gerçeklik"; sahte içeriği azaltır. Profil fotoğrafı ve kapak galeriden seçilebilir (T-28) |
 | Video (kısa) | Belki | Depolama + moderasyon maliyeti yüksek |
 | Paylaşımların kalıcı olması | Olmazsa olmaz | Karar (K-16, 17.10.2026): paylaşımlar ve yer bildirimleri kalır, 04:00'te yalnızca sohbetler sıfırlanır. Önceden "Yapmayalım" idi: 04:00'te her şey silinirken (16.10.2026) ilke 2'ye aykırıydı. Geçmiş profilde ve anı takviminde görünür (T-22); "Şimdi ve burada" ilkesiyle gerilimi §5.6'da. Paylaşımı sonradan silme açık (K-16) |
@@ -148,13 +148,13 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 | Fikir | Sınıf | Not |
 |---|---|---|
 | Kalıcı profil (ad, foto, biyografi, ilgi alanları) | Olmazsa olmaz | Prototipte düzenlenebilir (T-28): kapak, profil fotoğrafı, ad, kullanıcı adı, hakkında, en fazla 5 ilgi alanı |
-| Gecelik anonim takma ad | Olmazsa olmaz | |
+| ~~Gecelik anonim takma ad~~ | Kalktı | K-04 (24.10.2026): takma ad yerine @kullanıcı adı |
 | Yer bildirimleri profilde | Olmazsa olmaz | Kalıcı (K-16) |
 | Arkadaş / takip | Açık | → K-03 |
 | Rozetler, seri (streak), istatistik | Belki | Denendi, profilden kaldırıldı ("çok karışık"). Kalan: profilde "anı" sayısı (yer bildirilen geceler) ve ondan açılan anı takvimi, yalnızca karşılıklı takipleşenlere (T-22; kendi takviminde görünen etiket ise "Şu an burada kimler görsün" ayarına bağlı, hangisinin geçerli olacağı açık: §14 S4). "Şimdi ve burada" ilkesiyle gerilim: takvim geçmişi gösterir, akış ve sohbet anlık kalır |
 | Sık gidilen mekânlar | Belki | Profilden kaldırıldı; kurucu: "oraya daha sonra geliriz" |
 | "To-HERE": gitmek istenen mekânlar listesi | Güçlü aday | Prototipte (T-25): mekân sayfasında kaydet, profilde üçüncü sekme; arkadaşların da kaydettiği yerler görünür (birlikte plan için) |
-| Paylaşımda kişi etiketleme | Güçlü aday | Prototipte yalnızca veride (T-25): profilde "Etiketlenenler", kartta "kiminle" satırı. Paylaşırken etiketleme ekranı yok |
+| Paylaşımda kişi etiketleme | Olmazsa olmaz | Karar (§14 S3, 24.10.2026): fotoğraftan sonra "Kimlerle?" adımı; yalnızca o gece aynı mekânda yer bildirmiş ve karşılıklı takipleştiğin kişiler; etiketlenen kişi etiketi kaldırabilir. Profilde "Etiketlenenler" (T-25) |
 | Birlikte olunan geceler | Belki | Denendi, kaldırıldı (18.10.2026): anı takviminin altında yalnızca takvim kalsın |
 
 ### 5.7 Güvenlik
@@ -196,16 +196,17 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **Öneri:** MVP'de A, ardından B. "Arkadaşların bu gece nerede" güçlü bir geri dönüş nedeni olabilir.
 - ~~Karar: B · Karşılıklı arkadaşlık~~ → **güncellendi:**
 - **Karar:** ✅ **C · Tek yönlü takip, MVP'de var** (16.10.2026). Instagram / X gibi "takip et / takibi bırak". Kişiler birbirinin profilini görebilir. Takip ilişkisi kalıcıdır (`core` şeması); sohbetler yine 04:00'te silinir, paylaşımlar K-16'dan beri kalır.
-- **Kitle seçimi (karar):** Paylaşım ekranında kitle seçilir; **varsayılan "Herkes"**. Kullanıcı değiştirirse son seçimi hatırlanır ve sonraki paylaşımlarda o kullanılır. *Prototipte ayrı paylaşım ekranı T-26 ile kalktı; yer bildirme sayfasında kitle seçimi yok, çekilen fotoğraf herkese açık gider. Seçimin nereye ve nasıl döneceği açık (§14 S2).*
+- **Kitle (güncellendi 24.10.2026, §14 S2):** paylaşım başına kitle seçimi **yok**; paylaşımlar **hesabın gizliliğine uyar**. Açık hesapta herkes görür, gizli hesapta yalnızca onaylı takipçiler. Takip etmeyenler mekân sayfasında fotoğrafı değil yalnızca sayıyı görür ("+1 kişi"). *(16.10.2026'daki eski karar: paylaşımda kitle seçilir, varsayılan "Herkes", son seçim hatırlanır.)*
 - **Rehberden kişi bulma:** ❌ Şimdilik yok. Kişiler **kullanıcı adıyla** aranıp bulunur (bkz. K-15).
 - ⚠️ **Tek yönlü takibin riski:** Takip onay gerektirmediği için bir yabancı birini takip edip onun yer bildirimlerini anlık izleyebilir. Önlemler (**karar, 16.10.2026**, tümü kullanıcının tercihine bağlı):
   - **Gizli hesap:** isteğe bağlı bir ayar, varsayılan kapalı (hesaplar açık). Açılırsa takip istek/onay ile olur, onaylanmayan kişi paylaşımları görmez.
   - **"Şu an burada" görünürlüğü:** varsayılan **sadece karşılıklı takipleşenler**. Kullanıcı ayarlardan değiştirebilir (Herkes / Karşılıklı takipleşenler / Kimse). Tek yönlü takipçi varsayılan durumda sadece paylaşımın kendisini görür.
+  - **Görünürlük (§14 S4, 24.10.2026):** profil hesabın gizliliğine uyar: açık hesabı herkes, gizli hesabı yalnızca onaylı takipçiler görür; göremeyen için profil kilitli (sayılar görünür ama dokunulamaz, fotoğraf yok, kilit işareti). "Şu an burada" (bu geceki yer bildirimi, Burada kimler var listesi, profildeki halka) kişinin bu ayarına uyar; göremeyenler yalnızca sayıyı görür ("+3 kişi"). Geçmiş gece takvimini profili görebilen herkes görür; bu gece, gece bitene (04:00) kadar takvimde yalnızca canlı konumu görmesine izin verilenlere görünür. Mekân sohbetinde ise o an orada olan herkes birbirinin @kullanıcı adını görür (ayar sohbeti etkilemez).
   - Takipçiyi çıkarma ve engelleme her zaman açık.
 - **Açık alt sorular:**
   - Arkadaşlar birbirinin bu gece **nerede** yer bildirdiğini görsün mü (ör. ana sayfada "Ayşe şu an Liman Açıkhava'da")? Varsayılan açık mı kapalı mı?
   - Arkadaş olmayan biri profilde ne görür: ad, foto, biyografi, ilgi alanları evet; bu geceki yer bildirimleri?
-  - Anonim yer bildirimi yapan birinin profiline sohbetten **gidilemez** (takma ad profile bağlanmaz).
+  - Anonimlik yok (K-04, 24.10.2026): sohbette @kullanıcı adına dokununca profil açılır.
   - Arkadaş isteği de bir taciz kanalı olabilir: istekte mesaj yok, gece başına istek sınırı, engellenen kişi tekrar istek atamaz.
 
 ### K-04 · Anonimlik kapsamı 🟡
@@ -213,7 +214,7 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **B) Mekân başına farklı takma ad** — Daha anonim; gece içinde tutarlılık kaybolur.
 - **C) Anonim mod yok** — Daha az taciz; daha az özgürlük.
 - **Öneri:** A.
-- **Karar:** ⬜
+- **Karar:** ✅ **Anonim mod yok (C), 24.10.2026.** Mekân sohbetinde herkes gerçek adı yerine **@kullanıcı adıyla** görünür; kullanıcı adına dokununca profil açılır. Takma ad ve anonim yer bildirimi yok; veritabanındaki gecelik takma ad (persona) Faz 2'de kalkar. Gerçek adını göstermek istemeyen, kullanıcı adını buna göre seçer (K-15).
 
 ### K-05 · Mekân verisi nereden gelecek? 🔴
 - **A) Google Places API** — En kapsamlı; ama ücretli ve önbellekleme kısıtları var.
@@ -245,7 +246,8 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **B) Sabit süre (ör. 3 saat)** — Makul; bazen erken düşer.
 - **C) Ayrılınca / başka yere bildirince** — En doğru; kullanıcı eylemine bağlı.
 - **Öneri:** B + C (3 saat veya başka yere bildirene / "Ayrıldım" diyene kadar). Sohbete okuma erişimi 04:00'e kadar sürsün.
-- **Karar:** ⬜
+- **Karar (kısmi, 24.10.2026):** ✅ Yer bildirdiğin mekânda, başka bir mekânda yer bildirene kadar (en geç gece sonu 04:00) **orada sayılırsın**; aynı anda yalnızca **tek mekân**. Yeni bir yerde yer bildirirken **her seferinde onay** sorulur ("Rıhtım'dan çıkıp Sahne'ye geçiyorsun"), sayı sınırı yok. Ayrıldığın mekânın sohbeti 04:00'e kadar **okunur, yazılamaz**; oraya dönüp (300 m içinde) yeniden yer bildirirsen yine yazarsın. Sohbete girmek için orada olmak gerekir (K-17), sonra ayrılsan da yeni bir yerde bildirmedikçe yazmaya devam edersin: konserde tanışıp çıkışta çorbacıya gidenler konserin sohbetinde kalır.
+- **Karar (28.10.2026):** ✅ Mekândaki canlı sayı ("342 kişi burada") yalnızca son 3 saatte yer bildirenleri ve "Hâlâ buradayım" diyenleri sayar; sohbete yazma hakkı bundan etkilenmez. Yer bildirdikten 3 saat sonra bir kez "Hâlâ Rıhtım'da mısın?" sorulur ("Evet, buradayım" · "Ayrıldım"); cevapsızsa hiçbir şey değişmez; "Ayrıldım" sohbette de düğme. Soru telefonun kendi (yerel) bildirimiyle gelir: sunucu ve bildirim servisi gerekmez, maliyeti yok; başka yerde yer bildirince ya da "Ayrıldım" deyince iptal edilir.
 
 ### K-07 · Büyük mekânlarda sohbet ölçeği 🟢
 - **A) Tek sohbet** — Basit; 1 000+ kişide okunmaz.
@@ -320,11 +322,12 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **Kalıcı:** paylaşımlar (yer bildirimleri, yorumlar, eklenen fotoğraflar). Ana sayfada, mekân sayfasında ve profilde görünmeye devam eder.
 - **Arayüz:** "Her şey 04:00'te silinir" yazıları kaldırıldı; ana sayfa ve Keşfet'teki genel sayaç kalktı. Sayaç ve "her gece 04:00'te sıfırlanır" notu yalnızca sohbetlerde (sohbet başlığı, Mesajlar). İstisna: yer bildirmişken sekme aksesuarında da kalan süre görünüyor; kalıp kalmayacağı açık (§14 S7).
 - **Etkisi:** Veritabanında paylaşımlar ve yer bildirimleri `ephemeral` şemasından kalıcı tablolara taşınmalı (Faz 2). Gizlilik vaadi "sohbetler silinir" olarak yeniden yazılmalı; paylaşımlar için saklama süresi (KVKK) ayrıca belirlenmeli.
-- **Açık:** Paylaşımı kullanıcı sonradan silebilsin mi (öneri: evet, her paylaşımın ••• menüsünde)? Akış ne kadar eskiye gitsin (öneri: önce son 24 saat, sonra daha eski)?
+- **Silme:** ✅ (24.10.2026, §14 S3) kişi kendi paylaşımını istediği zaman silebilir (paylaşımın ••• menüsü).
+- **Açık:** Akış ne kadar eskiye gitsin (öneri: önce son 24 saat, sonra daha eski)?
 
 ### K-17 · Sohbete kim girebilir? 🔴
 - **Karar:** ✅ (17.10.2026) Mekân sohbetine **yalnızca yer bildirerek** girilir; yer bildirimi **yalnızca mekânın 300 m yakınında** yapılabilir. Evden "X mekânındayım" deyip sohbete katılmak yok.
-- **Prototipte:** Uzaktaki mekânın sayfasında fuşya "Yer bildir" yine etkindir ve yer bildirme sayfasını (T-26) kilitli açar: mesafe yazılır ("300 m içinde değilsin · 900 m uzaktasın"), iğneli oluk gridir, yanında "Yol tarifi" var. Kilitli sohbette düğme kapalıdır ("Mekânda olmalısın"); Buradayım listesinde uzak mekânlar soluk ve kilitli, dokununca mekân sayfası açılır. Uzak mekân için tek bir davranış seçmek açık (§14 S5). Kural veri katmanında da uygulanır (uzak mekânda yer bildirimi ve sohbete yazma reddedilir).
+- **Prototipte:** Uzaktaki mekânın sayfasında fuşya "Yer bildir" yine etkindir ve yer bildirme sayfasını (T-26) kilitli açar: mesafe yazılır ("300 m içinde değilsin · 900 m uzaktasın"), iğneli oluk gridir, yanında "Yol tarifi" var. Kilitli sohbette düğme kapalıdır ("Mekânda olmalısın"); Buradayım listesinde uzak mekânlar soluk ve kilitli, dokununca mekân sayfası açılır. **Karar (§14 S5, 24.10.2026):** uzaktayken her yerde tek davranış: "Yer bildir" yerine **"Yol tarifi · 2 km"** (Haritalar'ı açar); 300 m içine girince kendiliğinden "Yer bildir"e döner. Kilitli yer bildirme sayfası kalkar; kilitli sohbette de aynı düğme. Kural veri katmanında da uygulanır (uzak mekânda yer bildirimi ve sohbete yazma reddedilir).
 - **Üründe:** Konum sunucuda doğrulanır (konum + doğruluk yarıçapı); sahte konuma karşı önlemler §8 kapsamında.
 
 ### K-13 · Ürün adı ve kimliği 🟢
@@ -523,12 +526,19 @@ Faz 6  Lansman
 | 19.10.2026 | **T-29: Uygulama iki dilli** (Türkçe ve İngilizce, Ayarlar › Dil). GitHub'da kurulum gerektirmeyen İngilizce medya kiti: `docs/media-kit/` | Kurucu isteği: insanlar kodu indirip kurmadan uygulamayı görebilsin |
 | 18.10.2026 | **İnceleme düzeltmeleri:** "şu an burada" yalnızca bu gecenin paylaşımlarından çıkar (önceki gecelerinki kimseyi "şu an" göstermez); "Sana özel" akış yeniden eskiye sıralı; mekân adına yanlış ek alan cümleler eksiz yazıldı ("Kule Teras'da" gibi); "Can de" → "Can da"; "şimdi önce" düzeldi; zaten yer bildirdiğin mekâna dokununca sohbet açılır (aynı fotoğraf iki kez paylaşılmaz); "Sohbete katıl" → "Sohbete git"; Buradayım listesi 1 km içi (aramada hepsi) | Uygulama içi inceleme; ürün soruları §14'te |
 | 18.10.2026 | **Belgeler son kararlarla hizalandı** (yeni karar yok): 04:00'te yalnızca sohbetlerin sıfırlandığı (K-16) ARCHITECTURE, TASARIM ve bu belgenin her yerine işlendi; eski paylaşım sayfasının yerine yer bildirme sayfası anlatılıyor (T-26); kalıcı paylaşıma ve kişi bazlı geçmişe karşı çıkan maddeler (§5.2, §10, R6) karara göre yeniden yazıldı (K-16, T-22); T-5 güncellendi (logo ortada, sayaç yok); takvim görünürlüğü, uzak mekân ve sekme aksesuarındaki sayaç açık soru olarak işaretlendi (§14 S4, S5, S7) | Uygulama içi inceleme |
+| 24.10.2026 | **K-04 + S1: Anonim mod yok; sohbette herkes @kullanıcı adıyla görünür** (gerçek ad yerine). Takma ad ve anonim yer bildirimi yok; @kullanıcı adına dokununca profil açılır | Kurucu kararı: tek kimlik, hesap sorumluluğu; gerçek adını göstermek istemeyen kullanıcı adını öyle seçer |
+| 24.10.2026 | **S2: Paylaşımlar hesabın gizliliğine uyar**; paylaşım başına kitle seçimi kalktı (16.10'daki kitle seçimi kararının yerine). Gizli hesapta fotoğrafları yalnızca onaylı takipçiler görür; takip etmeyenler mekân sayfasında yalnızca sayıyı görür | Kurucu kararı: ayar ne diyorsa o olur; yer bildirme tek hareket kalır |
+| 24.10.2026 | **S3: Paylaşımın içeriği.** Fotoğrafın altına en fazla 150 harf yazı (yalnızca yazıdan oluşan paylaşım yok); "Kimlerle?" etiketi yalnızca o gece aynı mekânda yer bildirmiş ve karşılıklı takipleştiğin kişiler; etiketlenen kişi etiketi kaldırabilir; betada yorum yok, yalnızca beğeni (betadan sonra: yalnızca takipçiler yorum yazar, paylaşan kapatabilir); herkes kendi paylaşımını silebilir | Kurucu kararı: kısa ve fotoğraf odaklı paylaşım; yabancı biri seni etiketleyip nerede olduğunu gösteremez; yorum moderasyonu betadan sonra |
+| 24.10.2026 | **S4: Görünürlük.** "Şu an burada kimler görsün" ayarı kalır ve her yerde geçerli (Burada listesi, profildeki halka, bu geceki yer bildirimi); profil ve geçmiş takvim hesabın gizliliğine uyar (gizli hesapta yalnızca onaylı takipçiler; göremeyene kilitli profil, sayılar dokunulamaz); bu gece takvimde 04:00'e kadar yalnızca canlı konumu görebilenlere görünür; mekân sohbetinde herkes @kullanıcı adıyla görünür | Kurucu kararı: herkes canlı konumunu kimin göreceğine kendisi karar verir; profil ve geçmiş için tek kural (gizli hesap) |
+| 24.10.2026 | **S5: Uzaktaki mekânda tek davranış.** 300 m dışındaysan "Yer bildir" yerine "Yol tarifi · 2 km" (Haritalar'ı açar), içine girince kendiliğinden "Yer bildir"; kilitli yer bildirme sayfası kalkar; mekân sayfası ve kilitli sohbet aynı | Kurucu kararı: uzaktaki biri için en işe yarayan şey oraya nasıl gideceği; basılamayan düğme ya da kilitli sayfa "olmuyor" hissi veriyor |
+| 24.10.2026 | **S6 + K-06 (kısmi): Aynı anda tek mekân.** Başka bir mekânda yer bildirene kadar (en geç 04:00) orada sayılırsın; yer değiştirirken her seferinde onay, sınır yok; ayrıldığın mekânın sohbeti 04:00'e kadar okunur, yazılamaz; oraya dönüp yeniden yer bildirince yazma geri gelir. Açık: canlı sayı ve "Hâlâ orada mısın?" | Kurucu kararı: insanlar tanıştıkları yerden birlikte başka yere gidebilir (konser çıkışı çorbacı); sohbete girmek için orada olmak yeter |
+| 28.10.2026 | **K-06 tamamlandı:** mekândaki canlı sayı yalnızca son 3 saatte yer bildirenleri ve "Hâlâ buradayım" diyenleri sayar (sohbete yazma hakkını etkilemez); yer bildirdikten 3 saat sonra bir kez "Hâlâ orada mısın?" (Evet · Ayrıldım), telefonun kendi bildirimiyle | Kurucu kararı: sayı mekânın gerçek canlılığını göstersin; bildirim ücretsiz olsun (yerel bildirim, sunucu yok) |
 
 ---
 
 ## 14. Sıradaki adım
 
-**Kapanan kararlar:** K-01 (MVP için geçici: 18+), K-02 (mekân), K-03 (tek yönlü takip), K-05 (Google Places), K-08 (istek modeliyle mesajlaşma), K-09 (telefon + Apple + Google), K-11'in platform kısmı (iOS + Android), K-13 (ad ve renkler), K-14 (iki sekmeli akış), K-15 (görünen ad + @kullanıcı adı), K-16 (04:00'te yalnızca sohbetler sıfırlanır), K-17 (sohbete yalnızca yakında yer bildirerek).
+**Kapanan kararlar:** K-01 (MVP için geçici: 18+), K-02 (mekân), K-03 (tek yönlü takip), K-05 (Google Places), K-08 (istek modeliyle mesajlaşma), K-09 (telefon + Apple + Google), K-11'in platform kısmı (iOS + Android), K-13 (ad ve renkler), K-14 (iki sekmeli akış), K-15 (görünen ad + @kullanıcı adı), K-16 (04:00'te yalnızca sohbetler sıfırlanır), K-17 (sohbete yalnızca yakında yer bildirerek), K-04 (anonim mod yok; sohbette @kullanıcı adı, 24.10.2026), K-06 (aynı anda tek mekân; canlı sayı son 3 saat, 28.10.2026).
 
 **Sıradaki adımlar:**
 1. ~~[TASARIM.md §6](TASARIM.md#6-raporlar-arasındaki-çelişkiler-ve-karar-önerileri)'daki tasarım kararlarını (T-1…T-10) birlikte ver.~~ ✅ Hepsi kabul edildi (17.10.2026).
@@ -537,12 +547,12 @@ Faz 6  Lansman
 4. 🟡 **Karar bekliyor:** T-18 (zemin A/B/C) ve T-19 (görünüm alanı 1/2/3). Ayarlar › Tasarım denemesi'nde denenip seçilecek; seçilmeyenler ve deneme bölümü kaldırılacak.
 
 **İncelemeden çıkan sorular (18.10.2026):**
-- **S1 Anonimlik:** yer bildirme sayfasında anonim seçeneği yok; anonim yer bildirimi ve sohbet artık yapılamıyor (K-04 açık). Kaldıralım mı, sonraya mı, sayfaya "Takma adla" anahtarı mı?
-- **S2 Kitle:** "kim görebilir" seçimi (K-03) arayüzden kalktı; yer bildirirken çekilen her fotoğraf herkese açık, gizli hesapta bile. Paylaşımlar hesabın gizliliğine mi uysun?
-- **S3 Yorum:** yer bildirirken yalnızca fotoğraf var; README ve §5.1 "fotoğraf ya da yorum" diyor. Yalnızca fotoğraf mı, isteğe bağlı kısa yazı mı? Kişi etiketleme nerede olacak?
-- **S4 Takvim ve "şu an" gizliliği:** kendi takviminin etiketi "Şu an burada kimler görsün" ayarına bağlı, başkalarınınki hep "yalnızca karşılıklı"; "Burada kimler var" listesi karşılıklı olmayanları da adıyla gösteriyor. Hep karşılıklı mı, ayara mı bağlı?
-- **S5 Uzaktaki mekân:** mekân sayfasında etkin fuşya "Yer bildir" kilitli sayfa açıyor, kilitli sohbette pasif "Mekânda olmalısın", Buradayım'da uzak satır mekân sayfasına gidiyor. Tek bir davranış seçelim.
-- **S6 Mekân değiştirme (K-06):** başka yerde yer bildirince önceki sohbet sessizce tamamen kilitleniyor. Onay mı sorulsun, 04:00'e kadar okunabilir mi kalsın?
+- **S1 Anonimlik:** ✅ **Karar (24.10.2026):** anonimlik yok; sohbette herkes @kullanıcı adıyla görünür (K-04). *Soru şuydu:* yer bildirme sayfasında anonim seçeneği yok; anonim yer bildirimi ve sohbet artık yapılamıyor (K-04 açık). Kaldıralım mı, sonraya mı, sayfaya "Takma adla" anahtarı mı?
+- **S2 Kitle:** ✅ **Karar (24.10.2026):** paylaşımlar hesabın gizliliğine uyar; gizli hesapta fotoğrafları yalnızca onaylı takipçiler görür, paylaşım başına kitle seçimi yok. *Soru şuydu:* "kim görebilir" seçimi (K-03) arayüzden kalktı; yer bildirirken çekilen her fotoğraf herkese açık, gizli hesapta bile. Paylaşımlar hesabın gizliliğine mi uysun?
+- **S3 Yorum:** ✅ **Karar (24.10.2026):** fotoğrafın altına en fazla 150 harf yazı; etiket yalnızca o gece aynı mekânda yer bildirmiş karşılıklı takipleşenlere (etiketlenen kaldırabilir); betada yorum yok (yalnızca beğeni), betadan sonra yalnızca takipçiler yorum yazar ve paylaşan kapatabilir; herkes kendi paylaşımını silebilir. *Soru şuydu:* yer bildirirken yalnızca fotoğraf var; README ve §5.1 "fotoğraf ya da yorum" diyor. Yalnızca fotoğraf mı, isteğe bağlı kısa yazı mı? Kişi etiketleme nerede olacak?
+- **S4 Takvim ve "şu an" gizliliği:** ✅ **Karar (24.10.2026):** "Şu an burada kimler görsün" ayarı kalır (Herkes / Karşılıklı / Kimse, varsayılan Karşılıklı) ve her yerde geçerli olur; profil ve geçmiş takvim hesabın gizliliğine uyar (açık hesap herkese, gizli hesap onaylı takipçilere); sohbette herkes @kullanıcı adıyla görünür. *Soru şuydu:* kendi takviminin etiketi "Şu an burada kimler görsün" ayarına bağlı, başkalarınınki hep "yalnızca karşılıklı"; "Burada kimler var" listesi karşılıklı olmayanları da adıyla gösteriyor. Hep karşılıklı mı, ayara mı bağlı?
+- **S5 Uzaktaki mekân:** ✅ **Karar (24.10.2026):** uzaktayken her yerde "Yol tarifi · 2 km" (Haritalar), 300 m içinde "Yer bildir"; kilitli yer bildirme sayfası kalkar. *Soru şuydu:* mekân sayfasında etkin fuşya "Yer bildir" kilitli sayfa açıyor, kilitli sohbette pasif "Mekânda olmalısın", Buradayım'da uzak satır mekân sayfasına gidiyor. Tek bir davranış seçelim.
+- **S6 Mekân değiştirme (K-06):** ✅ **Karar (kısmi, 24.10.2026):** başka yerde bildirene kadar (en geç 04:00) orada sayılırsın, aynı anda tek mekân; değiştirirken her seferinde onay; ayrıldığın sohbet 04:00'e kadar okunur, yazılamaz, yeniden yer bildirince yazma geri gelir. 28.10.2026: canlı sayı yalnızca son 3 saat + "Hâlâ buradayım" diyenler; 3 saat sonra bir kez yerel bildirimle "Hâlâ orada mısın?" (K-06). *Soru şuydu:* başka yerde yer bildirince önceki sohbet sessizce tamamen kilitleniyor. Onay mı sorulsun, 04:00'e kadar okunabilir mi kalsın?
 - **S7 Sekme aksesuarındaki sayaç:** her sekmede "342 kişi · 4 sa 12 dk" görünüyor; K-16'ya göre sayaç yalnızca sohbetlerde. Kalsın mı?
 
-**Açık kararlar:** K-04 (anonimlik kapsamı), K-06 ("burada" süresi), K-07 (büyük mekânlarda sohbet ölçeği), K-10 (gece sınırı ve saat dilimi), K-11'in beta ve lansman kısmı, K-12 (gelir modeli).
+**Açık kararlar:** K-07 (büyük mekânlarda sohbet ölçeği), K-10 (gece sınırı ve saat dilimi), K-11'in beta ve lansman kısmı, K-12 (gelir modeli).
