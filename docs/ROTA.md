@@ -52,8 +52,8 @@
 | Alan | Durum |
 |---|---|
 | Teknik mimari ve teknoloji yığını | ✅ Önerildi ([ARCHITECTURE.md](ARCHITECTURE.md)); sunucu yolu **Supabase** (K-18, 28.10.2026) |
-| Veritabanı şeması + 04:00 silme motoru | ✅ Yazıldı, 80 test ile doğrulandı (ilk ürün modeline göre) |
-| Ürün modeli güncellemesi (yer bildirimi + mekân sohbeti) | 🟡 Belirlendi, şemaya henüz işlenmedi |
+| Veritabanı şeması + 04:00 silme motoru | ✅ Supabase'e kuruldu (28.10.2026): bugüne kadarki bütün kararlarla, 147 testle doğrulandı; 12 örnek Kadıköy mekânı yüklü ([ARCHITECTURE.md §5.0](ARCHITECTURE.md#50-beta-şeması-supabase-28102026)) |
+| Ürün modeli güncellemesi (yer bildirimi + mekân sohbeti) | ✅ Şemaya işlendi (28.10.2026); uygulama henüz veritabanına bağlı değil, sahte veriyle çalışıyor |
 | Arayüz | 🟡 Çalışan prototip var (`apps/mobile`, sahte veri), Liquid Glass ile yeniden tasarlandı ve iOS 27'de denendi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, boş durumlar, T-18 ve T-19 kararları |
 | Ürün kararları | 🟡 Çekirdek kararlar kapandı (§13); açık kalanlar: K-11'in beta ve lansman kısmı, incelemeden çıkan S7 (§14) |
 
@@ -553,7 +553,7 @@ Faz 6  Lansman
 **Sıradaki adımlar:**
 1. ~~[TASARIM.md §6](TASARIM.md#6-raporlar-arasındaki-çelişkiler-ve-karar-önerileri)'daki tasarım kararlarını (T-1…T-10) birlikte ver.~~ ✅ Hepsi kabul edildi (17.10.2026).
 2. 🟡 **Büyük ölçüde tamam (17.10.2026):** Mevcut ekranlar Liquid Glass ile yeniden tasarlandı ve iOS 27 simülatörlerinde test edildi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, boş durumların tamamı, erişilebilirlik testleri.
-3. Faz 2: şemayı yeni ürün modeline göre güncelle (mekânlar, yer bildirimi, paylaşımlar, paylaşım etiketleri, kaydedilen mekânlar (To-HERE), planlar, takip, kullanıcı adı, mesaj istekleri; `anlik_*` adları `here_*` olacak). **K-16 gereği** paylaşımlar ve yer bildirimleri kalıcı tablolara taşınır; 04:00 silme motoru yalnızca sohbetleri (mesajlar, üyelik, istekler, planlar) kapsar.
+3. ✅ **Tamam (28.10.2026):** şema Supabase'te yeni ürün modeliyle kuruldu ([ARCHITECTURE.md §5.0](ARCHITECTURE.md#50-beta-şeması-supabase-28102026)). ~~Faz 2: şemayı yeni ürün modeline göre güncelle (mekânlar, yer bildirimi, paylaşımlar, paylaşım etiketleri, kaydedilen mekânlar (To-HERE), planlar, takip, kullanıcı adı, mesaj istekleri; `anlik_*` adları `here_*` olacak). **K-16 gereği** paylaşımlar ve yer bildirimleri kalıcı tablolara taşınır; 04:00 silme motoru yalnızca sohbetleri (mesajlar, üyelik, istekler, planlar) kapsar.~~
 4. 🟡 **Karar bekliyor:** T-18 (zemin A/B/C) ve T-19 (görünüm alanı 1/2/3). Ayarlar › Tasarım denemesi'nde denenip seçilecek; seçilmeyenler ve deneme bölümü kaldırılacak.
 
 **İncelemeden çıkan sorular (18.10.2026):**

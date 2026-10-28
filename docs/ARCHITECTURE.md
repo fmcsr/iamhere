@@ -115,6 +115,27 @@ anlik/
 
 ## 5. Veri modeli
 
+### 5.0 Beta şeması (Supabase, 28.10.2026)
+
+Güncel şema `supabase/migrations` klasöründe ve bugüne kadarki bütün kararları (K-03…K-18, S1–S6) uygular. Uygulama tablolara Supabase API'si üzerinden, oturum açmış kullanıcı olarak erişir; bu yüzden **kim neyi görür ve yazar sorusunun cevabı RLS politikalarındadır**, ayrı bir API sunucusu yok.
+
+| Dosya | Tablolar | Özet |
+|---|---|---|
+| 01 foundation | `private.config` | Gece hesabı (`current_cycle`, `cycle_ends_at`, `night()`), testler için zaman yolculuğu |
+| 02 people | `profiles`, `follows`, `blocks` | Kullanıcı adı kuralları, gizli hesapta takip isteği, iki yönlü engelleme; görünürlük fonksiyonları (`can_see_profile`, `can_see_presence`) |
+| 03 venues | `venues`, `venue_accounts`, `saved_venues`, `check_ins` | 300 m doğrulaması (PostGIS), aynı anda tek mekân, canlı sayı (`here_count`), Burada listesi (`venue_people`), yakındaki mekânlar |
+| 04 posts | `posts`, `post_tags`, `post_likes` | Yalnızca etkin yer bildirimiyle paylaşım, "Kimlerle?" etiketi kuralı, beğeni |
+| 05 chat | `conversations`, `messages`, `plans`, `plan_participants` | Mekân sohbeti (okuma/yazma hakkı yer bildiriminden), istek modeliyle birebir mesaj, planlar, gerçek zamanlı yayın, 04:00 silme |
+| 06 safety_storage | `reports` | Kanıtlı şikâyet, fotoğraf depoları (`profiles`, `posts`), hesap silme |
+
+- **Yer bildirimi, mesaj isteği ve hesap silme** yalnızca fonksiyonla yapılır (`check_in`, `start_direct`, `delete_account`…); bu tablolara uygulama doğrudan yazamaz.
+- **04:00:** RLS eski geceyi saat 04:00:00'te anında gizler; `pg_cron` her dakika süresi dolan sohbetleri `DELETE` ile siler (mesajlar ve planlar onlarla gider). Beta hacminde bölümlemeye (§6.2) gerek yok; trafik büyüyünce aynı tablolara bölümleme eklenebilir, uygulama değişmez.
+- **Testler:** `supabase/tests/run.sh` bütün kuralları bağlı projede tek bir işlemde dener ve sonunda geri alır; projede test verisi kalmaz. `--migrations` ile şema yüklenmeden önce de denenir.
+- **Supabase denetimi** (`supabase db advisors`): "giriş yapan kullanıcı bu yetkili fonksiyonu çağırabilir" uyarıları bilinçlidir. Yer bildirimi, mesaj isteği, sayılar ve hesap silme bu fonksiyonlarla yapılır; her biri işlemi yapanı `auth.uid()` ile kendisi doğrular. `venue_accounts` tablosunun politikasız olması da bilinçlidir (K-12).
+- `db/` klasöründeki ilk model ve testleri başvuru için duruyor; aşağıdaki §5 ve §6 o modeli anlatır.
+
+### 5.1 İlk model (`db/`)
+
 İki şema var ve sınırı nettir: **`core` asla sohbet içeriği veya konum tutmaz; `ephemeral` asla 04:00'ü geçmez.** Aşağıdaki tablo ilk ürün modeline göre yazılan şemayı anlatır; K-16 gereği paylaşımlar ve yer bildirimleri `ephemeral`'a değil kalıcı tablolara eklenecek (§14).
 
 | Şema | Tablo | İçerik | Yaşam süresi |
@@ -244,7 +265,7 @@ sequenceDiagram
 
 1. ✅ **Veritabanı şeması + 04:00 TTL motoru + testler**
 2. 🔄 **Ürün kararları ve arayüz:** ürün rotası ve açık kararlar [ROTA.md](ROTA.md) dosyasında; arayüz Mobbin referanslarıyla yeniden tasarlanacak
-3. Şemayı yeni ürün modeline uyarlama (§14): mekânlar, yer bildirimi, paylaşımlar, planlar
+3. ✅ **Şemayı yeni ürün modeline uyarlama** (§5.0, §14): Supabase'te kurulu (28.10.2026)
 4. Monorepo iskeleti + API (NestJS) + kimlik doğrulama (telefon OTP / Apple / Google) + profil
 5. Yer bildirimi ve keşif uç noktaları (yakınlık doğrulama, hız kontrolü)
 6. Mekân sohbeti: WS gateway, Valkey pub/sub, planlar, medya yükleme
