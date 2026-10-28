@@ -541,6 +541,7 @@ Faz 6  Lansman
 | 28.10.2026 | **K-06 tamamlandı:** mekândaki canlı sayı yalnızca son 3 saatte yer bildirenleri ve "Hâlâ buradayım" diyenleri sayar (sohbete yazma hakkını etkilemez); yer bildirdikten 3 saat sonra bir kez "Hâlâ orada mısın?" (Evet · Ayrıldım), telefonun kendi bildirimiyle | Kurucu kararı: sayı mekânın gerçek canlılığını göstersin; bildirim ücretsiz olsun (yerel bildirim, sunucu yok) |
 | 28.10.2026 | **K-18: Sunucu yolu Supabase** (beta için): Postgres + PostGIS + pg_cron, giriş, dosya deposu, gerçek zamanlı; ücretsiz planla başlanır | Kurucu kararı: hızlı başlangıç, yerel kurulum gerekmiyor; şema düz SQL olduğu için ileride taşınabilir |
 | 28.10.2026 | **İlk TestFlight sürümü şimdiki prototiple** (sahte veri; testçiler birbirini göremez), mevcut bir Apple Developer hesabı üzerinden. Kararlar sonraki sürümlerde | Kurucu kararı: çevredeki insanlar uygulamayı kendi telefonlarında denesin |
+| 28.10.2026 | **TestFlight hazırlığı:** uygulamanın kalıcı kimliği `com.iamhere.app`; "Apple ile devam et" gerçek Apple girişi olur, Google düğmesi şimdilik gizli; gizlilik politikası GitHub'daki depodan yayınlanan bir sayfada; derleme ve yükleme kurucunun Mac'inden. Sıra: önce veritabanı (Supabase), sonra TestFlight | Kurucu kararı: Apple incelemesinde çalışmayan giriş düğmesi riski olmasın; ek maliyet olmasın |
 
 ---
 

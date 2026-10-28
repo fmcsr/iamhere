@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.iamhere.prototype",
-      "icon": "./assets/here.icon"
+      "buildNumber": "1",
+      "icon": "./assets/here.icon",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
