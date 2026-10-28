@@ -51,7 +51,7 @@
 
 | Alan | Durum |
 |---|---|
-| Teknik mimari ve teknoloji yığını | ✅ Önerildi ([ARCHITECTURE.md](ARCHITECTURE.md)) — onaylanmayı bekliyor |
+| Teknik mimari ve teknoloji yığını | ✅ Önerildi ([ARCHITECTURE.md](ARCHITECTURE.md)); sunucu yolu **Supabase** (K-18, 28.10.2026) |
 | Veritabanı şeması + 04:00 silme motoru | ✅ Yazıldı, 80 test ile doğrulandı (ilk ürün modeline göre) |
 | Ürün modeli güncellemesi (yer bildirimi + mekân sohbeti) | 🟡 Belirlendi, şemaya henüz işlenmedi |
 | Arayüz | 🟡 Çalışan prototip var (`apps/mobile`, sahte veri), Liquid Glass ile yeniden tasarlandı ve iOS 27'de denendi ([TASARIM.md §7](TASARIM.md#7-uygulama-sırası)). Kalanlar: kayıt akışı, boş durumlar, T-18 ve T-19 kararları |
@@ -330,6 +330,12 @@ Sınıflandırma: **Olmazsa olmaz** (MVP) · **Güçlü aday** (MVP+1) · **Belk
 - **Prototipte:** Uzaktaki mekânın sayfasında fuşya "Yer bildir" yine etkindir ve yer bildirme sayfasını (T-26) kilitli açar: mesafe yazılır ("300 m içinde değilsin · 900 m uzaktasın"), iğneli oluk gridir, yanında "Yol tarifi" var. Kilitli sohbette düğme kapalıdır ("Mekânda olmalısın"); Buradayım listesinde uzak mekânlar soluk ve kilitli, dokununca mekân sayfası açılır. **Karar (§14 S5, 24.10.2026):** uzaktayken her yerde tek davranış: "Yer bildir" yerine **"Yol tarifi · 2 km"** (Haritalar'ı açar); 300 m içine girince kendiliğinden "Yer bildir"e döner. Kilitli yer bildirme sayfası kalkar; kilitli sohbette de aynı düğme. Kural veri katmanında da uygulanır (uzak mekânda yer bildirimi ve sohbete yazma reddedilir).
 - **Üründe:** Konum sunucuda doğrulanır (konum + doğruluk yarıçapı); sahte konuma karşı önlemler §8 kapsamında.
 
+### K-18 · Sunucu yolu 🔴
+- **A) Kendi sunucumuz:** NestJS + kendi Postgres'imiz + Socket.IO + Redis ([ARCHITECTURE.md §2](ARCHITECTURE.md)). Tam kontrol, daha çok iş.
+- **B) Supabase:** Postgres + PostGIS + pg_cron, giriş (SMS, Apple, Google), dosya deposu ve gerçek zamanlı iletişim hazır. İş kuralları SQL fonksiyonlarında ve birkaç sunucu fonksiyonunda.
+- **Öneri:** B, beta için. Şema düz SQL olduğu için kurallar gerekirse sonra NestJS'e taşınır.
+- **Karar:** ✅ **B · Supabase** (28.10.2026). Ücretsiz planla başlanır, yerel Docker gerekmez. Eski şema PostgreSQL 18'e göre yazıldı (ör. yerleşik `uuidv7()`); Supabase'in sürümüne göre küçük uyarlamalar gerekebilir. Sunucu bölgesi (KVKK, yurt dışına aktarım) avukatla netleşecek.
+
 ### K-13 · Ürün adı ve kimliği 🟢
 - **Karar:** ✅ (16.10.2026)
   - **Mağaza adı:** **I am Here** (App Store Connect / Google Play'deki uygulama adı)
@@ -533,12 +539,14 @@ Faz 6  Lansman
 | 24.10.2026 | **S5: Uzaktaki mekânda tek davranış.** 300 m dışındaysan "Yer bildir" yerine "Yol tarifi · 2 km" (Haritalar'ı açar), içine girince kendiliğinden "Yer bildir"; kilitli yer bildirme sayfası kalkar; mekân sayfası ve kilitli sohbet aynı | Kurucu kararı: uzaktaki biri için en işe yarayan şey oraya nasıl gideceği; basılamayan düğme ya da kilitli sayfa "olmuyor" hissi veriyor |
 | 24.10.2026 | **S6 + K-06 (kısmi): Aynı anda tek mekân.** Başka bir mekânda yer bildirene kadar (en geç 04:00) orada sayılırsın; yer değiştirirken her seferinde onay, sınır yok; ayrıldığın mekânın sohbeti 04:00'e kadar okunur, yazılamaz; oraya dönüp yeniden yer bildirince yazma geri gelir. Açık: canlı sayı ve "Hâlâ orada mısın?" | Kurucu kararı: insanlar tanıştıkları yerden birlikte başka yere gidebilir (konser çıkışı çorbacı); sohbete girmek için orada olmak yeter |
 | 28.10.2026 | **K-06 tamamlandı:** mekândaki canlı sayı yalnızca son 3 saatte yer bildirenleri ve "Hâlâ buradayım" diyenleri sayar (sohbete yazma hakkını etkilemez); yer bildirdikten 3 saat sonra bir kez "Hâlâ orada mısın?" (Evet · Ayrıldım), telefonun kendi bildirimiyle | Kurucu kararı: sayı mekânın gerçek canlılığını göstersin; bildirim ücretsiz olsun (yerel bildirim, sunucu yok) |
+| 28.10.2026 | **K-18: Sunucu yolu Supabase** (beta için): Postgres + PostGIS + pg_cron, giriş, dosya deposu, gerçek zamanlı; ücretsiz planla başlanır | Kurucu kararı: hızlı başlangıç, yerel kurulum gerekmiyor; şema düz SQL olduğu için ileride taşınabilir |
+| 28.10.2026 | **İlk TestFlight sürümü şimdiki prototiple** (sahte veri; testçiler birbirini göremez), mevcut bir Apple Developer hesabı üzerinden. Kararlar sonraki sürümlerde | Kurucu kararı: çevredeki insanlar uygulamayı kendi telefonlarında denesin |
 
 ---
 
 ## 14. Sıradaki adım
 
-**Kapanan kararlar:** K-01 (MVP için geçici: 18+), K-02 (mekân), K-03 (tek yönlü takip), K-05 (Google Places), K-08 (istek modeliyle mesajlaşma), K-09 (telefon + Apple + Google), K-11'in platform kısmı (iOS + Android), K-13 (ad ve renkler), K-14 (iki sekmeli akış), K-15 (görünen ad + @kullanıcı adı), K-16 (04:00'te yalnızca sohbetler sıfırlanır), K-17 (sohbete yalnızca yakında yer bildirerek), K-04 (anonim mod yok; sohbette @kullanıcı adı, 24.10.2026), K-06 (aynı anda tek mekân; canlı sayı son 3 saat, 28.10.2026).
+**Kapanan kararlar:** K-01 (MVP için geçici: 18+), K-02 (mekân), K-03 (tek yönlü takip), K-05 (Google Places), K-08 (istek modeliyle mesajlaşma), K-09 (telefon + Apple + Google), K-11'in platform kısmı (iOS + Android), K-13 (ad ve renkler), K-14 (iki sekmeli akış), K-15 (görünen ad + @kullanıcı adı), K-16 (04:00'te yalnızca sohbetler sıfırlanır), K-17 (sohbete yalnızca yakında yer bildirerek), K-04 (anonim mod yok; sohbette @kullanıcı adı, 24.10.2026), K-06 (aynı anda tek mekân; canlı sayı son 3 saat, 28.10.2026), K-18 (sunucu yolu Supabase, 28.10.2026).
 
 **Sıradaki adımlar:**
 1. ~~[TASARIM.md §6](TASARIM.md#6-raporlar-arasındaki-çelişkiler-ve-karar-önerileri)'daki tasarım kararlarını (T-1…T-10) birlikte ver.~~ ✅ Hepsi kabul edildi (17.10.2026).

@@ -45,6 +45,7 @@ Konum bazlı, grup aktivitelerine odaklı bir sosyal medya uygulaması. Kullanı
 **Neden başka bir yol değil?**
 - **Firebase/Firestore:** TTL silmesi kesin değil; belgelere göre "genellikle 24 saat içinde" yapılır. 04:00 garantisi verilemez. Coğrafi sorgu desteği zayıf, ayrıca veri yerelliği (KVKK) sorunu var.
 - **Supabase:** Şemamız düz PostgreSQL olduğu için Supabase'de de çalışır (PostGIS ve pg_cron mevcut). Fakat maskeleme, sahte konum tespiti, hız sınırı ve moderasyon gibi iş kuralları istemcide ya da RLS'de değil, API katmanında olmalı.
+  - **Karar (ROTA K-18, 28.10.2026):** beta Supabase üzerinde kurulur (Postgres + PostGIS + pg_cron, Auth, Storage, Realtime). İş kuralları (yakınlık doğrulama, hız sınırı, moderasyon) SQL fonksiyonlarında ve Edge Functions'ta. NestJS gerekirse sonra; şema düz SQL olduğu için taşınabilir.
 - **Flutter:** Güçlü bir alternatif. React Native'i seçme nedenimiz tek dil (TypeScript) ve mobil ile API arasında paylaşılan sözleşmeler.
 - **Elixir/Phoenix:** Gerçek zamanlı iletişimde çok güçlü. Ölçek sınırına gelinirse yalnızca realtime katmanı ayrıştırılabilir.
 
