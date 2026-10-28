@@ -80,14 +80,12 @@ export const tr = {
     titleMine: 'Anıların',
     /** `owner`: iyelik ekli ad ("Zeynep'in" · "Zeynep’s"). */
     title: (owner: string) => `${owner} anıları`,
-    /** Kendi takviminin kimlere açık olduğu, "Şu an burada kimler görsün" ayarına bağlı. */
-    visibility: {
-      herkes: 'Herkes görebilir',
-      karsilikli: 'Yalnızca karşılıklı takipleştiklerin görür',
-      kimse: 'Yalnızca sen görürsün',
-    } as Record<PresenceVisibility, string>,
-    mutual: 'Karşılıklı takipleştiğiniz için görüyorsun',
-    hidden: 'Anılarını yalnızca karşılıklı takipleştikleri görür.',
+    /** Kendi takviminin kimlere açık olduğu (S4): geçmiş geceler hesabın gizliliğine, bu gece "Şu an burada" ayarına bağlı. */
+    visibility: (privateAccount: boolean, tonight: PresenceVisibility) =>
+      `${privateAccount ? 'Onaylı takipçilerin' : 'Herkes'} görür · bu gece ${{ herkes: 'herkes', karsilikli: 'karşılıklılar', kimse: 'yalnızca sen' }[tonight]}`,
+    publicAccount: 'Açık hesap: geçmiş geceleri herkes görür',
+    follower: 'Onaylı takipçisi olduğun için görüyorsun',
+    hidden: 'Bu hesap gizli. Gecelerini yalnızca onaylı takipçileri görür.',
   },
   /** Anı takvimi. */
   calendar: {
@@ -205,13 +203,11 @@ export const en: typeof tr = {
   memories: {
     titleMine: 'Your memories',
     title: (owner: string) => `${owner} memories`,
-    visibility: {
-      herkes: 'Everyone can see',
-      karsilikli: 'Only mutual follows can see',
-      kimse: 'Only you can see',
-    },
-    mutual: 'Visible because you follow each other',
-    hidden: 'Their memories are only visible to mutual follows.',
+    visibility: (privateAccount: boolean, tonight: PresenceVisibility) =>
+      `${privateAccount ? 'Your approved followers' : 'Everyone'} can see · tonight ${{ herkes: 'everyone', karsilikli: 'mutuals', kimse: 'only you' }[tonight]}`,
+    publicAccount: 'Public account: everyone can see past nights',
+    follower: 'Visible because you’re an approved follower',
+    hidden: 'This account is private. Only approved followers see their nights.',
   },
   calendar: {
     previous: 'Previous month',

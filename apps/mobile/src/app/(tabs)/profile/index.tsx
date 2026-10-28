@@ -28,7 +28,7 @@ export default function ProfileScreen() {
   const { overCover } = useCoverStatusBar({ setStyle: false, offset });
 
   const nights = nightsOf('me');
-  const myPosts = posts.filter((p) => p.userId === 'me' && !p.anonAlias).sort((a, b) => b.createdAt - a.createdAt);
+  const myPosts = posts.filter((p) => p.userId === 'me').sort((a, b) => b.createdAt - a.createdAt);
   const postById = (id: string) => posts.find((p) => p.id === id);
   const last = nights[0];
   // Seçtiğin kapak net; seçmediysen son gecenin fotoğrafı bulanık.

@@ -10,7 +10,6 @@ export const tr = {
   tabs: { home: 'Ana Sayfa', explore: 'Keşfet', checkin: 'Buradayım', messages: 'Mesajlar', profile: 'Profil' },
   titles: {
     chat: 'Sohbet',
-    compose: 'Buradayım',
     settings: 'Ayarlar',
     editProfile: 'Profili düzenle',
     newMessage: 'Yeni mesaj',
@@ -59,6 +58,11 @@ export const tr = {
     like: (count: number) => `Beğen, ${count}`,
     goToChat: 'Sohbete git',
     venue: 'Mekân',
+    /** ••• menüsü (S3): kendi paylaşımını silersin, etiketlendiğin paylaşımdan etiketini kaldırırsın. */
+    delete: 'Paylaşımı sil',
+    deleteConfirm: 'Paylaşım silinsin mi?',
+    deleteNote: 'Fotoğraf ve yazı profilinden ve akıştan kalkar. Bu geri alınamaz.',
+    removeTag: 'Etiketimi kaldır',
   },
   /** Mekân kartı ve satırları. */
   venueCard: {
@@ -102,7 +106,6 @@ export const en: typeof tr = {
   tabs: { home: 'Home', explore: 'Explore', checkin: 'Here', messages: 'Messages', profile: 'Profile' },
   titles: {
     chat: 'Chat',
-    compose: 'Here',
     settings: 'Settings',
     editProfile: 'Edit profile',
     newMessage: 'New message',
@@ -145,6 +148,10 @@ export const en: typeof tr = {
     like: (count: number) => `Like, ${count}`,
     goToChat: 'Go to chat',
     venue: 'Venue',
+    delete: 'Delete post',
+    deleteConfirm: 'Delete this post?',
+    deleteNote: 'The photo and caption disappear from your profile and the feed. This can’t be undone.',
+    removeTag: 'Remove my tag',
   },
   venueCard: {
     a11y: (name: string, category: string, distance: string, here: number) =>

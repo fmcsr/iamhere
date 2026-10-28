@@ -17,11 +17,11 @@ import {
   SAVED_VENUES,
   USERS,
   VENUES,
-  type Audience,
   type Conversation,
   type Message,
   type Plan,
   type Post,
+  type PresenceVisibility,
   type User,
   type Venue,
   followsBetween,
@@ -30,8 +30,9 @@ import { EN } from './mock.en';
 import { resolveLang, setLang, type Lang, type LanguageSetting } from '@/i18n';
 import { collectNights, nightKeyOf, tonightKey } from '@/lib/nights';
 import { loadedPhoto, storedPhoto } from '@/lib/profile';
+import { cancelStillHere, scheduleStillHere } from '@/lib/still-here';
 
-export type PresenceVisibility = 'herkes' | 'karsilikli' | 'kimse';
+export type { PresenceVisibility };
 
 /** Görünüm: sistemi izle ya da her zaman açık / koyu. Cihazda saklanır. */
 export type AppearanceMode = 'system' | 'light' | 'dark';
@@ -59,8 +60,6 @@ const APPEARANCE_UIS: AppearanceUI[] = ['onizleme', 'ios', 'menu'];
 type Settings = {
   privateAccount: boolean;
   presenceVisibility: PresenceVisibility;
-  /** Yer bildirirken paylaşımın kitlesi; yer bildirme sayfasında seçim yok, hep "herkes" (ROTA.md §14, S2). */
-  lastAudience: Audience;
   appearance: AppearanceMode;
   /** Ayarlar › Dil: Sistem / Türkçe / English (T-29). */
   language: LanguageSetting;
@@ -74,11 +73,11 @@ function applyAppearance(mode: AppearanceMode) {
 /** Benden başka herkes: paylaşımı olan kişiler ve takip listelerini dolduran diğerleri. */
 const OTHERS: User[] = [...USERS, ...MORE_USERS];
 
-type CheckIn = { venueId: string; anonAlias?: string; at: number };
+/** `stillHereAt`: "Hâlâ orada mısın?" sorusuna "Evet, buradayım" (K-06). */
+type CheckIn = { venueId: string; at: number; stillHereAt?: number };
 
-type CheckInInput = { venueId: string; text: string; imageUri?: string; audience: Audience };
-
-const ANON_ALIAS = 'Gezgin Martı 17';
+/** Yer bildirimi; fotoğraf çektiysen paylaşım da olur: altına yazı ve "Kimlerle?" etiketi (S3). */
+type CheckInInput = { venueId: string; text: string; imageUri?: string; tagged: string[] };
 
 function useAppState() {
   const [rawMe, setMe] = useState<User>(ME);
@@ -88,6 +87,8 @@ function useAppState() {
   const [conversations, setConversations] = useState<Conversation[]>(CONVERSATIONS);
   const [rawMessages, setMessages] = useState<Message[]>(MESSAGES);
   const [checkIn, setCheckIn] = useState<CheckIn | null>(null);
+  // Bu gece yer bildirdiğin mekânlar: ayrıldıklarının sohbeti 04:00'e kadar okunur, yazılamaz (K-06).
+  const [visited, setVisited] = useState<string[]>([]);
   const [joinedPlans, setJoinedPlans] = useState<Set<string>>(() => new Set());
   const [readConversations, setReadConversations] = useState<Set<string>>(() => new Set());
   const [followRequests, setFollowRequests] = useState<Set<string>>(() => new Set());
@@ -96,7 +97,6 @@ function useAppState() {
   const [settings, setSettings] = useState<Settings>({
     privateAccount: false,
     presenceVisibility: 'karsilikli',
-    lastAudience: 'herkes',
     appearance: 'system',
     language: 'system',
   });
@@ -108,15 +108,13 @@ function useAppState() {
   // Durum (state) hep ham veriyi tutar; okuyan her şey aşağıdaki çevrilmiş hâlleri görür.
   const lang: Lang = resolveLang(settings.language);
   const en = lang === 'en';
-  const alias = (name?: string) => (en && name ? (EN.aliases[name] ?? name) : name);
   const localUser = (u: User): User => (en && EN.bios[u.id] ? { ...u, bio: EN.bios[u.id] } : u);
-  const localPost = (p: Post): Post => (en ? { ...p, text: p.text && (EN.posts[p.id] ?? p.text), anonAlias: alias(p.anonAlias) } : p);
+  const localPost = (p: Post): Post => (en ? { ...p, text: p.text && (EN.posts[p.id] ?? p.text) } : p);
   const localMessage = (m: Message): Message =>
     en
       ? {
           ...m,
           text: EN.messages[m.id] ?? m.text,
-          anonAlias: alias(m.anonAlias),
           plan: m.plan && EN.plans[m.id] ? { ...m.plan, ...EN.plans[m.id] } : m.plan,
         }
       : m;
@@ -223,22 +221,51 @@ function useAppState() {
   const followingOf = (userId: string) => everyone.filter((u) => u.id !== userId && follows(userId, u.id));
 
   /**
-   * Kişinin geceleri (profil takvimi, özet, ortak geceler). `onlyPosts`: yalnızca paylaşım yaptığı geceler;
-   * karşılıklı takipleşmediğin birinin yer bildirimleri görünmez (gizlilik, TASARIM.md §5.8).
+   * Profilini, paylaşımlarını ve geçmiş gecelerini görebilir miyim (S2, S4): açık hesap herkese, gizli hesap
+   * yalnızca onaylı takipçilere.
    */
-  const nightsOf = (userId: string, { onlyPosts = false, visiblePosts }: { onlyPosts?: boolean; visiblePosts?: Post[] } = {}) =>
+  const canSeeProfile = (userId: string) => userId === 'me' || !userById(userId).isPrivate || following.has(userId);
+
+  /**
+   * Bu geceki konumunu görebilir miyim (S4): kişinin "Şu an burada kimler görsün" ayarı. Burada listesi,
+   * profildeki halka ve takvimdeki bu gece buna uyar.
+   */
+  const canSeePresence = (userId: string) => {
+    if (userId === 'me') return true;
+    const presence = userById(userId).presence ?? 'karsilikli';
+    return presence === 'herkes' || (presence === 'karsilikli' && isMutual(userId));
+  };
+
+  /** Kişinin bütün geceleri: geçmiş yer bildirimleri, paylaşımları ve (benim için) bu geceki yer bildirimi. */
+  const allNightsOf = (userId: string) =>
     collectNights({
-      history: onlyPosts ? [] : (NIGHT_HISTORY[userId] ?? []),
-      posts: visiblePosts ?? posts.filter((p) => p.userId === userId && !p.anonAlias),
-      tonightVenueId: userId === 'me' && !onlyPosts ? checkIn?.venueId : undefined,
+      history: NIGHT_HISTORY[userId] ?? [],
+      posts: posts.filter((p) => p.userId === userId),
+      tonightVenueId: userId === 'me' ? (checkIn?.venueId ?? visited.at(-1)) : undefined,
     });
 
-  /** Paylaşımı görebilir miyim: takipçilere özel olanları yalnızca takip edenler görür. */
-  const canSee = (post: Post) => post.audience !== 'takipciler' || post.userId === 'me' || following.has(post.userId);
+  /** Görebildiğim geceleri (profil takvimi): bu gece "şu an burada" ayarına, geçmiş geceler hesabın gizliliğine uyar (S4). */
+  const nightsOf = (userId: string) => {
+    if (!canSeeProfile(userId)) return [];
+    const nights = allNightsOf(userId);
+    return canSeePresence(userId) ? nights : nights.filter((n) => n.key !== tonightKey());
+  };
+
+  /** Profildeki fuşya halka: bu gece bir mekânda ve konumunu görebiliyorum (S4; hesabın gizliliğinden bağımsız). */
+  const isOutTonight = (userId: string) => canSeePresence(userId) && allNightsOf(userId)[0]?.key === tonightKey();
+
+  /** Profildeki "anı" sayısı: gizli hesapta da görünür ama dokunulamaz (S4). */
+  const nightCountOf = (userId: string) => {
+    const nights = allNightsOf(userId);
+    return (canSeePresence(userId) ? nights : nights.filter((n) => n.key !== tonightKey())).length;
+  };
+
+  /** Paylaşımı görebilir miyim: hesabın gizliliği (S2); paylaşım başına kitle yok. */
+  const canSee = (post: Post) => canSeeProfile(post.userId);
 
   /** Kişinin etiketlendiği (görebildiğim) paylaşımlar; yeniden eskiye. */
   const taggedPostsOf = (userId: string) =>
-    posts.filter((p) => p.tagged?.includes(userId) && !p.anonAlias && canSee(p)).sort((a, b) => b.createdAt - a.createdAt);
+    posts.filter((p) => p.tagged?.includes(userId) && canSee(p)).sort((a, b) => b.createdAt - a.createdAt);
 
   /** Kişinin To-HERE listesi (gitmek istediği mekânlar). */
   const savedOf = (userId: string) => (userId === 'me' ? saved : (SAVED_VENUES[userId] ?? []));
@@ -256,21 +283,24 @@ function useAppState() {
     setReadConversations((prev) => (prev.has(conversationId) ? prev : new Set(prev).add(conversationId)));
 
   /**
-   * Kişinin bu geceki son (anonim olmayan) paylaşımı; "şu an burada" bundan çıkar. Paylaşımlar kalıcı (K-16)
-   * ama önceki gecelerinkiler kimseyi "şu an" bir mekânda göstermez.
+   * Kişinin bu geceki son paylaşımı; "şu an burada" bundan çıkar. Paylaşımlar kalıcı (K-16) ama önceki
+   * gecelerinkiler kimseyi "şu an" bir mekânda göstermez.
    */
   const tonightPostOf = (userId: string) => {
     const tonight = tonightKey();
     return posts
-      .filter((p) => p.userId === userId && !p.anonAlias && nightKeyOf(p.createdAt) === tonight)
+      .filter((p) => p.userId === userId && nightKeyOf(p.createdAt) === tonight)
       .sort((a, b) => b.createdAt - a.createdAt)[0];
   };
 
-  /** Bu gece bu mekânda görünen (anonim olmayan) kişiler; takip ettiklerin önde. */
+  /** Bu gece bu mekânda görebildiğim kişiler (S4: ayarı izin vermeyen yalnızca sayıya dahil); takip ettiklerin önde. */
   const peopleAt = (venueId: string): User[] =>
-    people.filter((u) => tonightPostOf(u.id)?.venueId === venueId).sort(
-      (a, b) => Number(following.has(b.id)) - Number(following.has(a.id)),
-    );
+    people
+      .filter((u) => tonightPostOf(u.id)?.venueId === venueId && canSeePresence(u.id))
+      .sort((a, b) => Number(following.has(b.id)) - Number(following.has(a.id)));
+
+  /** "Kimlerle?" (S3): bu gece aynı mekânda olan, karşılıklı takipleştiğin kişiler. */
+  const taggableAt = (venueId: string) => peopleAt(venueId).filter((u) => isMutual(u.id));
 
   /** Plan kartında "Ben de varım". */
   const togglePlan = (messageId: string) =>
@@ -306,23 +336,27 @@ function useAppState() {
     return Boolean(venue && venue.distanceM <= CHECK_IN_RADIUS_M);
   };
 
-  /** Yer bildirir; isteğe bağlı paylaşım oluşturur ve mekân sohbetine üye yapar. Mekân uzaksa hiçbir şey yapmaz. */
-  const doCheckIn = ({ venueId, text, imageUri, audience }: CheckInInput): string | null => {
-    if (!canCheckIn(venueId)) return null;
-    const anonAlias = audience === 'anonim' ? ANON_ALIAS : undefined;
-    setCheckIn({ venueId, anonAlias, at: Date.now() });
-    setSettings((s) => ({ ...s, lastAudience: audience }));
-    if (text.trim() || imageUri) {
+  /**
+   * Yer bildirir: aynı anda tek mekân (K-06), öncekinin sohbeti salt okunur kalır. Fotoğraf çektiysen paylaşım
+   * da olur (yalnızca yazıdan oluşan paylaşım yok, S3). Mekân uzaksa hiçbir şey yapmaz.
+   */
+  const doCheckIn = ({ venueId, text, imageUri, tagged }: CheckInInput): string | null => {
+    const venue = venueById(venueId);
+    if (!venue || !canCheckIn(venueId)) return null;
+    setCheckIn({ venueId, at: Date.now() });
+    // 3 saat sonra bir kez "Hâlâ orada mısın?" (yerel bildirim); önceki mekânın sorusunun yerini alır.
+    scheduleStillHere(venue).catch(() => {});
+    setVisited((prev) => [...prev.filter((id) => id !== venueId), venueId]);
+    if (imageUri) {
       const post: Post = {
         id: `p-${Date.now()}`,
         userId: 'me',
-        anonAlias,
         venueId,
         text: text.trim() || undefined,
         imageUri,
         createdAt: Date.now(),
         likes: 0,
-        audience,
+        tagged: tagged.length ? tagged : undefined,
       };
       setPosts((prev) => [post, ...prev]);
     }
@@ -333,13 +367,30 @@ function useAppState() {
     return convId;
   };
 
+  /** "Ayrıldım" (K-06): artık hiçbir mekânda değilsin; sohbeti 04:00'e kadar okursun, yazamazsın. */
+  const leaveVenue = () => {
+    setCheckIn(null);
+    cancelStillHere().catch(() => {});
+  };
+
+  /** "Evet, buradayım": canlı sayıda kalırsın (K-06). */
+  const stillHere = () => setCheckIn((current) => current && { ...current, stillHereAt: Date.now() });
+
+  /** Kişi kendi paylaşımını ••• menüsünden siler (S3). */
+  const deletePost = (postId: string) => setPosts((prev) => prev.filter((p) => !(p.id === postId && p.userId === 'me')));
+
+  /** Etiketlenen kişi etiketi kaldırabilir (S3). */
+  const removeMyTag = (postId: string) =>
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId && p.tagged?.includes('me') ? { ...p, tagged: p.tagged.filter((id) => id !== 'me') } : p)),
+    );
+
   const sendMessage = (conversationId: string, text: string, plan?: Plan) => {
     const conv = conversations.find((c) => c.id === conversationId);
-    // Mekân sohbetine yalnızca o mekânda yer bildirmiş olan yazabilir.
+    // Mekân sohbetine yalnızca o mekânda etkin yer bildirimi olan yazabilir.
     if (conv?.kind === 'venue' && checkIn?.venueId !== conv.venueId) return;
-    const anonAlias = conv?.kind === 'venue' ? checkIn?.anonAlias : undefined;
     const id = `m-${Date.now()}`;
-    setMessages((prev) => [...prev, { id, conversationId, senderId: 'me', anonAlias, text, plan, createdAt: Date.now() }]);
+    setMessages((prev) => [...prev, { id, conversationId, senderId: 'me', text, plan, createdAt: Date.now() }]);
     // Kendi planına otomatik katılırsın.
     if (plan) setJoinedPlans((prev) => new Set(prev).add(id));
   };
@@ -384,8 +435,8 @@ function useAppState() {
     following,
     conversations,
     messages,
-    // Takma ad da seçili dilde ("Gezgin Martı 17" · "Wandering Seagull 17").
-    checkIn: checkIn && en ? { ...checkIn, anonAlias: alias(checkIn.anonAlias) } : checkIn,
+    checkIn,
+    visited,
     joinedPlans,
     settings,
     appearanceLoaded,
@@ -398,6 +449,10 @@ function useAppState() {
     followersOf,
     followingOf,
     nightsOf,
+    nightCountOf,
+    isOutTonight,
+    canSeeProfile,
+    canSeePresence,
     canSee,
     taggedPostsOf,
     savedOf,
@@ -407,6 +462,7 @@ function useAppState() {
     markRead,
     tonightPostOf,
     peopleAt,
+    taggableAt,
     togglePlan,
     toggleLike,
     toggleFollow,
@@ -414,6 +470,10 @@ function useAppState() {
     toggleFollowRequest,
     canCheckIn,
     doCheckIn,
+    leaveVenue,
+    stillHere,
+    deletePost,
+    removeMyTag,
     sendMessage,
     openDirect,
     acceptRequest,

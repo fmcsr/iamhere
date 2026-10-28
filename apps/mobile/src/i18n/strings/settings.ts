@@ -51,9 +51,9 @@ export const tr = {
     option: { herkes: 'Herkes', karsilikli: 'Karşılıklı takipleştiklerim', kimse: 'Kimse' } as Record<PresenceVisibility, string>,
     optionShort: { herkes: 'Herkes', karsilikli: 'Karşılıklı', kimse: 'Kimse' } as Record<PresenceVisibility, string>,
     note: {
-      herkes: 'Yer bildirdiğinde bulunduğun mekânı herkes görür.',
-      karsilikli: 'Yalnızca karşılıklı takipleştiğin kişiler hangi mekânda olduğunu görür.',
-      kimse: 'Kimse hangi mekânda olduğunu görmez; sohbette yine görünürsün.',
+      herkes: 'Yer bildirdiğinde bulunduğun mekânı herkes görür: Burada listesi, profilindeki halka ve takviminde bu gece.',
+      karsilikli: 'Yalnızca karşılıklı takipleştiğin kişiler hangi mekânda olduğunu görür: Burada listesi, profilindeki halka ve takviminde bu gece.',
+      kimse: 'Kimse hangi mekânda olduğunu görmez; sohbette yine @kullanıcı adınla görünürsün.',
     } as Record<PresenceVisibility, string>,
   },
   safety: {
@@ -109,9 +109,9 @@ export const en: typeof tr = {
     option: { herkes: 'Everyone', karsilikli: 'Mutual follows', kimse: 'No one' },
     optionShort: { herkes: 'Everyone', karsilikli: 'Mutual', kimse: 'No one' },
     note: {
-      herkes: 'When you check in, everyone sees the venue you’re at.',
-      karsilikli: 'Only people you follow mutually see which venue you’re at.',
-      kimse: 'No one sees which venue you’re at; you still appear in the chat.',
+      herkes: 'When you check in, everyone sees the venue you’re at: in Who’s here, the ring on your profile and tonight on your calendar.',
+      karsilikli: 'Only people you follow mutually see which venue you’re at: in Who’s here, the ring on your profile and tonight on your calendar.',
+      kimse: 'No one sees which venue you’re at; you still appear in the chat with your @username.',
     },
   },
   safety: {

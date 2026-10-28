@@ -14,7 +14,6 @@ export const EN: {
   /** Plan kartı taşıyan mesajın kimliği → plan başlığı ve buluşma yeri. */
   plans: Record<string, { title: string; place: string }>;
   /** Türkçe takma ad → İngilizcesi ("Sessiz Tilki 58" → "Silent Fox 58"). */
-  aliases: Record<string, string>;
 } = {
   posts: {
     p1: 'Gece Treni just came back out for a second encore. Right in front of the stage it’s a whole other world, and the sound is crystal clear.',
@@ -103,11 +102,5 @@ export const EN: {
   },
   plans: {
     m4: { title: 'Walk to the seafront', place: 'Outside Gate 2' },
-  },
-  aliases: {
-    'Uykusuz Baykuş 42': 'Sleepless Owl 42',
-    'Sessiz Tilki 58': 'Silent Fox 58',
-    'Neşeli Martı 7': 'Jolly Seagull 7',
-    'Gezgin Martı 17': 'Wandering Seagull 17',
   },
 };

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, Stack, useIsFocused, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GlassCard } from '@/components/glass';
@@ -14,11 +14,13 @@ import { Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 import { useT } from '@/i18n/use-t';
+import { openDirections, startCheckIn } from '@/lib/check-in';
 
 /**
  * Mekân sayfası (TASARIM.md §5.4): kapak fotoğrafı cam geri düğmesinin altında, "kimler burada",
  * bu gecenin fotoğrafları, sohbet önizlemesi. Altta yan yana solda cam "Yol tarifi", sağda fuşya
- * "Yer bildir" (alttan açılan sayfada iğne aşağı kaydırılır, T-26); yer bildirdiysen yalnızca "Sohbete katıl".
+ * "Yer bildir" (alttan açılan sayfada iğne aşağı kaydırılır, T-26); yer bildirdiysen yalnızca "Sohbete git".
+ * 300 m'den uzaksa tek düğme: fuşya "Yol tarifi · 2 km" (S5).
  */
 export default function VenueScreen() {
   const theme = useTheme();
@@ -27,7 +29,7 @@ export default function VenueScreen() {
   // Izgara hücreleri ölçülen genişlikten hesaplanır (yüzde genişlik görselleri çizdirmiyordu).
   const [gridWidth, setGridWidth] = useState(0);
   const cell = Math.floor((gridWidth - 8) / 3);
-  const { venueById, posts, messages, checkIn, following, peopleAt, savedOf, toggleSaved } = useApp();
+  const { venueById, posts, messages, checkIn, visited, canSee, canCheckIn, peopleAt, savedOf, toggleSaved } = useApp();
   const venue = venueById(id);
   // Yer bildirme sayfası açıkken alttaki düğmeler gizlenir: cam sayfanın ardında fuşya leke kalmasın.
   const focused = useIsFocused();
@@ -35,19 +37,20 @@ export default function VenueScreen() {
   if (!venue) return <Text style={{ color: theme.text, padding: 16 }}>{t.home.venue.notFound}</Text>;
 
   const isHere = checkIn?.venueId === venue.id;
+  // Ayrıldığın mekânın sohbeti 04:00'e kadar okunur (K-06).
+  const canRead = isHere || visited.includes(venue.id);
+  const near = canCheckIn(venue.id);
+  const current = checkIn ? venueById(checkIn.venueId) : undefined;
   // To-HERE: gitmek istediğin yerler listesi (profilin üçüncü sekmesi).
   const isSaved = savedOf('me').includes(venue.id);
-  const venuePosts = posts.filter(
-    (p) => p.venueId === venue.id && (p.audience !== 'takipciler' || p.userId === 'me' || following.has(p.userId)),
-  );
-  const photos = [...new Set([...venuePosts.flatMap((p) => (p.imageUri ? [p.imageUri] : [])), ...venue.nightPhotos])].slice(0, 6);
+  const venuePosts = posts.filter((p) => p.venueId === venue.id && canSee(p));
+  const photos = [...new Set([...venuePosts.map((p) => p.imageUri), ...venue.nightPhotos])].slice(0, 6);
   const people = peopleAt(venue.id);
   const chat = messages.filter((m) => m.conversationId === `c-${venue.id}`);
   const lastChat = chat.at(-1);
   const plans = chat.filter((m) => m.plan).length;
 
   const joinChat = () => router.push({ pathname: '/chat/[id]', params: { id: `c-${venue.id}` } });
-  const directions = () => Linking.openURL(`https://maps.apple.com/?daddr=${venue.latitude},${venue.longitude}`);
 
   return (
     <View style={{ flex: 1 }}>
@@ -109,16 +112,16 @@ export default function VenueScreen() {
 
           <View style={styles.section}>
             <Text style={[Type.section, { color: theme.text }]}>{t.home.venue.chat}</Text>
-            <GlassCard onPress={joinChat} disabled={!isHere} style={styles.chatCard}>
+            <GlassCard onPress={joinChat} disabled={!canRead} style={styles.chatCard}>
               <View style={styles.chatMeta}>
-                <Icon ios={isHere ? 'bubble.left.and.bubble.right.fill' : 'lock.fill'} md={isHere ? 'forum' : 'lock'} size={16} color={theme.text} />
+                <Icon ios={canRead ? 'bubble.left.and.bubble.right.fill' : 'lock.fill'} md={canRead ? 'forum' : 'lock'} size={16} color={theme.text} />
                 <Text style={[Type.subheadline, { color: theme.text, fontWeight: '600', flex: 1 }]}>
                   {t.people(venue.here)}
                   {lastChat ? ` · ${t.home.venue.lastMessage(minutesAgo(lastChat.createdAt, t))}` : ''}
                   {plans > 0 ? ` · ${t.home.venue.plans(plans)}` : ''}
                 </Text>
               </View>
-              {isHere && lastChat ? (
+              {canRead && lastChat ? (
                 <Text style={[Type.subheadline, { color: theme.textSecondary }]} numberOfLines={2}>
                   {messagePreview(lastChat, t)}
                 </Text>
@@ -151,10 +154,16 @@ export default function VenueScreen() {
             <View style={styles.half}>
               <ActionButton title={t.card.goToChat} systemImage="bubble.left.and.bubble.right.fill" variant="glassProminent" fullWidth onPress={joinChat} />
             </View>
-          ) : (
+          ) : near ? (
             <>
               <View style={styles.half}>
-                <ActionButton title={t.home.directions} systemImage="arrow.triangle.turn.up.right.diamond.fill" variant="glass" fullWidth onPress={directions} />
+                <ActionButton
+                  title={t.home.directions}
+                  systemImage="arrow.triangle.turn.up.right.diamond.fill"
+                  variant="glass"
+                  fullWidth
+                  onPress={() => openDirections(venue)}
+                />
               </View>
               <View style={styles.half}>
                 <ActionButton
@@ -162,10 +171,20 @@ export default function VenueScreen() {
                   systemImage="mappin.and.ellipse"
                   variant="glassProminent"
                   fullWidth
-                  onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id } })}
+                  onPress={() => startCheckIn(t, venue, current)}
                 />
               </View>
             </>
+          ) : (
+            <View style={styles.half}>
+              <ActionButton
+                title={t.home.directionsTo(formatDistance(venue.distanceM, t))}
+                systemImage="arrow.triangle.turn.up.right.diamond.fill"
+                variant="glassProminent"
+                fullWidth
+                onPress={() => openDirections(venue)}
+              />
+            </View>
           )}
         </View>
       </SafeAreaView>

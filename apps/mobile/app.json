@@ -47,6 +47,12 @@
           "microphonePermission": false
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "enableRemoteNotifications": false
+        }
+      ],
       "./plugins/with-xcassets"
     ],
     "experiments": {

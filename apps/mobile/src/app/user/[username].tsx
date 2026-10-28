@@ -17,12 +17,13 @@ import { Gap, Type } from '@/constants/theme';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 import { useT } from '@/i18n/use-t';
-import { tonightKey } from '@/lib/nights';
 
 /**
  * Başkasının profili (TASARIM.md §5.8, T-22, T-25): kendi profilinle aynı düzen; Mesaj ve Takip et küçük
- * kapsüllerde, etiketlerin altında üç sekme (Paylaşımlar, Etiketlenenler, To-HERE). "anı" sayısı ve anı takvimi
- * yalnızca karşılıklı takipleşenlere açık. Bildir / Engelle / Sessize al kapaktaki •••'de.
+ * kapsüllerde, etiketlerin altında üç sekme (Paylaşımlar, Etiketlenenler, To-HERE). Profil, paylaşımlar ve geçmiş
+ * geceler hesabın gizliliğine uyar: gizli hesapta onaylı takipçi değilsen kilit, sayılar görünür ama dokunulamaz.
+ * Halka ve takvimdeki bu gece kişinin "Şu an burada kimler görsün" ayarına uyar (S4). Bildir / Engelle / Sessize al
+ * kapaktaki •••'de.
  */
 export default function UserProfileScreen() {
   const theme = useTheme();
@@ -42,6 +43,9 @@ export default function UserProfileScreen() {
     followersOf,
     followingOf,
     nightsOf,
+    nightCountOf,
+    isOutTonight,
+    canSeeProfile,
   } = useApp();
   const { onScroll, overCover } = useCoverStatusBar();
   const user = users.find((u) => u.username === username);
@@ -51,19 +55,13 @@ export default function UserProfileScreen() {
   const isFollowing = following.has(user.id);
   const requested = followRequests.has(user.id);
   const mutual = isMutual(user.id);
-  const locked = user.isPrivate && !isFollowing;
-  // Anonim paylaşımlar profile asla bağlanmaz; takipçilere özel olanları yalnızca takipçiler görür.
-  const theirPosts = posts
-    .filter((p) => p.userId === user.id && !p.anonAlias && (p.audience === 'herkes' || isFollowing))
-    .sort((a, b) => b.createdAt - a.createdAt);
+  const locked = !canSeeProfile(user.id);
+  // Paylaşımlar hesabın gizliliğine uyar (S2).
+  const theirPosts = locked ? [] : posts.filter((p) => p.userId === user.id).sort((a, b) => b.createdAt - a.createdAt);
   const postById = (id: string) => posts.find((p) => p.id === id);
 
-  // Karşılıklı değilse yer bildirimleri görünmez; yalnızca görebildiğin paylaşımların geceleri.
-  const theirNights = nightsOf(user.id, mutual ? {} : { onlyPosts: true, visiblePosts: theirPosts });
-  const tonight = theirNights[0]?.key === tonightKey();
-  const last = theirNights[0];
-  const cover =
-    user.coverUri ?? theirPosts.find((p) => p.imageUri)?.imageUri ?? (last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined);
+  const last = nightsOf(user.id)[0];
+  const cover = user.coverUri ?? theirPosts[0]?.imageUri ?? (last ? nightPhoto(last, postById, venueById(last.venueId)) : undefined);
 
   const onFollowPress = () => {
     if (isFollowing) {
@@ -97,14 +95,14 @@ export default function UserProfileScreen() {
           <View style={{ gap: 10 }}>
             <ProfileHeader
               user={user}
-              ring={tonight && mutual}
+              ring={isOutTonight(user.id)}
               isPrivate={user.isPrivate}
               followers={followersOf(user.id).length}
               following={followingOf(user.id).length}
-              memories={mutual ? theirNights.length : undefined}
-              onFollowers={() => router.push({ pathname: '/follows', params: { user: user.id, tab: 'followers' } })}
-              onFollowing={() => router.push({ pathname: '/follows', params: { user: user.id, tab: 'following' } })}
-              onMemories={() => router.push({ pathname: '/nights', params: { user: user.id } })}
+              memories={nightCountOf(user.id)}
+              onFollowers={locked ? undefined : () => router.push({ pathname: '/follows', params: { user: user.id, tab: 'followers' } })}
+              onFollowing={locked ? undefined : () => router.push({ pathname: '/follows', params: { user: user.id, tab: 'following' } })}
+              onMemories={locked ? undefined : () => router.push({ pathname: '/nights', params: { user: user.id } })}
               actions={
                 <>
                   <Pill

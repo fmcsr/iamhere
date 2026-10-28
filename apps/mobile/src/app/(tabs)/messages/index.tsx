@@ -28,7 +28,8 @@ import { useNight } from '@/lib/night';
 export default function MessagesScreen() {
   const theme = useTheme();
   const t = useT();
-  const { me, users, venues, conversations, messages, venueById, userById, checkIn, isUnread, isMutual, openDirect, tonightPostOf } = useApp();
+  const { me, users, venues, conversations, messages, venueById, userById, checkIn, following, isUnread, isMutual, canSeePresence, openDirect, tonightPostOf } =
+    useApp();
   const { remaining } = useNight(t);
   const [query, setQuery] = useState('');
 
@@ -46,8 +47,9 @@ export default function MessagesScreen() {
     });
 
   const mutuals = users.filter((u) => isMutual(u.id));
-  // Grup sohbetleri şeridi: yer bildirdiğin mekân önde, sonra tanıdığın olanlar ve kalabalık.
-  const friendsAt = (venueId: string) => mutuals.filter((u) => tonightPostOf(u.id)?.venueId === venueId);
+  // Grup sohbetleri şeridi: yer bildirdiğin mekân önde, sonra tanıdığın olanlar ve kalabalık. Tanıdıklar,
+  // "şu an burada" ayarı sana izin verenler (S4).
+  const friendsAt = (venueId: string) => users.filter((u) => following.has(u.id) && canSeePresence(u.id) && tonightPostOf(u.id)?.venueId === venueId);
   const groups = [...venues].sort(
     (a, b) =>
       Number(b.id === checkIn?.venueId) - Number(a.id === checkIn?.venueId) ||
@@ -163,16 +165,17 @@ export default function MessagesScreen() {
 function ChatRow({ conversation: c, last, unread: hasUnread }: { conversation: Conversation; last?: Message; unread: boolean }) {
   const theme = useTheme();
   const t = useT();
-  const { venueById, userById, checkIn } = useApp();
+  const { venueById, userById, checkIn, visited } = useApp();
   const time = last ? ` · ${minutesAgo(last.createdAt, t)}` : '';
 
   if (c.kind === 'venue') {
     const venue = venueById(c.venueId)!;
-    const locked = checkIn?.venueId !== c.venueId;
+    // Ayrıldığın mekânın sohbeti 04:00'e kadar okunur (K-06); hiç yer bildirmediğinin sohbeti kilitli.
+    const locked = checkIn?.venueId !== c.venueId && !visited.includes(c.venueId);
     // Kilitli sohbetin mesajları görünmüyor; okunmamış gibi vurgulanmaz.
     const unread = hasUnread && !locked;
-    const sender =
-      last && last.senderId !== 'me' ? (last.anonAlias ?? userById(last.senderId).displayName.split(' ')[0]) : t.messages.inbox.you;
+    // Mekân sohbetinde herkes @kullanıcı adıyla görünür (K-04).
+    const sender = last && last.senderId !== 'me' ? `@${userById(last.senderId).username}` : t.messages.inbox.you;
     return (
       <Pressable
         onPress={() =>

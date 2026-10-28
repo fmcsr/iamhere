@@ -11,7 +11,7 @@ import { useT } from '@/i18n/use-t';
 
 /**
  * "Burada kimler var" — yarım yükseklikte açılan sayfa (iOS 26+ cam zemin). Takip ettiklerin önde.
- * Anonim kişiler sayıya dahil ama listede yok.
+ * "Şu an burada kimler görsün" ayarı sana izin vermeyenler sayıya dahil ama listede yok (S4).
  */
 export default function PeopleSheet() {
   const theme = useTheme();

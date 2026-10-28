@@ -17,6 +17,7 @@ import { AppProvider, useApp } from '@/data/store';
 import { useBackdrop } from '@/hooks/use-backdrop';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { STRINGS } from '@/i18n';
+import { useStillHereResponses } from '@/lib/still-here';
 
 // Yazılar (DM Sans) yüklenene ve kayıtlı görünüm (açık/koyu) ekrana yansıyana kadar açılış ekranı
 // kalır: telefon açık modda olsa da "Koyu" seçen kullanıcı açılışta beyaz flaş görmez.
@@ -49,8 +50,10 @@ export default function RootLayout() {
 function RootStack() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const backdrop = useBackdrop();
-  const { settings, appearanceLoaded, lang, signedIn } = useApp();
+  const { settings, appearanceLoaded, lang, signedIn, stillHere, leaveVenue } = useApp();
   const title = STRINGS[lang].titles;
+  // "Hâlâ orada mısın?" bildiriminin düğmeleri (K-06).
+  useStillHereResponses(STRINGS[lang], { onStillHere: stillHere, onLeft: leaveVenue });
   const ready = appearanceLoaded && (settings.appearance === 'system' || settings.appearance === scheme);
 
   useEffect(() => {
@@ -81,7 +84,6 @@ function RootStack() {
           <Stack.Screen name="chat/[id]" options={{ title: title.chat }} />
           {/* Profil kapağı ekranın en üstünden başlar; geri ve ••• düğmeleri kapağın üstünde (kendi profilin gibi). */}
           <Stack.Screen name="user/[username]" options={{ headerShown: false }} />
-          <Stack.Screen name="compose" options={{ presentation: 'modal', title: title.compose }} />
           {/* Yer bildirme sayfası (T-26): ekranın üstünde saydam katman; sayfa alttan kendi animasyonuyla kayar. */}
           <Stack.Screen
             name="check-in/[venueId]"

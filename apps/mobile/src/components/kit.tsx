@@ -54,7 +54,6 @@ export function Avatar({
   color,
   uri,
   size = 40,
-  anonymous,
   ring,
 }: {
   name: string;
@@ -62,7 +61,6 @@ export function Avatar({
   /** Profil fotoğrafı. Yüklenene kadar (ya da yüklenemezse) renkli zeminde baş harf görünür. */
   uri?: string;
   size?: number;
-  anonymous?: boolean;
   /** Fuşya halka: bu kişi şu an bir mekânda. */
   ring?: boolean;
 }) {
@@ -73,19 +71,13 @@ export function Avatar({
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: anonymous ? theme.backgroundSelected : color,
+        backgroundColor: color,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
       }}>
-      {anonymous ? (
-        <Icon ios="moon.fill" md="dark_mode" size={size * 0.45} color={theme.textSecondary} />
-      ) : (
-        <>
-          <Text style={{ color: '#fff', fontWeight: '700', fontSize: size * 0.4 }}>{name.charAt(0)}</Text>
-          {uri && <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} />}
-        </>
-      )}
+      <Text style={{ color: '#fff', fontWeight: '700', fontSize: size * 0.4 }}>{name.charAt(0)}</Text>
+      {uri && <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} />}
     </View>
   );
   if (!ring) return face;
@@ -185,19 +177,41 @@ export function showSafetyMenu(title: string) {
 }
 
 /**
+ * Paylaşımın ••• menüsü: kendi paylaşımını silersin, etiketlendiğin paylaşımdan etiketini kaldırırsın (S3);
+ * başkasının paylaşımında Bildir / Engelle / Sessize al.
+ */
+function showPostMenu(post: Post, title: string, { deletePost, removeMyTag }: { deletePost: (id: string) => void; removeMyTag: (id: string) => void }) {
+  const { card, actions } = strings();
+  const confirmDelete = () =>
+    Alert.alert(card.deleteConfirm, card.deleteNote, [
+      { text: actions.cancel, style: 'cancel' },
+      { text: card.delete, style: 'destructive', onPress: () => deletePost(post.id) },
+    ]);
+  const own = post.userId === 'me' ? { label: card.delete, run: confirmDelete } : post.tagged?.includes('me') ? { label: card.removeTag, run: () => removeMyTag(post.id) } : null;
+  if (!own) return showSafetyMenu(title);
+  if (Platform.OS === 'ios') {
+    ActionSheetIOS.showActionSheetWithOptions(
+      { title, options: [own.label, actions.cancel], cancelButtonIndex: 1, destructiveButtonIndex: 0 },
+      (index) => index === 0 && own.run(),
+    );
+  } else {
+    Alert.alert(title, undefined, [{ text: own.label, style: 'destructive', onPress: own.run }, { text: actions.cancel, style: 'cancel' }]);
+  }
+}
+
+/**
  * Akış kartı (TASARIM.md §5.2, T-20): kişi ve mekân tek blokta → fotoğraf → yorum → eylemler.
  * Katman az: mekân bir satır bağlantı, eylem düz metin. Kart geçirgen cam (T-13, T-17).
  */
 export function PostCard({ post }: { post: Post }) {
   const theme = useTheme();
   const t = useT();
-  const { userById, venueById, liked, toggleLike, checkIn } = useApp();
+  const { userById, venueById, liked, toggleLike, checkIn, deletePost, removeMyTag } = useApp();
   const lastTap = useRef(0);
   const user = userById(post.userId);
   const venue = venueById(post.venueId);
   const isLiked = liked.has(post.id);
-  const anonymous = Boolean(post.anonAlias);
-  const name = anonymous ? post.anonAlias! : user.displayName;
+  const name = user.displayName;
   const iAmHere = checkIn?.venueId === post.venueId;
   const others = (post.tagged ?? []).filter((id) => id !== 'me').map((id) => userById(id).displayName.split(' ')[0]);
   const withLine = post.tagged?.length
@@ -219,10 +233,10 @@ export function PostCard({ post }: { post: Post }) {
     <GlassCard style={styles.card} translucent>
       <View style={styles.cardHeader}>
         <Pressable
-          disabled={anonymous || post.userId === 'me'}
+          disabled={post.userId === 'me'}
           onPress={() => router.push({ pathname: '/user/[username]', params: { username: user.username } })}
           accessibilityLabel={name}>
-          <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} anonymous={anonymous} size={38} />
+          <Avatar name={user.displayName} color={user.avatarColor} uri={user.avatarUri} size={38} />
         </Pressable>
         <View style={{ flex: 1, gap: 1 }}>
           <Text numberOfLines={1} style={[Type.subheadline, { color: theme.text, fontWeight: '600' }]}>
@@ -246,7 +260,7 @@ export function PostCard({ post }: { post: Post }) {
           )}
         </View>
         <Pressable
-          onPress={() => showSafetyMenu(name)}
+          onPress={() => showPostMenu(post, name, { deletePost, removeMyTag })}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel={t.actions.more}
@@ -255,17 +269,15 @@ export function PostCard({ post }: { post: Post }) {
         </Pressable>
       </View>
 
-      {post.imageUri && (
-        <Pressable onPress={onPhotoPress} accessibilityHint={t.card.doubleTapToLike}>
-          <Image
-            source={{ uri: post.imageUri }}
-            style={styles.cardImage}
-            contentFit="cover"
-            transition={200}
-            accessibilityLabel={t.card.photoAt(venue?.name ?? '')}
-          />
-        </Pressable>
-      )}
+      <Pressable onPress={onPhotoPress} accessibilityHint={t.card.doubleTapToLike}>
+        <Image
+          source={{ uri: post.imageUri }}
+          style={styles.cardImage}
+          contentFit="cover"
+          transition={200}
+          accessibilityLabel={t.card.photoAt(venue?.name ?? '')}
+        />
+      </Pressable>
       {post.text && <Text style={[Type.body, { color: theme.text }]}>{post.text}</Text>}
 
       <View style={styles.cardActions}>

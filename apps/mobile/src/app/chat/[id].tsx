@@ -14,6 +14,7 @@ import type { Message } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 import { useT } from '@/i18n/use-t';
+import { confirmLeave, openDirections, startCheckIn } from '@/lib/check-in';
 import { suggestedPlanTime, useNight } from '@/lib/night';
 
 type Row = { message: Message; grouped: boolean };
@@ -23,6 +24,8 @@ const GROUP_WINDOW_MS = 5 * 60_000;
 /**
  * Sohbet (TASARIM.md §5.7). Mekân sohbeti kalabalık olabileceği için balonsuz kompakt satırlar,
  * birebir sohbet balon. Yazma alanı mesajların üstünde yüzen cam; başlıkta 04:00'e kalan süre.
+ * Mekân sohbetinde herkes @kullanıcı adıyla görünür (K-04). Ayrıldığın mekânın sohbeti 04:00'e kadar
+ * okunur, yazılamaz (K-06); uzaktaysan tek düğme "Yol tarifi" (S5).
  */
 export default function ChatScreen() {
   const theme = useTheme();
@@ -30,7 +33,8 @@ export default function ChatScreen() {
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { conversations, messages, venueById, userById, checkIn, canCheckIn, sendMessage, acceptRequest, declineRequest, markRead } = useApp();
+  const { conversations, messages, venueById, userById, checkIn, visited, canCheckIn, sendMessage, leaveVenue, acceptRequest, declineRequest, markRead } =
+    useApp();
   const { remaining, lastHour } = useNight(t);
   const [draft, setDraft] = useState('');
   const [composerHeight, setComposerHeight] = useState(64);
@@ -58,17 +62,20 @@ export default function ChatScreen() {
   const other = !isVenue ? userById(conversation.userId) : undefined;
   const title = venue?.name ?? other?.displayName ?? t.titles.chat;
 
-  // Kurallar: mekân sohbeti yalnızca orada yer bildirenlere açık; gelen istek kabul edilmeden yanıtlanamaz;
+  // Kurallar: mekân sohbeti yalnızca orada yer bildirenlere açık; ayrıldığın (başka yerde bildirdiğin ya da
+  // "Ayrıldım" dediğin) mekânın sohbeti 04:00'e kadar salt okunur (K-06); gelen istek kabul edilmeden yanıtlanamaz;
   // gönderilen istekte karşı taraf kabul edene kadar ikinci mesaj yazılamaz (K-08).
-  const lockedVenue = isVenue && checkIn?.venueId !== conversation.venueId;
+  const here = isVenue && checkIn?.venueId === conversation.venueId;
+  const lockedVenue = isVenue && !here && !visited.includes(conversation.venueId);
+  const readOnly = isVenue && !here && !lockedVenue;
+  const current = checkIn ? venueById(checkIn.venueId) : undefined;
   const incomingRequest = conversation.kind === 'direct' && conversation.status === 'request';
   const waitingAccept = conversation.kind === 'direct' && conversation.status === 'sent' && thread.some((m) => m.senderId === 'me');
 
   const rows: Row[] = thread.map((message, i) => {
     const prev = thread[i - 1];
     const grouped =
-      !!prev && !prev.plan && !message.plan && prev.senderId === message.senderId && prev.anonAlias === message.anonAlias &&
-      message.createdAt - prev.createdAt < GROUP_WINDOW_MS;
+      !!prev && !prev.plan && !message.plan && prev.senderId === message.senderId && message.createdAt - prev.createdAt < GROUP_WINDOW_MS;
     return { message, grouped };
   });
 
@@ -126,6 +133,13 @@ export default function ChatScreen() {
         </View>
       </Stack.Title>
       <Stack.Toolbar placement="right">
+        {venue && here && (
+          <Stack.Toolbar.Button
+            icon="figure.walk.departure"
+            accessibilityLabel={t.home.leave.button}
+            onPress={() => confirmLeave(t, venue, leaveVenue)}
+          />
+        )}
         {venue ? (
           <Stack.Toolbar.Button
             icon="info.circle"
@@ -170,14 +184,13 @@ export default function ChatScreen() {
         </View>
         <SafeAreaView edges={['bottom']} style={styles.bottomBar}>
           <View style={styles.barInner}>
+          {/* Yakındaysan alttan yer bildirme sayfası (T-26), iğne saplanınca bu sohbete dönülür; uzaktaysan yol tarifi (S5). */}
           <ActionButton
-            title={nearby ? t.messages.chat.locked.checkInAndJoin : t.messages.chat.locked.mustBeThere}
-            systemImage={nearby ? 'mappin.and.ellipse' : 'location.slash'}
+            title={nearby ? t.messages.chat.locked.checkInAndJoin : t.home.directionsTo(formatDistance(venue.distanceM, t))}
+            systemImage={nearby ? 'mappin.and.ellipse' : 'arrow.triangle.turn.up.right.diamond.fill'}
             variant="glassProminent"
             fullWidth
-            disabled={!nearby}
-            // Alttan yer bildirme sayfası (T-26); iğne saplanınca bu sohbete geri dönülür.
-            onPress={() => router.push({ pathname: '/check-in/[venueId]', params: { venueId: venue.id, from: 'chat' } })}
+            onPress={() => (nearby ? startCheckIn(t, venue, current, true) : openDirections(venue))}
           />
           </View>
         </SafeAreaView>
@@ -186,15 +199,12 @@ export default function ChatScreen() {
   }
 
   const renderItem = ({ item: { message, grouped } }: { item: Row }) => {
-    if (message.plan) return <PlanCard message={message} />;
+    if (message.plan) return <PlanCard message={message} readOnly={readOnly} />;
     const mine = message.senderId === 'me';
     const spacing = { paddingTop: grouped ? 2 : 12 };
     if (mine) {
       return (
         <View style={[styles.mineWrap, spacing]}>
-          {message.anonAlias && !grouped && (
-            <Text style={[Type.caption, { color: theme.textSecondary }]}>{t.messages.chat.asAlias(message.anonAlias)}</Text>
-          )}
           <View style={[styles.bubble, styles.mine, { backgroundColor: theme.accent }]}>
             <Text style={[Type.body, { color: theme.onAccent }]}>{message.text}</Text>
           </View>
@@ -202,17 +212,17 @@ export default function ChatScreen() {
       );
     }
     const sender = userById(message.senderId);
-    const anonymous = Boolean(message.anonAlias);
-    const name = anonymous ? message.anonAlias! : sender.displayName;
-    const openProfile = () => !anonymous && router.push({ pathname: '/user/[username]', params: { username: sender.username } });
+    // Sohbette herkes @kullanıcı adıyla görünür; dokununca profil açılır (K-04).
+    const name = `@${sender.username}`;
+    const openProfile = () => router.push({ pathname: '/user/[username]', params: { username: sender.username } });
 
     if (isVenue) {
       return (
         <Pressable onLongPress={() => showSafetyMenu(name)} style={[styles.compact, spacing]} accessibilityHint={t.messages.chat.reportHint}>
           <View style={styles.compactAvatar}>
             {!grouped && (
-              <Pressable onPress={openProfile} disabled={anonymous} accessibilityLabel={name}>
-                <Avatar name={sender.displayName} color={sender.avatarColor} uri={sender.avatarUri} size={28} anonymous={anonymous} />
+              <Pressable onPress={openProfile} accessibilityLabel={name}>
+                <Avatar name={sender.displayName} color={sender.avatarColor} uri={sender.avatarUri} size={28} />
               </Pressable>
             )}
           </View>
@@ -238,7 +248,32 @@ export default function ChatScreen() {
   };
 
   const canSend = draft.trim().length > 0;
-  const composer = incomingRequest ? (
+  const composer = readOnly && venue ? (
+    <Glass style={styles.panel}>
+      <View style={{ gap: 2 }}>
+        <Text style={[Type.headline, { color: theme.text, textAlign: 'center' }]}>{t.messages.chat.readOnly.title}</Text>
+        <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>{t.messages.chat.readOnly.note}</Text>
+      </View>
+      {/* Yakındaysan yeniden yer bildirince yazma geri gelir; uzaktaysan yol tarifi (S5). */}
+      {canCheckIn(venue.id) ? (
+        <ActionButton
+          title={t.home.checkIn}
+          systemImage="mappin.and.ellipse"
+          size="regular"
+          fullWidth
+          onPress={() => startCheckIn(t, venue, current, true)}
+        />
+      ) : (
+        <ActionButton
+          title={t.home.directionsTo(formatDistance(venue.distanceM, t))}
+          systemImage="arrow.triangle.turn.up.right.diamond.fill"
+          size="regular"
+          fullWidth
+          onPress={() => openDirections(venue)}
+        />
+      )}
+    </Glass>
+  ) : incomingRequest ? (
     <Glass style={styles.panel}>
       <Text style={[Type.subheadline, { color: theme.textSecondary, textAlign: 'center' }]}>
         {t.messages.chat.incomingRequest(other?.displayName ?? '')}
@@ -275,7 +310,7 @@ export default function ChatScreen() {
         <TextInput
           value={draft}
           onChangeText={setDraft}
-          placeholder={checkIn?.anonAlias && isVenue ? t.messages.chat.placeholderAs(checkIn.anonAlias) : t.messages.chat.placeholder}
+          placeholder={t.messages.chat.placeholder}
           placeholderTextColor={theme.textSecondary}
           accessibilityLabel={t.messages.chat.inputA11y}
           multiline
@@ -337,15 +372,15 @@ export default function ChatScreen() {
   );
 }
 
-/** Plan kartı: "Ben de varım" → "Varsın" (geri alınabilir). */
-function PlanCard({ message }: { message: Message }) {
+/** Plan kartı: "Ben de varım" → "Varsın" (geri alınabilir). Ayrıldığın mekânın sohbetinde plana katılınmaz (K-06). */
+function PlanCard({ message, readOnly }: { message: Message; readOnly: boolean }) {
   const theme = useTheme();
   const t = useT();
   const { joinedPlans, togglePlan, userById, users } = useApp();
   const plan = message.plan!;
   const joined = joinedPlans.has(message.id);
   const going = plan.going + (joined ? 1 : 0);
-  const author = message.senderId === 'me' ? null : userById(message.senderId).displayName.split(' ')[0];
+  const author = message.senderId === 'me' ? null : `@${userById(message.senderId).username}`;
   return (
     <GlassCard style={styles.plan}>
       <Text style={[Type.caption, { color: theme.textSecondary }]}>{t.messages.plan.shared(author, minutesAgo(message.createdAt, t))}</Text>
@@ -369,6 +404,7 @@ function PlanCard({ message }: { message: Message }) {
           systemImage={joined ? 'checkmark' : undefined}
           variant={joined ? 'filled' : 'tonal'}
           size="regular"
+          disabled={readOnly}
           onPress={() => togglePlan(message.id)}
         />
       </View>

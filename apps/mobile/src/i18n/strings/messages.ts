@@ -1,4 +1,3 @@
-import type { Audience } from '@/data/mock';
 
 /** Mesajlar, istekler, yeni mesaj, sohbetler (mekân sohbeti, DM, plan kartı) ve eski paylaşım ekranı (T-29). */
 export const tr = {
@@ -57,10 +56,12 @@ export const tr = {
       /** `people`: "342 kişi". */
       stats: (people: string, messages: number, plans: number) => `${people} · ${messages} mesaj${plans ? ` · ${plans} aktif plan` : ''}`,
       checkInAndJoin: 'Yer bildir ve katıl',
-      mustBeThere: 'Mekânda olmalısın',
     },
-    /** Takma adla yazdığın mesajın üstünde. */
-    asAlias: (alias: string) => `${alias} olarak`,
+    /** Ayrıldığın mekânın sohbeti (K-06): 04:00'e kadar okunur, yazılamaz. */
+    readOnly: {
+      title: 'Artık burada değilsin',
+      note: 'Sohbeti 04:00’e kadar okuyabilirsin. Yazmak için yeniden yer bildir.',
+    },
     reportHint: 'Bildirmek veya engellemek için basılı tut',
     incomingRequest: (name: string) => `${name} sana mesaj isteği gönderdi. Kabul etmeden yanıt yazamazsın.`,
     waitingAccept: (name: string) => `İsteğin gönderildi. ${name} kabul edene kadar yeni mesaj yazamazsın.`,
@@ -73,7 +74,6 @@ export const tr = {
       notYet: 'Prototipte henüz yok.',
     },
     placeholder: 'Mesaj',
-    placeholderAs: (alias: string) => `${alias} olarak yaz…`,
     inputA11y: 'Mesaj yaz',
     send: 'Gönder',
     venueNote: 'Bu sohbet her gece 04:00’te sıfırlanır. Yalnızca burada yer bildirenler katılabilir.',
@@ -93,32 +93,6 @@ export const tr = {
     beFirst: 'İlk katılan sen ol',
     join: 'Ben de varım',
     joined: 'Varsın',
-  },
-  /** Eski paylaşım ekranı (derin bağlantıyla hâlâ açılıyor). */
-  compose: {
-    notFound: 'Mekân bulunamadı.',
-    change: 'Değiştir',
-    changeVenueA11y: 'Mekânı değiştir',
-    tooFar: (distance: string) =>
-      `Bu mekâna ${distance} uzaktasın. Yer bildirmek ve sohbete katılmak için mekânda (300 m içinde) olmalısın.`,
-    selectedPhoto: 'Seçilen fotoğraf',
-    removePhoto: 'Fotoğrafı kaldır',
-    addPhoto: 'Fotoğraf ekle',
-    addPhotoA11y: 'Fotoğraf ekle, isteğe bağlı',
-    optional: 'İsteğe bağlı',
-    placeholder: 'Neler oluyor? (isteğe bağlı)',
-    textA11y: 'Yorum',
-    whoCanSee: 'Kim görebilir',
-    audience: { herkes: 'Herkes', takipciler: 'Takipçilerim', anonim: 'Anonim' } as Record<Audience, string>,
-    audienceNote: {
-      herkes: 'Paylaşımın yakındakilerin akışında ve mekân sayfasında görünür.',
-      takipciler: 'Yalnızca seni takip edenler görür.',
-      anonim: 'Adın ve profilin gizli kalır; mekân görünür. Bu gece “Gezgin Martı 17” olarak görünürsün.',
-    } as Record<Audience, string>,
-    joinChat: 'Mekân sohbetine katıl',
-    mustBeThere: 'Mekânda olmalısın',
-    shareAndJoin: 'Paylaş ve katıl',
-    checkIn: 'Buradayım',
   },
 };
 
@@ -174,9 +148,11 @@ export const en: typeof tr = {
       stats: (people: string, messages: number, plans: number) =>
         `${people} · ${count(messages, 'message')}${plans ? ` · ${count(plans, 'active plan')}` : ''}`,
       checkInAndJoin: 'Check in and join',
-      mustBeThere: 'You need to be there',
     },
-    asAlias: (alias: string) => `as ${alias}`,
+    readOnly: {
+      title: 'You’re not here anymore',
+      note: 'You can read this chat until 04:00. Check in again to write.',
+    },
     reportHint: 'Touch and hold to report or block',
     incomingRequest: (name: string) => `${name} sent you a message request. You can’t reply until you accept.`,
     waitingAccept: (name: string) => `Request sent. You can’t send more messages until ${name} accepts.`,
@@ -188,7 +164,6 @@ export const en: typeof tr = {
       notYet: 'Not in the prototype yet.',
     },
     placeholder: 'Message',
-    placeholderAs: (alias: string) => `Write as ${alias}…`,
     inputA11y: 'Write a message',
     send: 'Send',
     venueNote: 'This chat resets every night at 04:00. Only people checked in here can join.',
@@ -204,29 +179,5 @@ export const en: typeof tr = {
     beFirst: 'Be the first to join',
     join: 'I’m in',
     joined: 'You’re in',
-  },
-  compose: {
-    notFound: 'Venue not found.',
-    change: 'Change',
-    changeVenueA11y: 'Change venue',
-    tooFar: (distance: string) => `You’re ${distance} from this venue. To check in and join the chat, you need to be there (within 300 m).`,
-    selectedPhoto: 'Selected photo',
-    removePhoto: 'Remove photo',
-    addPhoto: 'Add photo',
-    addPhotoA11y: 'Add photo, optional',
-    optional: 'Optional',
-    placeholder: 'What’s happening? (optional)',
-    textA11y: 'Comment',
-    whoCanSee: 'Who can see this',
-    audience: { herkes: 'Everyone', takipciler: 'Followers', anonim: 'Anonymous' },
-    audienceNote: {
-      herkes: 'Your post appears in nearby people’s feeds and on the venue page.',
-      takipciler: 'Only people who follow you see it.',
-      anonim: 'Your name and profile stay hidden; the venue is visible. Tonight you’ll appear as “Wandering Seagull 17”.',
-    },
-    joinChat: 'Join the venue chat',
-    mustBeThere: 'You need to be there',
-    shareAndJoin: 'Share and join',
-    checkIn: 'I’m here',
   },
 };

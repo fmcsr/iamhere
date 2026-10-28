@@ -20,6 +20,9 @@ export type Venue = {
   nightPhotos: string[];
 };
 
+/** "Şu an burada kimler görsün" (ROTA §14 S4): Burada listesi, profildeki halka ve bu geceki yer bildirimi. */
+export type PresenceVisibility = 'herkes' | 'karsilikli' | 'kimse';
+
 export type User = {
   id: string;
   username: string;
@@ -32,6 +35,8 @@ export type User = {
   /** Kişinin seçtiği kapak fotoğrafı (net görünür). Yoksa kapak son gecenin fotoğrafı, bulanık. */
   coverUri?: string;
   isPrivate?: boolean;
+  /** Varsayılan: karşılıklı takipleşenler. */
+  presence?: PresenceVisibility;
 };
 
 /** Profilde seçilebilen ilgi alanları (en fazla 5). */
@@ -41,18 +46,16 @@ export const INTERESTS = [
 ];
 export const MAX_INTERESTS = 5;
 
-export type Audience = 'herkes' | 'takipciler' | 'anonim';
-
 export type Post = {
   id: string;
   userId: string;
-  anonAlias?: string;
   venueId: string;
+  /** Fotoğrafın altındaki yazı (en fazla 150 harf, S3). */
   text?: string;
-  imageUri?: string;
+  /** Yalnızca yazıdan oluşan paylaşım yok (S3). */
+  imageUri: string;
   createdAt: number;
   likes: number;
-  audience: Audience;
   /** Paylaşımda etiketlenen kişiler (profilde "Etiketlenenler"). */
   tagged?: string[];
 };
@@ -70,7 +73,6 @@ export type Message = {
   id: string;
   conversationId: string;
   senderId: string; // 'me' = ben
-  anonAlias?: string;
   text: string;
   plan?: Plan;
   createdAt: number;
@@ -104,13 +106,13 @@ export const ME: User = {
 
 export const USERS: User[] = [
   { id: 'u1', username: 'zeynep.k', displayName: 'Zeynep Kaya', bio: 'Konser fotoğrafçısı. Ön sıra benim.', interests: ['Canlı müzik', 'Fotoğraf'], avatarColor: '#7048E8', avatarUri: face('women/68') },
-  { id: 'u2', username: 'mertdmr', displayName: 'Mert Demir', bio: 'Ocakbaşı uzmanı, meyhane müdavimi.', interests: ['Meyhane', 'Yemek'], avatarColor: '#C2410C', avatarUri: face('men/32') },
+  { id: 'u2', username: 'mertdmr', displayName: 'Mert Demir', bio: 'Ocakbaşı uzmanı, meyhane müdavimi.', interests: ['Meyhane', 'Yemek'], avatarColor: '#C2410C', avatarUri: face('men/32'), presence: 'herkes' },
   { id: 'u3', username: 'canozturk', displayName: 'Can Öztürk', bio: 'Gece yürüyüşleri ve sahil.', interests: ['Koşu', 'Açık hava'], avatarColor: '#0B7285', avatarUri: face('men/75') },
   { id: 'u4', username: 'selin', displayName: 'Selin Aydın', bio: 'DJ setleri, çatı katları.', interests: ['Elektronik', 'Bar'], avatarColor: '#A61E4D', avatarUri: face('women/21'), isPrivate: true },
-  { id: 'u5', username: 'arda_y', displayName: 'Arda Yıldız', bio: 'Kahve, kitap, kutu oyunları.', interests: ['Kahve', 'Kutu oyunları'], avatarColor: '#2B8A3E', avatarUri: face('men/46') },
+  { id: 'u5', username: 'arda_y', displayName: 'Arda Yıldız', bio: 'Kahve, kitap, kutu oyunları.', interests: ['Kahve', 'Kutu oyunları'], avatarColor: '#2B8A3E', avatarUri: face('men/46'), presence: 'herkes' },
   { id: 'u6', username: 'denizarslan', displayName: 'Deniz Arslan', bio: 'Meze haritası çıkarıyorum. Fava konusunda tartışmam.', interests: ['Meyhane', 'Yemek'], avatarColor: '#5F3DC4', avatarUri: face('women/32') },
   { id: 'u7', username: 'burakkoc', displayName: 'Burak Koç', bio: 'Burger ve gece sineması.', interests: ['Yemek', 'Kahve'], avatarColor: '#1864AB', avatarUri: face('men/22') },
-  { id: 'u8', username: 'ece.sahin', displayName: 'Ece Şahin', bio: 'Küçük sahneler, akustik geceler.', interests: ['Canlı müzik'], avatarColor: '#C92A2A', avatarUri: face('women/90') },
+  { id: 'u8', username: 'ece.sahin', displayName: 'Ece Şahin', bio: 'Küçük sahneler, akustik geceler.', interests: ['Canlı müzik'], avatarColor: '#C92A2A', avatarUri: face('women/90'), presence: 'kimse' },
   { id: 'u9', username: 'kerempolat', displayName: 'Kerem Polat', bio: 'Rakı-balık ehli.', interests: ['Meyhane'], avatarColor: '#5C940D', avatarUri: face('men/11') },
 ];
 
@@ -259,36 +261,36 @@ export const VENUES: Venue[] = [
 ];
 
 export const POSTS: Post[] = [
-  { id: 'p1', userId: 'u1', venueId: 'v1', text: 'Gece Treni ikinci bise çıktı. Sahnenin önü bambaşka bir dünya, ses de tertemiz.', imageUri: IMG.konserTuruncu, createdAt: min(12), likes: 148, audience: 'herkes' },
-  { id: 'p6', userId: 'u6', venueId: 'v6', text: 'Fava, haydari, deniz börülcesi… Meze tabağı geldi, fasıl 22:00’de başlıyor. Favayı mutlaka deneyin.', imageUri: IMG.meyhaneMeze, createdAt: min(18), likes: 89, audience: 'herkes' },
-  { id: 'p2', userId: 'u4', anonAlias: 'Uykusuz Baykuş 42', venueId: 'v5', text: 'Terasta yer kalmadı ama DJ seti tam kıvamında. Manzara bedava.', imageUri: IMG.barTeras, createdAt: min(25), likes: 61, audience: 'anonim' },
-  { id: 'p7', userId: 'u7', venueId: 'v7', text: 'Double smash söyledim, cheddar akıyor. Patatesler çıtır, sos ev yapımı. 15 dakikada geldi.', imageUri: IMG.burgerDouble, createdAt: min(33), likes: 54, audience: 'herkes' },
-  { id: 'p3', userId: 'u2', venueId: 'v4', text: 'Acılı Adana efsane, yanına közlenmiş biber şart. 4 kişilik masa boşaldı, konserden çıkıp acıkan varsa bekleriz.', imageUri: IMG.ocakAdana, createdAt: min(41), likes: 37, audience: 'herkes' },
-  { id: 'p8', userId: 'u8', venueId: 'v8', text: 'Akustik gece başladı. Salon küçük ama ses harika, ön sıralar dolmak üzere.', imageUri: IMG.sahneSolist, createdAt: min(47), likes: 76, audience: 'herkes' },
-  { id: 'p4', userId: 'u3', venueId: 'v3', text: 'Sahilde 15 kişi olduk, 23:30’da koşuya çıkıyoruz. Hava serin, rüzgârlık alın.', imageUri: IMG.sahilBank, createdAt: min(55), likes: 30, audience: 'herkes' },
-  { id: 'p10', userId: 'u9', venueId: 'v6', text: 'Çınar’da rakı-balık masası kurduk, iki kişi daha sığar. Fasıl başlamadan gelin.', createdAt: min(64), likes: 18, audience: 'herkes' },
-  { id: 'p5', userId: 'u5', venueId: 'v2', text: 'Flat white’ları hâlâ Kadıköy’ün en iyisi. Arka masada kutu oyunu kuruldu, iki kişi eksiğiz.', imageUri: IMG.kafeLatte, createdAt: min(70), likes: 22, audience: 'herkes' },
-  { id: 'p9', userId: 'u1', venueId: 'v1', text: 'Kapılar açıldı, ışık provası yapılıyor. Erken gelen sahnenin sol tarafını kapsın.', imageUri: IMG.konserIsik, createdAt: min(150), likes: 95, audience: 'herkes' },
-  { id: 'p13', userId: 'u7', venueId: 'v2', text: 'Akşam kahvesi molası: dört fincan, dört farklı desen. Barista bugün formunda.', imageUri: IMG.kafeDortFincan, createdAt: min(190), likes: 27, audience: 'herkes' },
-  { id: 'p11', userId: 'u6', venueId: 'v4', text: 'Dün akşamki karışık ızgara hâlâ aklımda. Kuzu şiş yumuşacıktı, lavaş da sıcak geldi.', imageUri: IMG.ocakKarisik, createdAt: min(26 * 60), likes: 132, audience: 'herkes' },
-  { id: 'p12', userId: 'u2', venueId: 'v5', text: 'Kule Teras’ın yeni kokteyl menüsü: fesleğenli gin çok iyi, fiyatlar biraz yüksek.', imageUri: IMG.barKokteyl, createdAt: min(30 * 60), likes: 44, audience: 'herkes' },
+  { id: 'p1', userId: 'u1', venueId: 'v1', text: 'Gece Treni ikinci bise çıktı. Sahnenin önü bambaşka bir dünya, ses de tertemiz.', imageUri: IMG.konserTuruncu, createdAt: min(12), likes: 148 },
+  { id: 'p6', userId: 'u6', venueId: 'v6', text: 'Fava, haydari, deniz börülcesi… Meze tabağı geldi, fasıl 22:00’de başlıyor. Favayı mutlaka deneyin.', imageUri: IMG.meyhaneMeze, createdAt: min(18), likes: 89 },
+  { id: 'p2', userId: 'u4', venueId: 'v5', text: 'Terasta yer kalmadı ama DJ seti tam kıvamında. Manzara bedava.', imageUri: IMG.barTeras, createdAt: min(25), likes: 61 },
+  { id: 'p7', userId: 'u7', venueId: 'v7', text: 'Double smash söyledim, cheddar akıyor. Patatesler çıtır, sos ev yapımı. 15 dakikada geldi.', imageUri: IMG.burgerDouble, createdAt: min(33), likes: 54 },
+  { id: 'p3', userId: 'u2', venueId: 'v4', text: 'Acılı Adana efsane, yanına közlenmiş biber şart. 4 kişilik masa boşaldı, konserden çıkıp acıkan varsa bekleriz.', imageUri: IMG.ocakAdana, createdAt: min(41), likes: 37 },
+  { id: 'p8', userId: 'u8', venueId: 'v8', text: 'Akustik gece başladı. Salon küçük ama ses harika, ön sıralar dolmak üzere.', imageUri: IMG.sahneSolist, createdAt: min(47), likes: 76 },
+  { id: 'p4', userId: 'u3', venueId: 'v3', text: 'Sahilde 15 kişi olduk, 23:30’da koşuya çıkıyoruz. Hava serin, rüzgârlık alın.', imageUri: IMG.sahilBank, createdAt: min(55), likes: 30 },
+  { id: 'p10', userId: 'u9', venueId: 'v6', text: 'Çınar’da rakı-balık masası kurduk, iki kişi daha sığar. Fasıl başlamadan gelin.', imageUri: IMG.meyhaneRaki, createdAt: min(64), likes: 18 },
+  { id: 'p5', userId: 'u5', venueId: 'v2', text: 'Flat white’ları hâlâ Kadıköy’ün en iyisi. Arka masada kutu oyunu kuruldu, iki kişi eksiğiz.', imageUri: IMG.kafeLatte, createdAt: min(70), likes: 22 },
+  { id: 'p9', userId: 'u1', venueId: 'v1', text: 'Kapılar açıldı, ışık provası yapılıyor. Erken gelen sahnenin sol tarafını kapsın.', imageUri: IMG.konserIsik, createdAt: min(150), likes: 95 },
+  { id: 'p13', userId: 'u7', venueId: 'v2', text: 'Akşam kahvesi molası: dört fincan, dört farklı desen. Barista bugün formunda.', imageUri: IMG.kafeDortFincan, createdAt: min(190), likes: 27 },
+  { id: 'p11', userId: 'u6', venueId: 'v4', text: 'Dün akşamki karışık ızgara hâlâ aklımda. Kuzu şiş yumuşacıktı, lavaş da sıcak geldi.', imageUri: IMG.ocakKarisik, createdAt: min(26 * 60), likes: 132 },
+  { id: 'p12', userId: 'u2', venueId: 'v5', text: 'Kule Teras’ın yeni kokteyl menüsü: fesleğenli gin çok iyi, fiyatlar biraz yüksek.', imageUri: IMG.barKokteyl, createdAt: min(30 * 60), likes: 44 },
   // Elif'in (ben) geçmiş gecelerden paylaşımları: profilde Pinterest tipi ızgara.
-  { id: 'pm1', userId: 'me', venueId: 'v6', text: 'Fasıl ekibi bu gece çok iyiydi; son şarkıda bütün meyhane eşlik etti.', imageUri: IMG.meyhaneMasa, createdAt: night(1, 95), likes: 34, audience: 'herkes', tagged: ['u6'] },
-  { id: 'pm2', userId: 'me', venueId: 'v5', text: 'Gün batımında terasa çıktık; DJ gelmeden önceki en güzel saat.', imageUri: IMG.barGunbatimi, createdAt: night(2, -150), likes: 51, audience: 'herkes' },
-  { id: 'pm3', userId: 'me', venueId: 'v7', text: 'Konser öncesi hızlı bir burger. Turşular ev yapımı, patates çıtır.', imageUri: IMG.burgerKlasik, createdAt: night(3, -60), likes: 22, audience: 'herkes' },
-  { id: 'pm4', userId: 'me', venueId: 'v2', text: 'Gece kahvesi ve kitap. Arka masada yine kutu oyunu turnuvası var.', imageUri: IMG.kafeFincan, createdAt: night(6, 30), likes: 18, audience: 'herkes' },
-  { id: 'pm5', userId: 'me', venueId: 'v8', text: 'Akustik gecede ilk kez dinlediğim bir grup; adlarını not ettim.', imageUri: IMG.sahneMikrofon, createdAt: night(9, 70), likes: 40, audience: 'herkes' },
-  { id: 'pm6', userId: 'me', venueId: 'v6', text: 'Çınar’da “Ben de varım” dediğim ilk plan: dokuz kişi olduk, masa iki kez uzadı.', createdAt: night(11, 120), likes: 27, audience: 'herkes' },
-  { id: 'pm7', userId: 'me', venueId: 'v3', text: 'Koşudan sonra iskelede soluklandık. Karşı kıyının ışıkları bir harika.', imageUri: IMG.sahilKizKulesi, createdAt: night(13, 80), likes: 63, audience: 'herkes' },
-  { id: 'pm8', userId: 'me', venueId: 'v1', text: 'Bis’te konfeti yağdı, sesimiz kısıldı.', imageUri: IMG.konserKonfeti, createdAt: night(14, 40), likes: 88, audience: 'herkes', tagged: ['u1'] },
-  { id: 'pm9', userId: 'me', venueId: 'v5', text: 'Fesleğenli gin’i denedim; Mert haklıymış.', imageUri: IMG.barKadeh, createdAt: night(16, 60), likes: 29, audience: 'takipciler' },
+  { id: 'pm1', userId: 'me', venueId: 'v6', text: 'Fasıl ekibi bu gece çok iyiydi; son şarkıda bütün meyhane eşlik etti.', imageUri: IMG.meyhaneMasa, createdAt: night(1, 95), likes: 34, tagged: ['u6'] },
+  { id: 'pm2', userId: 'me', venueId: 'v5', text: 'Gün batımında terasa çıktık; DJ gelmeden önceki en güzel saat.', imageUri: IMG.barGunbatimi, createdAt: night(2, -150), likes: 51 },
+  { id: 'pm3', userId: 'me', venueId: 'v7', text: 'Konser öncesi hızlı bir burger. Turşular ev yapımı, patates çıtır.', imageUri: IMG.burgerKlasik, createdAt: night(3, -60), likes: 22 },
+  { id: 'pm4', userId: 'me', venueId: 'v2', text: 'Gece kahvesi ve kitap. Arka masada yine kutu oyunu turnuvası var.', imageUri: IMG.kafeFincan, createdAt: night(6, 30), likes: 18 },
+  { id: 'pm5', userId: 'me', venueId: 'v8', text: 'Akustik gecede ilk kez dinlediğim bir grup; adlarını not ettim.', imageUri: IMG.sahneMikrofon, createdAt: night(9, 70), likes: 40 },
+  { id: 'pm6', userId: 'me', venueId: 'v6', text: 'Çınar’da “Ben de varım” dediğim ilk plan: dokuz kişi olduk, masa iki kez uzadı.', imageUri: IMG.meyhaneSalata, createdAt: night(11, 120), likes: 27 },
+  { id: 'pm7', userId: 'me', venueId: 'v3', text: 'Koşudan sonra iskelede soluklandık. Karşı kıyının ışıkları bir harika.', imageUri: IMG.sahilKizKulesi, createdAt: night(13, 80), likes: 63 },
+  { id: 'pm8', userId: 'me', venueId: 'v1', text: 'Bis’te konfeti yağdı, sesimiz kısıldı.', imageUri: IMG.konserKonfeti, createdAt: night(14, 40), likes: 88, tagged: ['u1'] },
+  { id: 'pm9', userId: 'me', venueId: 'v5', text: 'Fesleğenli gin’i denedim; Mert haklıymış.', imageUri: IMG.barKadeh, createdAt: night(16, 60), likes: 29 },
   // Arkadaşların, Elif'i etiketlediği paylaşımları (birlikte oldukları gecelerden): profilde "Etiketlenenler".
-  { id: 'pt1', userId: 'u1', venueId: 'v5', text: 'Elif’le gün batımı nöbetindeyiz; DJ gelene kadar manzara bizim.', imageUri: IMG.barManzara, createdAt: night(2, -140), likes: 57, audience: 'herkes', tagged: ['me'] },
-  { id: 'pt2', userId: 'u6', venueId: 'v6', text: 'Elif nihayet favaya ikna oldu. Meze masası tam kadro.', imageUri: IMG.meyhaneTabak, createdAt: night(4, 50), likes: 41, audience: 'herkes', tagged: ['me'] },
-  { id: 'pt3', userId: 'u8', venueId: 'v8', text: 'Ön sıra bizimdi; Elif bütün şarkılara eşlik etti.', imageUri: IMG.sahneGrup, createdAt: night(9, 85), likes: 36, audience: 'herkes', tagged: ['me'] },
-  { id: 'pt4', userId: 'u7', venueId: 'v7', text: 'Konser öncesi burger turu: Elif cheddar’sız söyledi, hâlâ anlamadık.', imageUri: IMG.burgerMarul, createdAt: night(3, -50), likes: 19, audience: 'herkes', tagged: ['me'] },
-  { id: 'pt5', userId: 'u3', venueId: 'v3', text: 'Gece koşusu ekibi, iskelede mola. Elif tempoyu yine bozdu.', imageUri: IMG.sahilIsiklar, createdAt: night(13, 95), likes: 24, audience: 'herkes', tagged: ['me'] },
-  { id: 'pt6', userId: 'u1', venueId: 'v1', text: 'Bis’ten önceki an. Konfeti birazdan, Elif hazır.', imageUri: IMG.konserKalabalik, createdAt: night(14, 30), likes: 72, audience: 'herkes', tagged: ['me'] },
+  { id: 'pt1', userId: 'u1', venueId: 'v5', text: 'Elif’le gün batımı nöbetindeyiz; DJ gelene kadar manzara bizim.', imageUri: IMG.barManzara, createdAt: night(2, -140), likes: 57, tagged: ['me'] },
+  { id: 'pt2', userId: 'u6', venueId: 'v6', text: 'Elif nihayet favaya ikna oldu. Meze masası tam kadro.', imageUri: IMG.meyhaneTabak, createdAt: night(4, 50), likes: 41, tagged: ['me'] },
+  { id: 'pt3', userId: 'u8', venueId: 'v8', text: 'Ön sıra bizimdi; Elif bütün şarkılara eşlik etti.', imageUri: IMG.sahneGrup, createdAt: night(9, 85), likes: 36, tagged: ['me'] },
+  { id: 'pt4', userId: 'u7', venueId: 'v7', text: 'Konser öncesi burger turu: Elif cheddar’sız söyledi, hâlâ anlamadık.', imageUri: IMG.burgerMarul, createdAt: night(3, -50), likes: 19, tagged: ['me'] },
+  { id: 'pt5', userId: 'u3', venueId: 'v3', text: 'Gece koşusu ekibi, iskelede mola. Elif tempoyu yine bozdu.', imageUri: IMG.sahilIsiklar, createdAt: night(13, 95), likes: 24, tagged: ['me'] },
+  { id: 'pt6', userId: 'u1', venueId: 'v1', text: 'Bis’ten önceki an. Konfeti birazdan, Elif hazır.', imageUri: IMG.konserKalabalik, createdAt: night(14, 30), likes: 72, tagged: ['me'] },
 ];
 
 /**
@@ -329,7 +331,7 @@ export const CONVERSATIONS: Conversation[] = [
 
 export const MESSAGES: Message[] = [
   { id: 'm1', conversationId: 'c-v1', senderId: 'u2', text: 'Sahnenin sol tarafı daha rahat, oraya gelin', createdAt: min(14) },
-  { id: 'm2', conversationId: 'c-v1', senderId: 'u4', anonAlias: 'Sessiz Tilki 58', text: 'Bis yapacaklar mı sizce?', createdAt: min(11) },
+  { id: 'm2', conversationId: 'c-v1', senderId: 'u4', text: 'Bis yapacaklar mı sizce?', createdAt: min(11) },
   { id: 'm3', conversationId: 'c-v1', senderId: 'u1', text: 'Işıklar şahane, fotoğrafları akışa attım', createdAt: min(9) },
   {
     id: 'm4', conversationId: 'c-v1', senderId: 'u3', text: 'Konserden sonra sahile yürüyelim mi?',
@@ -339,7 +341,7 @@ export const MESSAGES: Message[] = [
   { id: 'm7', conversationId: 'c-v1', senderId: 'u5', text: 'Ben de geliyorum, kapıda buluşalım', createdAt: min(3) },
   { id: 'g1', conversationId: 'c-v6', senderId: 'u9', text: 'Pencere kenarındaki uzun masadayız, iki kişilik yer var', createdAt: min(22) },
   { id: 'g2', conversationId: 'c-v6', senderId: 'u6', text: 'Favayı söyledik, deniz börülcesi de geliyor', createdAt: min(17) },
-  { id: 'g3', conversationId: 'c-v6', senderId: 'u2', anonAlias: 'Neşeli Martı 7', text: 'Fasıl ekibi 22:00’de mi başlıyor kesin?', createdAt: min(12) },
+  { id: 'g3', conversationId: 'c-v6', senderId: 'u2', text: 'Fasıl ekibi 22:00’de mi başlıyor kesin?', createdAt: min(12) },
   { id: 'g4', conversationId: 'c-v6', senderId: 'u6', text: 'Evet, garson söyledi. İlk şarkı istek bizden', createdAt: min(8) },
   { id: 'g5', conversationId: 'c-v8', senderId: 'u8', text: 'Ön sıralar doldu ama bar tarafından da çok iyi duyuluyor', createdAt: min(30) },
   { id: 'g6', conversationId: 'c-v8', senderId: 'u7', text: 'Arada 15 dk mola veriyorlar, sonra ikinci set', createdAt: min(19) },

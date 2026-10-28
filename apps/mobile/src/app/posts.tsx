@@ -26,7 +26,7 @@ export default function PostsScreen() {
   const list =
     kind === 'tagged'
       ? taggedPostsOf(userId)
-      : posts.filter((p) => p.userId === userId && !p.anonAlias && canSee(p)).sort((a, b) => b.createdAt - a.createdAt);
+      : posts.filter((p) => p.userId === userId && canSee(p)).sort((a, b) => b.createdAt - a.createdAt);
   const title = kind === 'tagged' ? (mine ? t.profile.posts.taggedMine : t.profile.tabs.tagged) : mine ? t.profile.posts.mine : `@${owner.username}`;
 
   return (

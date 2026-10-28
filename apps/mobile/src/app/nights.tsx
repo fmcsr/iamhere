@@ -15,16 +15,17 @@ import { genitive } from '@/lib/tr';
 /**
  * Anılar (TASARIM.md §5.8): profildeki "anı" sayısına dokununca açılan takvim. Dışarıda olunan
  * gecelerde o gecenin fotoğrafı; bir geceye dokununca o gecenin paylaşımları (yoksa mekân) açılır.
- * Takvimin altında başka bir şey yok. Takvimi yalnızca kişinin kendisi ve karşılıklı takipleştikleri görür.
+ * Takvimin altında başka bir şey yok. Geçmiş geceler hesabın gizliliğine (açık hesap herkese, gizli hesap onaylı
+ * takipçilere), bu gece kişinin "Şu an burada kimler görsün" ayarına uyar (S4).
  */
 export default function MemoriesScreen() {
   const theme = useTheme();
   const t = useT();
   const { user: userId = 'me' } = useLocalSearchParams<{ user?: string }>();
-  const { posts, settings, venueById, userById, nightsOf, isMutual } = useApp();
+  const { posts, settings, venueById, userById, nightsOf, canSeeProfile } = useApp();
   const mine = userId === 'me';
   const owner = userById(userId);
-  const allowed = mine || isMutual(userId);
+  const allowed = canSeeProfile(userId);
 
   const nights = allowed ? nightsOf(userId) : [];
   const postById = (id: string) => posts.find((p) => p.id === id);
@@ -46,8 +47,8 @@ export default function MemoriesScreen() {
             onOpenNight={openNight}
             privacy={
               mine
-                ? { label: t.profile.memories.visibility[settings.presenceVisibility], onPress: () => router.push('/settings') }
-                : { label: t.profile.memories.mutual }
+                ? { label: t.profile.memories.visibility(settings.privateAccount, settings.presenceVisibility), onPress: () => router.push('/settings') }
+                : { label: owner.isPrivate ? t.profile.memories.follower : t.profile.memories.publicAccount }
             }
           />
         ) : (

@@ -16,19 +16,21 @@ import { CHECK_IN_RADIUS_M } from '@/data/mock';
 import { useApp } from '@/data/store';
 import { useTheme } from '@/hooks/use-theme';
 import { useT } from '@/i18n/use-t';
+import { confirmLeave, startCheckIn } from '@/lib/check-in';
 
 /** Listede 1 km içindeki mekânlar (K-02); aranınca hepsi. */
 const LIST_RADIUS_M = 1000;
 
 /**
  * Buradayım (TASARIM.md §5.3): listede yalnızca yakındaki mekânlar (1 km içi, K-02); 300 m dışındakiler
- * soluk ve kilitli. Harita gezilebilir, aramada tüm mekânlar çıkar. Yakındaki mekâna dokununca yer bildirme
- * sayfası, uzağa dokununca mekân sayfası, zaten yer bildirdiğin mekâna dokununca sohbeti açılır.
+ * soluk, yanlarında yol tarifi (S5). Harita gezilebilir, aramada tüm mekânlar çıkar. Yakındaki mekâna dokununca yer bildirme
+ * sayfası (başka bir mekândaysan önce geçiş onayı, K-06), uzağa dokununca mekân sayfası, zaten yer bildirdiğin
+ * mekâna dokununca sohbeti açılır. Bulunduğun mekânın kartında "Ayrıldım" var.
  */
 export default function CheckInScreen() {
   const theme = useTheme();
   const t = useT();
-  const { venues, checkIn, venueById } = useApp();
+  const { venues, checkIn, venueById, leaveVenue } = useApp();
   const [query, setQuery] = useState('');
 
   const matches = [...venues]
@@ -40,8 +42,10 @@ export default function CheckInScreen() {
   // Zaten yer bildirdiğin mekân yeniden bildirilmez (aynı fotoğraf iki kez paylaşılmasın): sohbeti açılır.
   const openVenue = (id: string) => {
     if (id === checkIn?.venueId) return router.push({ pathname: '/chat/[id]', params: { id: `c-${id}` } });
-    const far = (venueById(id)?.distanceM ?? Infinity) > CHECK_IN_RADIUS_M;
-    router.push(far ? { pathname: '/venue/[id]', params: { id } } : { pathname: '/check-in/[venueId]', params: { venueId: id } });
+    const venue = venueById(id);
+    if (!venue) return;
+    if (venue.distanceM > CHECK_IN_RADIUS_M) return router.push({ pathname: '/venue/[id]', params: { id } });
+    startCheckIn(t, venue, current);
   };
 
   return (
@@ -63,12 +67,22 @@ export default function CheckInScreen() {
                   <LiveCount count={current.here} text={t.live.here(current.here)} />
                 </View>
               </View>
-              <ActionButton
-                title={t.home.checkin.goToChat}
-                systemImage="bubble.left.and.bubble.right.fill"
-                fullWidth
-                onPress={() => router.push({ pathname: '/chat/[id]', params: { id: `c-${current.id}` } })}
-              />
+              <View style={styles.currentActions}>
+                <ActionButton
+                  title={t.home.leave.button}
+                  systemImage="figure.walk.departure"
+                  variant="tonal"
+                  onPress={() => confirmLeave(t, current, leaveVenue)}
+                />
+                <View style={{ flex: 1 }}>
+                  <ActionButton
+                    title={t.home.checkin.goToChat}
+                    systemImage="bubble.left.and.bubble.right.fill"
+                    fullWidth
+                    onPress={() => router.push({ pathname: '/chat/[id]', params: { id: `c-${current.id}` } })}
+                  />
+                </View>
+              </View>
             </GlassCard>
           )}
 
@@ -99,8 +113,10 @@ export default function CheckInScreen() {
                   <VenueRow
                     venue={v}
                     dimmed={tooFar}
-                    subtitle={tooFar ? `${formatDistance(v.distanceM, t)} · ${t.home.checkin.mustBeThere}` : undefined}
-                    trailing={tooFar ? <Icon ios="lock.fill" md="lock" size={15} color={theme.textSecondary} /> : undefined}
+                    subtitle={tooFar ? t.home.directionsTo(formatDistance(v.distanceM, t)) : undefined}
+                    trailing={
+                      tooFar ? <Icon ios="arrow.triangle.turn.up.right.diamond" md="directions" size={16} color={theme.textSecondary} /> : undefined
+                    }
                     onPress={() => openVenue(v.id)}
                   />
                 </View>
@@ -123,6 +139,7 @@ const styles = StyleSheet.create({
   content: { padding: 16, paddingTop: 8, gap: 14 },
   card: { borderRadius: 22, padding: 14, gap: 14 },
   currentRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  currentActions: { flexDirection: 'row', gap: 10 },
   map: { height: 220, borderRadius: 22, overflow: 'hidden' },
   note: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   list: { borderRadius: 22, paddingHorizontal: 14, paddingVertical: 4 },

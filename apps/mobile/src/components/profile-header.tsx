@@ -34,8 +34,9 @@ export function ProfileHeader({
   following: number;
   /** Anı sayısı: yer bildirilen ya da paylaşım yapılan geceler (görünmüyorsa verilmez). */
   memories?: number;
-  onFollowers: () => void;
-  onFollowing: () => void;
+  /** Verilmezse sayı dokunulamaz (gizli hesap, S4). */
+  onFollowers?: () => void;
+  onFollowing?: () => void;
   /** Anı takvimini açar. */
   onMemories?: () => void;
   actions?: ReactNode;
